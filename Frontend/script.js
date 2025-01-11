@@ -49,7 +49,50 @@ class CurtainControl {
             this.saveToLocalStorage();
         }
     }
+    toggleReportForm() {
+    const form = document.getElementById('reportForm');
+    const button = document.getElementById('reportButton');
+    if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'block';
+        button.textContent = 'Hide Report Form';
+    } else {
+        form.style.display = 'none';
+        button.textContent = 'Report Problem';
+    }
+}
 
+    submitReport() {
+        const reportText = document.getElementById('reportText').value;
+        if (!reportText.trim()) {
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+            return;
+        }
+
+        const encodedReport = encodeURIComponent(reportText);
+
+        fetch(`/submit-report/${encodedReport}`, {
+            method: 'GET'
+        })
+        .then(response => {
+            if (response.ok) {
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                document.getElementById('reportText').value = '';
+                setTimeout(() => {
+                    document.getElementById('reportForm').style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'none';
+                    document.getElementById('reportButton').textContent = 'Report Problem';
+                }, 3000);
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        })
+        .catch(error => {
+            document.getElementById('errorMessage').style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        });
+    }
     async moveCurtain(room, direction) {
         try {
             const selectedDirection = this.roomDirections[room].selected;

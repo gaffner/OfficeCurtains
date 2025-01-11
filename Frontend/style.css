@@ -168,3 +168,101 @@ input {
     .donate-button:hover {
       background-color: #555;
     }
+
+    .report-container {
+    position: fixed;
+    bottom: 70px; /* Position it above the donate button (which is at 20px) */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 1000;
+}
+
+.report-form {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 300px;
+    margin-bottom: 10px;
+    display: none;
+}
+
+.success-message, .error-message {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 10px;
+    border-radius: 4px;
+    width: 200px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.report-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.report-button {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.report-button:hover {
+    background-color: #2980b9;
+}
+
+.report-form {
+    display: none;
+    margin-top: 20px;
+}
+
+.submit-report-button {
+    padding: 8px 16px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.submit-report-button:hover {
+    background-color: #27ae60;
+}
+
+textarea {
+    width: 100%;
+    max-width: 500px;
+    height: 100px;
+    margin: 10px 0;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.success-message {
+    color: #27ae60;
+    margin-top: 10px;
+    display: none;
+}
+
+.error-message {
+    color: #e74c3c;
+    margin-top: 10px;
+    display: none;
+}
