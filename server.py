@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
-from utils import validate_isp
+from utils import validate_isp, get_client_ip
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -31,7 +31,7 @@ app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
 
 @app.get("/submit-report/{report}")
 def submit_report(request: Request, report: str):
-    user_ip = request.client.host
+    user_ip = get_client_ip(request)
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     report_entry = f"{current_time} - {user_ip} - {report}\n"
 

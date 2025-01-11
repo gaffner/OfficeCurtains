@@ -23,6 +23,15 @@ def is_allowed_isp(ip: str):
         return False
 
 
+def get_client_ip(request: Request) -> str:
+    if request.client:
+        user_ip = request.client.host  # local run (direct access)
+    else:
+        user_ip = request.headers.get("X-Real-IP")  # support for reverse proxy (nginx)
+
+    return user_ip
+
+
 def validate_isp():
     def decorator(func):
         @wraps(func)
@@ -32,11 +41,7 @@ def validate_isp():
                 raise HTTPException(status_code=400, detail="Request object is missing.")
 
             try:
-                if request.client:
-                    user_ip = request.client.host  # local run (direct access)
-                else:
-                    user_ip = request.headers.get("X-Real-IP")  # support for reverse proxy (nginx)
-
+                user_ip = get_client_ip(request)
                 if not is_allowed_isp(user_ip):
                     return RedirectResponse(url="/Frontend/blocked.html")
             except Exception as e:
