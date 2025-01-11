@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from functools import wraps
 
@@ -8,12 +9,14 @@ from fastapi.responses import RedirectResponse
 
 ALLOWED_ISP = os.getenv('ALLOWED_ISP')
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def is_allowed_isp(ip: str):
     try:
         result = json.loads(requests.get(f'http://ip-api.com/json/{ip}?fields=isp').text)
-        return result['isp'] == ALLOWED_ISP
+        logging.info(f'IP-API result: {result}, allowed isp is {ALLOWED_ISP}')
+        return ip == '127.0.0.1' or result['isp'] == ALLOWED_ISP
     except KeyError:
         return False
 

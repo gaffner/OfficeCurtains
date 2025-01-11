@@ -45,7 +45,7 @@ def submit_report(request: Request, report: str):
 
 @app.get("/")
 @validate_isp()
-def root():
+def root(request: Request):
     return RedirectResponse(url="/Frontend/index.html")
 
 
@@ -81,7 +81,7 @@ def get_room_states(room_name: str):
 
 @app.get("/register/{room_name}")
 @validate_isp()
-def register(room_name: str):
+def register(request: Request, room_name: str):
     states = get_room_states(room_name.upper())
     directions = [state['name'] for state in states]
 
@@ -123,7 +123,7 @@ def get_states_by_direction(room_name, direction):
 
 @app.get("/control/{room_name}/{action}")
 @validate_isp()
-def control_curtain(room_name: str, action: str, direction: str = None):
+def control_curtain(request: Request, room_name: str, action: str, direction: str = None):
     room_name = room_name.upper()
     creds = (get_username(room_name), CURTAINS_PASSWORD)
     address = (SERVER_IP, get_server_port(room_name))
