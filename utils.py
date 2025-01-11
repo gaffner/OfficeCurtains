@@ -9,6 +9,7 @@ from fastapi.responses import RedirectResponse
 ALLOWED_ISP = os.getenv('ALLOWED_ISP')
 
 
+
 def is_allowed_isp(ip: str):
     try:
         result = json.loads(requests.get(f'http://ip-api.com/json/{ip}?fields=isp').text)
