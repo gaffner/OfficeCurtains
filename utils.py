@@ -36,7 +36,7 @@ def validate_isp():
                 if not is_allowed_isp(user_ip):
                     return RedirectResponse(url="/Frontend/blocked.html")
             except Exception as e:
-                raise HTTPException(status_code=500, detail=str(e))
+                raise HTTPException(status_code=500, detail=f"Server exception: {str(e)}. Request:  {request}, {request.client})
 
             return func(*args, **kwargs)
 
