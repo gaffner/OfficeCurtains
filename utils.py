@@ -6,7 +6,9 @@ from functools import wraps
 import requests
 from fastapi import Request, HTTPException
 from fastapi.responses import RedirectResponse
+from dotenv import load_dotenv
 
+load_dotenv()
 ALLOWED_ISP = os.getenv('ALLOWED_ISP')
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
