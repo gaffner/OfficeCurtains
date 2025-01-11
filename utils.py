@@ -4,9 +4,9 @@ import os
 from functools import wraps
 
 import requests
+from dotenv import load_dotenv
 from fastapi import Request, HTTPException
 from fastapi.responses import RedirectResponse
-from dotenv import load_dotenv
 
 load_dotenv()
 ALLOWED_ISP = os.getenv('ALLOWED_ISP')
@@ -31,9 +31,12 @@ def validate_isp():
             if not request:
                 raise HTTPException(status_code=400, detail="Request object is missing.")
 
-            user_ip = request.client.host
-            if not is_allowed_isp(user_ip):
-                return RedirectResponse(url="/Frontend/blocked.html")
+            try:
+                user_ip = request.client.host
+                if not is_allowed_isp(user_ip):
+                    return RedirectResponse(url="/Frontend/blocked.html")
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=str(e))
 
             return func(*args, **kwargs)
 
