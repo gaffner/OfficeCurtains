@@ -122,7 +122,7 @@
         <div class="error-message" id="errorMessage">Error submitting report. Please try again.</div>
     </div>
 
-    <script>
+     <script>
         function toggleReportForm() {
             const form = document.getElementById('reportForm');
             const button = document.getElementById('reportButton');
@@ -143,12 +143,11 @@
                 return;
             }
 
-            fetch('/submit-report', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ report: reportText })
+            // Encode the report text for URL
+            const encodedReport = encodeURIComponent(reportText);
+
+            fetch(`/submit-report/${encodedReport}`, {
+                method: 'GET'
             })
             .then(response => {
                 if (response.ok) {

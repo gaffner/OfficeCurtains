@@ -29,10 +29,8 @@ REPORTS_FILE = os.getenv('REPORTS_FILE')
 app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
 
 
-@app.post("/submit-report")
+@app.get("/submit-report/{report}")
 def submit_report(request: Request, report: str):
-    # Ensure the directory exists
-    os.makedirs(os.path.dirname(REPORTS_FILE), exist_ok=True)
     user_ip = request.client.host
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     report_entry = f"{current_time} - {user_ip} - {report}\n"
