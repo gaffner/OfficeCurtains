@@ -54,8 +54,8 @@ class CurtainControl {
         try {
             const selectedDirection = this.roomDirections[room].selected;
         const url = selectedDirection ?
-                `https://${window.location.hostname}/control/${room}/${direction}?direction=${selectedDirection}` :
-                `https://${window.location.hostname}/control/${room}/${direction}`;
+                `/control/${room}/${direction}?direction=${selectedDirection}` :
+                `/control/${room}/${direction}`;
 
             console.log("Doing fetch to", url)
 	    if (direction === "stop")

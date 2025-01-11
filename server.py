@@ -1,14 +1,17 @@
 import json
 import logging
 import os
+from datetime import datetime
 from functools import lru_cache
-from dotenv import load_dotenv
 
 import requests
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
+
+from utils import validate_isp, get_client_ip
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -21,12 +24,26 @@ SERVER_IP = os.getenv('SERVER_IP')
 CURTAINS_USERNAME = os.getenv('CURTAINS_USERNAME')
 MD5_VALUE = os.getenv('MD5_VALUE')
 CURTAINS_PASSWORD = os.getenv('CURTAINS_PASSWORD')
+REPORTS_FILE = os.getenv('REPORTS_FILE')
 
 app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
 
 
+@app.get("/submit-report/{report}")
+def submit_report(request: Request, report: str):
+    user_ip = get_client_ip(request)
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    report_entry = f"{current_time} - {user_ip} - {report}\n"
+
+    with open(REPORTS_FILE, "a") as file:
+        file.write(report_entry)
+
+    return {"message": "Report submitted successfully"}
+
+
 @app.get("/")
-def root():
+@validate_isp()
+def root(request: Request):
     return RedirectResponse(url="/Frontend/index.html")
 
 
@@ -61,7 +78,8 @@ def get_room_states(room_name: str):
 
 
 @app.get("/register/{room_name}")
-def register(room_name: str):
+@validate_isp()
+def register(request: Request, room_name: str):
     states = get_room_states(room_name.upper())
     directions = [state['name'] for state in states]
 
@@ -102,7 +120,8 @@ def get_states_by_direction(room_name, direction):
 
 
 @app.get("/control/{room_name}/{action}")
-def control_curtain(room_name: str, action: str, direction: str=None):
+@validate_isp()
+def control_curtain(request: Request, room_name: str, action: str, direction: str = None):
     room_name = room_name.upper()
     creds = (get_username(room_name), CURTAINS_PASSWORD)
     address = (SERVER_IP, get_server_port(room_name))

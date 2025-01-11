@@ -27,3 +27,4 @@ urllib3==2.3.0
 wcwidth==0.2.13
 
 uvicorn~=0.34.0
+python-dotenv~=1.0.1
