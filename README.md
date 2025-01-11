@@ -1,4 +1,4 @@
-# CurtainsControl
+# Office Curtains Control
 No more stupid apps in order to control curtains. Lets get back to the good old days, where we control curtains using simple HTML Websites.
 
 ## How to use?
