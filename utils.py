@@ -32,11 +32,15 @@ def validate_isp():
                 raise HTTPException(status_code=400, detail="Request object is missing.")
 
             try:
-                user_ip = request.client.host
+                if request.client:
+                    user_ip = request.client.host  # local run (direct access)
+                else:
+                    user_ip = request.headers.get("X-Real-IP")  # support for reverse proxy (nginx)
+
                 if not is_allowed_isp(user_ip):
                     return RedirectResponse(url="/Frontend/blocked.html")
             except Exception as e:
-                logging.info(f"bad request: {request}, {request.client}")
+                logging.info(f"bad request: {request}, {request.client}, {request.headers}")
                 raise HTTPException(status_code=500, detail=str(e))
 
             return func(*args, **kwargs)
