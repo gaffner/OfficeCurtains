@@ -1,0 +1,170 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #f9fafb;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.input-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input {
+    flex-grow: 1;
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+.room-directions {
+    padding: 8px 2px;
+}
+
+.p-directions {
+    padding: 4px 10px;
+}
+
+.add-button {
+    padding: 8px 16px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.add-button:hover {
+    background-color: #1d4ed8;
+}
+
+.error {
+    color: #dc2626;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #fee2e2;
+    border-radius: 4px;
+    display: none;
+}
+
+.status {
+    color: #000000;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #6ec617;
+    border-radius: 4px;
+    display: none;
+}
+
+.room-card {
+    background-color: white;
+    padding: 16px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.room-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.control-button {
+    background: none;
+    border: 1.5px solid currentColor;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    padding: 0;
+}
+
+.btn-up {
+    color: #22c55e;
+}
+
+.btn-up:hover {
+    background-color: #f0fdf4;
+}
+
+.btn-stop {
+    width: 60px;
+    color: #6b7280;
+}
+
+.btn-stop:hover {
+    background-color: #f3f4f6;
+}
+
+.btn-down {
+    color: #ef4444;
+}
+
+.btn-down:hover {
+    background-color: #fef2f2;
+}
+
+.btn-remove {
+    color: #6b7280;
+    border: none;
+}
+
+.btn-remove:hover {
+    background-color: #f3f4f6;
+}
+
+.empty-state {
+    text-align: center;
+    color: #6b7280;
+    margin-top: 40px;
+}
+
+.room-number {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+    /* Style for the button */
+    .donate-button {
+      position: fixed; /* Fix the button to the bottom of the page */
+      bottom: 20px; /* Space from the bottom of the page */
+      left: 50%; /* Center horizontally */
+      transform: translateX(-50%); /* Center align the button */
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    /* Style for the button when hovering */
+    .donate-button:hover {
+      background-color: #555;
+    }
