@@ -9,7 +9,11 @@ body {
     padding: 20px;
     max-width: 600px;
     margin: 0 auto;
-    background-color: #f9fafb;
+    /* background-color: #f9fafb; */
+    background-image: url('../Images/background.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 h1 {
