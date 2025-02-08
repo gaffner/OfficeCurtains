@@ -1,25 +1,126 @@
-import hashlib
 import os
+import csv
+import logging
 from datetime import datetime
-
-from fastapi import Request
-
-from config import STATISTICS_FOLDER, CSV_FORMAT
-from utils import get_client_ip
+import pandas as pd
 
 
-def get_current_csv():
-    csv_name = datetime.now().strftime("%Y-%m-%d")
-    csv = open(os.path.join(STATISTICS_FOLDER, csv_name), "a")
-    csv.write(CSV_FORMAT)
+class StatisticsManager:
+    def __init__(self, stats_dir="stats"):
+        self.stats_dir = stats_dir
+        self._ensure_stats_directory()
 
-    return csv
+    def _ensure_stats_directory(self):
+        if not os.path.exists(self.stats_dir):
+            os.makedirs(self.stats_dir)
 
+    def get_all_stats(self):
+        """
+        Get statistics for all available days
 
-def log_control(request: Request, room_name: str, direction: str):
-    hashed_user_ip = hashlib.sha1(get_client_ip(request).encode()).hexdigest()
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    report_entry = f"{room_name},{hashed_user_ip},{direction}\n"
+        Returns:
+            list: List of dictionaries containing date and statistics for each day
+        """
+        all_stats = []
+        stats_files = sorted(os.listdir(self.stats_dir), reverse=True)  # Sort in reverse to show newest first
 
-    csv = get_current_csv()
-    csv.write(report_entry)
+        for filename in stats_files:
+            if filename.startswith('stats_') and filename.endswith('.csv'):
+                date = filename[6:-4]  # Extract date from filename
+                filepath = os.path.join(self.stats_dir, filename)
+                try:
+                    df = pd.read_csv(filepath)
+                    formatted_date = datetime.strptime(date, '%Y-%m-%d').strftime('%A, %B %d, %Y')
+                    all_stats.append({
+                        'date': formatted_date,
+                        'raw_date': date,
+                        'stats': df.to_dict('records')
+                    })
+                except Exception as e:
+                    logging.error(f"Error reading stats file {filename}: {e}")
+
+        return all_stats
+
+    def get_stats_filename(self):
+        """Generate statistics filename based on current date"""
+        return os.path.join(self.stats_dir, f"stats_{datetime.now().strftime('%Y-%m-%d')}.csv")
+
+    def initialize_stats_file(self):
+        """Initialize the daily statistics file if it doesn't exist"""
+        filename = self.get_stats_filename()
+        if not os.path.exists(filename):
+            with open(filename, 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(['room_number', 'up', 'down', 'stop'])
+            logging.info(f"Created new statistics file: {filename}")
+
+    def update_stats(self, room_number, action):
+        """
+        Update statistics for a room and action
+
+        Args:
+            room_number (str): The room number
+            action (str): The action performed ('up', 'down', or 'stop')
+        """
+        filename = self.get_stats_filename()
+        self.initialize_stats_file()
+
+        try:
+            df = pd.read_csv(filename)
+        except pd.errors.EmptyDataError:
+            df = pd.DataFrame(columns=['room_number', 'up', 'down', 'stop'])
+
+        # Check if room exists in stats
+        if room_number in df['room_number'].values:
+            df.loc[df['room_number'] == room_number, action] += 1
+        else:
+            new_row = {'room_number': room_number, 'up': 0, 'down': 0, 'stop': 0}
+            new_row[action] = 1
+            df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+
+        # Save updated stats
+        df.to_csv(filename, index=False)
+        logging.info(f"Updated statistics for room {room_number}, action: {action}")
+
+    def get_daily_stats(self):
+        """
+        Get statistics for the current day
+
+        Returns:
+            list: List of dictionaries containing statistics for each room
+        """
+        filename = self.get_stats_filename()
+        if not os.path.exists(filename):
+            return []
+
+        try:
+            df = pd.read_csv(filename)
+            return df.to_dict('records')
+        except Exception as e:
+            logging.error(f"Error reading statistics file: {e}")
+            return []
+
+    def get_historical_stats(self, days=7):
+        """
+        Get historical statistics for the specified number of days
+
+        Args:
+            days (int): Number of days of history to retrieve
+
+        Returns:
+            dict: Dictionary with dates as keys and statistics as values
+        """
+        historical_data = {}
+        stats_files = sorted(os.listdir(self.stats_dir))[-days:]
+
+        for filename in stats_files:
+            if filename.startswith('stats_') and filename.endswith('.csv'):
+                date = filename[6:-4]  # Extract date from filename
+                filepath = os.path.join(self.stats_dir, filename)
+                try:
+                    df = pd.read_csv(filepath)
+                    historical_data[date] = df.to_dict('records')
+                except Exception as e:
+                    logging.error(f"Error reading historical stats file {filename}: {e}")
+
+        return historical_data

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curtain Control Statistics</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-image: url('Images/background.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .stats-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .date-display {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #374151;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="stats-container">
+        <h1>Curtain Control Statistics</h1>
+        <div class="date-display" id="currentDate"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Room Number</th>
+                    <th>Up</th>
+                    <th>Down</th>
+                    <th>Stop</th>
+                </tr>
+            </thead>
+            <tbody id="statsBody">
+                <!-- Data will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function loadStats() {
+            fetch('/stats')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('statsBody');
+                    const currentDate = document.getElementById('currentDate');
+
+                    // Update date display
+                    currentDate.textContent = formatDate(new Date());
+
+                    // Clear existing data
+                    tbody.innerHTML = '';
+
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="no-data">No statistics available for today</td></tr>';
+                        return;
+                    }
+
+                    // Add new data
+                    data.data.forEach(row => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${row.room_number}</td>
+                                <td>${row.up}</td>
+                                <td>${row.down}</td>
+                                <td>${row.stop}</td>
+                            </tr>
+                        `;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading statistics:', error);
+                    document.getElementById('statsBody').innerHTML =
+                        '<tr><td colspan="4" class="no-data">Error loading statistics</td></tr>';
+                });
+        }
+
+        // Load stats when page loads
+        document.addEventListener('DOMContentLoaded', loadStats);
+
+        // Refresh stats every minute
+        setInterval(loadStats, 60000);
+    </script>
+</body>
+</html>
