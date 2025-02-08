@@ -1,6 +1,6 @@
 import json
 import logging
-import os
+
 from datetime import datetime
 from functools import lru_cache
 
@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
+from config import *
 
 from utils import validate_isp, get_client_ip
 
@@ -20,11 +21,7 @@ load_dotenv()
 app = FastAPI(redirect_slashes=False)
 
 # Constants for the server and authentication
-SERVER_IP = os.getenv('SERVER_IP')
-CURTAINS_USERNAME = os.getenv('CURTAINS_USERNAME')
-MD5_VALUE = os.getenv('MD5_VALUE')
-CURTAINS_PASSWORD = os.getenv('CURTAINS_PASSWORD')
-REPORTS_FILE = os.getenv('REPORTS_FILE')
+
 
 app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
 
@@ -102,9 +99,6 @@ def get_username(room_name):
     return username
 
 
-def get_server_port(room_name):
-    suffix = get_suffix(room_name).upper()
-    return os.getenv('SERVER_PORT_' + suffix)
 
 
 def get_states_by_direction(room_name, direction):
@@ -123,8 +117,9 @@ def get_states_by_direction(room_name, direction):
 @validate_isp()
 def control_curtain(request: Request, room_name: str, action: str, direction: str = None):
     room_name = room_name.upper()
+    suffix = get_suffix(room_name)
     creds = (get_username(room_name), CURTAINS_PASSWORD)
-    address = (SERVER_IP, get_server_port(room_name))
+    address = (SERVER_IP, get_server_port(suffix))
     states = get_states_by_direction(room_name, direction)
     lift_direction = None
     operation_type = states['start']
