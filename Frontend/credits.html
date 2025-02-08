@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curtain Control System - Credits</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-image: url('Images/background.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            color: #1a365d;
+            line-height: 1.6;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo svg {
+            width: 120px;
+            height: 120px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2563eb;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section h2 {
+            color: #1d4ed8;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .team-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .team-member {
+            background-color: #f3f4f6;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: rgba(61, 146, 255, 0.9);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .contribute-section {
+            background-color: #f0f9ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .contribute-section h3 {
+            color: #0369a1;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
+
+    <div class="container">
+        <div class="logo">
+            <svg viewBox="0 0 100 100">
+                <rect x="10" y="10" width="80" height="80" fill="#2563eb" rx="8"/>
+                <path d="M30 30 Q50 50 30 70" stroke="white" fill="none" stroke-width="4"/>
+                <path d="M70 30 Q50 50 70 70" stroke="white" fill="none" stroke-width="4"/>
+            </svg>
+        </div>
+
+        <h1>Credits</h1>
+
+        <div class="section">
+            <h2>About the Project</h2>
+            <p>The Curtain Control System was originally conceived during a Microsoft Hackathon as "The Curtain Project". Who could believe that controlling curtains could be so simple? Well, with a little bit of Python and HTML, it turns out that miracles can happen.</p>
+        </div>
+
+        <div class="section">
+            <h2>Original Team</h2>
+            <div class="team-list">
+                <div class="team-member">Dror Yekuel</div>
+                <div class="team-member">Lior Ben Porat</div>
+                <div class="team-member">Gefen Altsuler</div>
+                <div class="team-member">Or Begam</div>
+            </div>
+        </div>
+
+        <div class="contribute-section">
+            <h3>Want to Contribute?</h3>
+            <p>This project is open source and we welcome contributions from anyone! Whether you have ideas for new features, bug fixes, or improvements, we'd love to hear from you.</p>
+            <p>You can:</p>
+            <ul>
+                <li>Submit a Pull Request on GitHub</li>
+                <li>Contact us via Microsoft Teams for any questions or suggestions</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
