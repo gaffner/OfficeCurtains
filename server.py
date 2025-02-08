@@ -95,7 +95,7 @@ def get_suffix(room_name):
 
 def get_username(room_name):
     suffix = get_suffix(room_name)
-    username = CURTAINS_USERNAME + room_name[1]
+    username = CURTAINS_USERNAME + suffix
     logging.info(f'username is {username}')
 
     return username
