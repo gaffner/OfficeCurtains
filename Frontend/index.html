@@ -20,12 +20,17 @@
 <div id="emptyState" class="empty-state">No favorite rooms added yet. Add a room to get started!</div>
 <script src="script.js"></script>
 
-<div class="report-container">
+<!-- Add this right after the body tag opens -->
+<div class="stats-buttons-container">
     <a href="/Frontend/statistics.html" class="stats-button">Daily Statistics</a>
     <a href="/Frontend/all_statistics.html" class="stats-button">All Statistics</a>
-    <a href="https://github.com/gaffner/OfficeCurtains"  target="_blank" class="donate-button">
-        <img src="https://img.shields.io/badge/Donate_the_Code-GitHub-1f8ccf.svg" alt="Contribute the Code on GitHub">
-    </a>
+</div>
+
+<a  href="https://github.com/gaffner/OfficeCurtains"  target="_blank" class="donate-button">
+  <img src="https://img.shields.io/badge/Donate_the_Code-GitHub-1f8ccf.svg" alt="Donate the Code on GitHub">
+</a>
+<div class="report-container">
+
     <button onclick="curtainControl.toggleReportForm()" id="reportButton" class="report-button">Report Problem</button>
     <div class="report-form" id="reportForm">
         <textarea placeholder="Please describe the issue you're experiencing..." id="reportText"></textarea>
