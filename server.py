@@ -1,10 +1,7 @@
 import json
 import logging
-
 from datetime import datetime
 from functools import lru_cache
-import csv
-import pandas as pd
 
 import requests
 import uvicorn
@@ -12,10 +9,10 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
-from config import *
 
-from utils import validate_isp, get_client_ip
+from config import *
 from statistics import StatisticsManager
+from utils import validate_isp, get_client_ip
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -28,8 +25,9 @@ app = FastAPI(redirect_slashes=False)
 
 app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
 
-
 stats_manager = StatisticsManager()
+
+
 @app.get("/submit-report/{report}")
 def submit_report(request: Request, report: str):
     user_ip = get_client_ip(request)
@@ -103,8 +101,6 @@ def get_username(room_name):
     return username
 
 
-
-
 def get_states_by_direction(room_name, direction):
     states = get_room_states(room_name)
     # if this room have multiple directions, get the correct one
@@ -148,23 +144,19 @@ def control_curtain(request: Request, room_name: str, action: str, direction: st
     else:
         raise HTTPException(status_code=res.status_code, detail=f"Failed to send command {res.text}")
 
+
 @app.get("/stats")
 @validate_isp()
-def get_stats():
+def get_stats(request: Request):
     """Get statistics for the current day"""
     return {"data": stats_manager.get_daily_stats()}
 
-
-@app.get("/stats/historical/{days}")
-@validate_isp()
-def get_historical_stats(days: int = 7):
-    """Get historical statistics"""
-    return {"data": stats_manager.get_historical_stats(days)}
 @app.get("/stats/all")
 @validate_isp()
-def get_all_stats():
+def get_all_stats(request: Request):
     """Get statistics for all days"""
     return {"data": stats_manager.get_all_stats()}
+
 
 def main():
     uvicorn.run(app, host='0.0.0.0', port=8080)

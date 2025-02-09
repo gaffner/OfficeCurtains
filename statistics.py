@@ -74,8 +74,7 @@ class StatisticsManager:
         if room_number in df['room_number'].values:
             df.loc[df['room_number'] == room_number, action] += 1
         else:
-            new_row = {'room_number': room_number, 'up': 0, 'down': 0, 'stop': 0}
-            new_row[action] = 1
+            new_row = {'room_number': room_number, 'up': 0, 'down': 0, 'stop': 0, action: 1}
             df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
 
         # Save updated stats
@@ -99,28 +98,3 @@ class StatisticsManager:
         except Exception as e:
             logging.error(f"Error reading statistics file: {e}")
             return []
-
-    def get_historical_stats(self, days=7):
-        """
-        Get historical statistics for the specified number of days
-
-        Args:
-            days (int): Number of days of history to retrieve
-
-        Returns:
-            dict: Dictionary with dates as keys and statistics as values
-        """
-        historical_data = {}
-        stats_files = sorted(os.listdir(self.stats_dir))[-days:]
-
-        for filename in stats_files:
-            if filename.startswith('stats_') and filename.endswith('.csv'):
-                date = filename[6:-4]  # Extract date from filename
-                filepath = os.path.join(self.stats_dir, filename)
-                try:
-                    df = pd.read_csv(filepath)
-                    historical_data[date] = df.to_dict('records')
-                except Exception as e:
-                    logging.error(f"Error reading historical stats file {filename}: {e}")
-
-        return historical_data
