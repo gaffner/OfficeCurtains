@@ -425,3 +425,21 @@ textarea {
     font-size: 14px;
     font-weight: 500;
 }
+
+.teams-button {
+    display: flex;
+    align-items: center;
+    background-color: #8182c8;
+    color: white;
+    border: none;
+    padding: 7px 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+}
+.teams-button img {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
