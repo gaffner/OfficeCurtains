@@ -20,12 +20,13 @@
 <div id="emptyState" class="empty-state">No favorite rooms added yet. Add a room to get started!</div>
 <script src="script.js"></script>
 
-<!-- Add this right after the body tag opens -->
-<!-- Hamburger Menu Icon -->
-<div class="menu-icon">
-    <span></span>
-    <span></span>
-    <span></span>
+<div class="menu-button">
+    <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="menu-text">Menu</div>
 </div>
 
 <!-- Sidebar -->
@@ -55,17 +56,17 @@
 </html>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    const menuIcon = document.querySelector('.menu-icon');
+    const menuButton = document.querySelector('.menu-button');
     const sidebar = document.querySelector('.sidebar');
     const overlay = document.querySelector('.overlay');
 
     function toggleMenu() {
-        menuIcon.classList.toggle('active');
+        menuButton.classList.toggle('active');
         sidebar.classList.toggle('active');
         overlay.classList.toggle('active');
     }
 
-    menuIcon.addEventListener('click', toggleMenu);
+    menuButton.addEventListener('click', toggleMenu);
     overlay.addEventListener('click', toggleMenu);
 });
 </script>

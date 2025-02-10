@@ -378,3 +378,50 @@ textarea {
     opacity: 1;
     visibility: visible;
 }
+
+.menu-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    cursor: pointer;
+    z-index: 1002;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 8px 16px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.menu-button:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.menu-button span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background-color: #2563eb;
+    border-radius: 2px;
+    margin: 3px 0;
+}
+
+.menu-button.active span:nth-child(1) {
+    transform: translateY(5px) rotate(45deg);
+}
+
+.menu-button.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-button.active span:nth-child(3) {
+    transform: translateY(-5px) rotate(-45deg);
+}
+
+.menu-text {
+    color: #2563eb;
+    font-size: 14px;
+    font-weight: 500;
+}
