@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Curtain Control Statistics</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-image: url('Images/background.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1a365d;
+        }
+
+        .stats-container {
+            margin-bottom: 40px;
+        }
+
+        .date-header {
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: 0;
+            font-size: 18px;
+        }
+
+        .table-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-top: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        tr:hover {
+            background-color: #f9fafb;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #4b5563;
+            font-size: 18px;
+        }
+
+        .error-message {
+            background-color: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: rgba(61, 146, 255, 0.9);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .back-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* Add totals row styling */
+        .totals-row {
+            font-weight: bold;
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
+    <h1>All Curtain Control Statistics</h1>
+    <div id="statsContainer">
+        <div class="loading">Loading statistics...</div>
+    </div>
+
+    <script>
+        function calculateTotals(stats) {
+            return stats.reduce((totals, row) => {
+                totals.up += parseInt(row.up) || 0;
+                totals.down += parseInt(row.down) || 0;
+                totals.stop += parseInt(row.stop) || 0;
+                return totals;
+            }, { up: 0, down: 0, stop: 0 });
+        }
+
+        function createTableHTML(stats) {
+            if (stats.length === 0) {
+                return '<div class="no-data">No statistics available for this day</div>';
+            }
+
+            const totals = calculateTotals(stats);
+
+            return `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Room Number</th>
+                            <th>Up</th>
+                            <th>Down</th>
+                            <th>Stop</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${stats.map(row => `
+                            <tr>
+                                <td>${row.room_number}</td>
+                                <td>${row.up}</td>
+                                <td>${row.down}</td>
+                                <td>${row.stop}</td>
+                            </tr>
+                        `).join('')}
+                        <tr class="totals-row">
+                            <td>Daily Totals</td>
+                            <td>${totals.up}</td>
+                            <td>${totals.down}</td>
+                            <td>${totals.stop}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function loadAllStats() {
+            fetch('/stats/all')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('statsContainer');
+
+                    if (data.data.length === 0) {
+                        container.innerHTML = '<div class="no-data">No statistics available</div>';
+                        return;
+                    }
+
+                    container.innerHTML = data.data.map(day => `
+                        <div class="stats-container">
+                            <h2 class="date-header">${day.date}</h2>
+                            <div class="table-container">
+                                ${createTableHTML(day.stats)}
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error loading statistics:', error);
+                    document.getElementById('statsContainer').innerHTML = `
+                        <div class="error-message">
+                            Error loading statistics. Please try again later.
+                        </div>
+                    `;
+                });
+        }
+
+        // Load stats when page loads
+        document.addEventListener('DOMContentLoaded', loadAllStats);
+    </script>
+</body>
+</html>
