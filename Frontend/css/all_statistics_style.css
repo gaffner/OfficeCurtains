@@ -56,7 +56,7 @@ h1 {
 }
 
 .table-container {
-    background-color: var(--button-color);
+    background-color: var(--secondary-color);
     padding: 20px;
     border-radius: 0 0 8px 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -75,7 +75,7 @@ th, td {
 }
 
 th {
-    background-color: lightblue;
+    background-color: #1d4ed8;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
     transition: right 0.3s ease;
     font-weight: 600;
