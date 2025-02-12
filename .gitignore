@@ -3,3 +3,5 @@ statistics.txt
 reports.txt
 venv/
 .env
+__pycache__/*
+.gitignore

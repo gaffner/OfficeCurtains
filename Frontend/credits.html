@@ -4,99 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curtain Control System - Credits</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            background-image: url('Images/background.jpg');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
-            color: #1a365d;
-            line-height: 1.6;
-        }
-
-        .container {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-top: 2rem;
-        }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .logo svg {
-            width: 120px;
-            height: 120px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #2563eb;
-            margin-bottom: 1.5rem;
-            font-size: 2.5rem;
-        }
-
-        .section {
-            margin-bottom: 2rem;
-        }
-
-        .section h2 {
-            color: #1d4ed8;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .team-list {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            margin: 1.5rem 0;
-        }
-
-        .team-member {
-            background-color: #f3f4f6;
-            padding: 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            font-size: 1.1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .back-button {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: rgba(61, 146, 255, 0.9);
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            transition: background-color 0.3s;
-        }
-
-        .back-button:hover {
-            background-color: #1d4ed8;
-        }
-
-        .contribute-section {
-            background-color: #f0f9ff;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-top: 2rem;
-        }
-
-        .contribute-section h3 {
-            color: #0369a1;
-            margin-bottom: 1rem;
-        }
-    </style>
+    <link rel="stylesheet" href="css/credits_style.css">
 </head>
 <body>
     <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
@@ -137,5 +45,12 @@
             </ul>
         </div>
     </div>
+    <script>
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+        }
+        </script>
 </body>
 </html>

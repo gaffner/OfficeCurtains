@@ -4,11 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curtain Control System</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <button id="dark-mode-toggle">Toggle Dark Mode</button>
-<h1>Curtain Control System</h1>
+    <div class="toggle-switch">
+        <input type="checkbox" id="dark-mode-toggle" class="toggle-switch-checkbox">
+        <label for="dark-mode-toggle" class="toggle-switch-label">
+            <span class="toggle-switch-inner"></span>
+            <span class="toggle-switch-switch"></span>
+        </label>
+    </div>
+    <h1 style="font-family: 'Roboto', sans-serif;">Curtain Control System</h1>
 
 <div class="input-container">
     <input type="text" id="roomInput" placeholder="Enter room number (e.g., 8B210)">
@@ -49,24 +56,31 @@
         Need Help?
     </a>
 </div>
-<script>
-    const toggleButton = document.getElementById('dark-mode-toggle');
-    toggleButton.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-    });
-</script>
 </body>
 </html>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    const menuButton = document.querySelector('.menu-button');
-    const sidebar = document.querySelector('.sidebar');
-    const overlay = document.querySelector('.overlay');
+        const toggleButton = document.getElementById('dark-mode-toggle');
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
 
-    function toggleMenu() {
-        menuButton.classList.toggle('active');
-        sidebar.classList.toggle('active');
-        overlay.classList.toggle('active');
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                toggleButton.checked = true;
+            }
+
+            toggleButton.addEventListener('change', () => {
+                document.body.classList.toggle('dark-mode');
+                localStorage.setItem('dark-mode', toggleButton.checked);
+            });
+
+        const menuButton = document.querySelector('.menu-button');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.querySelector('.overlay');
+
+        function toggleMenu() {
+            menuButton.classList.toggle('active');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
     }
 
     menuButton.addEventListener('click', toggleMenu);

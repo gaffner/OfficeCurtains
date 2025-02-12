@@ -1,0 +1,120 @@
+:root {
+    --background-color: #FFFAF0;
+    --container-color: #f7eee1;
+    --sub-container-color: #f0f0f0;
+    --text-color: #000000;
+    --primary-color: #2563eb;
+    --secondary-color: #e5e7eb;
+    --error-color: #dc2626;
+    --success-color: #6ec617;
+    --text-color: #000000;
+    --hover-color: #f1f5f9;
+}
+
+.dark-mode {
+    --background-color: #121212;
+    --container-color: #1a202c;
+    --sub-container-color: #2d3748;
+    --text-color: #ffffff;
+    --primary-color: #1d4ed8;
+    --secondary-color: #374151;
+    --button-color: #1f2937;
+    --error-color: #f87171;
+    --success-color: #4ade80;
+    --text-color: #ffffff;
+    --hover-color: #323d4d;
+}
+
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    line-height: 1.6;
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.container {
+    background-color: var(--container-color);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo svg {
+    width: 120px;
+    height: 120px;
+}
+
+h1 {
+    text-align: center;
+    color: #2563eb;
+    margin-bottom: 1.5rem;
+    font-size: 2.5rem;
+}
+
+.section {
+    margin-bottom: 2rem;
+}
+
+.section h2 {
+    color: #1d4ed8;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.team-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.team-member {
+    background-color: var(--sub-container-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.back-button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--sub-container-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s;
+}
+
+.back-button:hover {
+    background-color: #1d4ed8;
+}
+
+.contribute-section {
+    background-color: var(--sub-container-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.contribute-section h3 {
+    color: #1d4ed8;
+    margin-bottom: 1rem;
+}
