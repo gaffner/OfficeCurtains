@@ -1,3 +1,21 @@
+:root {
+    --background-color: #ffffff;
+    --text-color: #000000;
+    --primary-color: #2563eb;
+    --secondary-color: #e5e7eb;
+    --error-color: #dc2626;
+    --success-color: #6ec617;
+}
+
+.dark-mode {
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --primary-color: #1d4ed8;
+    --secondary-color: #374151;
+    --error-color: #f87171;
+    --success-color: #4ade80;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -9,8 +27,9 @@ body {
     padding: 20px;
     max-width: 600px;
     margin: 0 auto;
-    /* background-color: #f9fafb; */
-    background-image: url('Images/background.jpg');
+    background-color: var(--background-color);
+    color: var(--text-color);
+    background-image: url('../Images/background.jpg');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
@@ -30,8 +49,10 @@ h1 {
 input {
     flex-grow: 1;
     padding: 8px 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--secondary-color);
     border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
     font-size: 16px;
 }
 
@@ -45,8 +66,8 @@ input {
 
 .add-button {
     padding: 8px 16px;
-    background-color: #2563eb;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--text-color);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -61,7 +82,7 @@ input {
 }
 
 .error {
-    color: #dc2626;
+    color: var(--error-color);
     margin-bottom: 20px;
     padding: 10px;
     background-color: #fee2e2;
@@ -70,16 +91,16 @@ input {
 }
 
 .status {
-    color: #000000;
+    color: var(--text-color);
     margin-bottom: 20px;
     padding: 10px;
-    background-color: #6ec617;
+    background-color: var(--success-color);
     border-radius: 4px;
     display: none;
 }
 
 .room-card {
-    background-color: white;
+    background-color: var(--background-color);
     padding: 16px;
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -88,6 +109,7 @@ input {
     justify-content: space-between;
     align-items: center;
 }
+
 
 .room-controls {
     display: flex;
