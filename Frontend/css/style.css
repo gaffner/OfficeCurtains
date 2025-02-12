@@ -1,3 +1,28 @@
+:root {
+    --background-color: #FFFAF0;
+    --text-color: #000000;
+    --primary-color: #2563eb;
+    --secondary-color: #e5e7eb;
+    --sub-container-color: #f0f0f0;
+    --error-color: #dc2626;
+    --success-color: #6ec617;
+    --text-color: #000000;
+    --hover-color: #f1f5f9;
+}
+
+.dark-mode {
+    --background-color: #121212;
+    --text-color: #ffffff;
+    --primary-color: #1d4ed8;
+    --secondary-color: #374151;
+    --sub-container-color: #2d3748;
+    --button-color: #1f2937;
+    --error-color: #f87171;
+    --success-color: #4ade80;
+    --text-color: #ffffff;
+    --hover-color: #323d4d;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -9,11 +34,12 @@ body {
     padding: 20px;
     max-width: 600px;
     margin: 0 auto;
-    /* background-color: #f9fafb; */
-    background-image: url('Images/background.jpg');
+    background-color: var(--background-color);
+    color: var(--text-color);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
+    transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 h1 {
@@ -30,9 +56,12 @@ h1 {
 input {
     flex-grow: 1;
     padding: 8px 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--secondary-color);
     border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
     font-size: 16px;
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease; /* Add transition */
 }
 
 .room-directions {
@@ -45,8 +74,8 @@ input {
 
 .add-button {
     padding: 8px 16px;
-    background-color: #2563eb;
-    color: white;
+    background-color: var(--primary-color);
+    color: var(--text-color);
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -54,6 +83,7 @@ input {
     display: flex;
     align-items: center;
     gap: 5px;
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
 }
 
 .add-button:hover {
@@ -61,7 +91,7 @@ input {
 }
 
 .error {
-    color: #dc2626;
+    color: var(--error-color);
     margin-bottom: 20px;
     padding: 10px;
     background-color: #fee2e2;
@@ -70,16 +100,16 @@ input {
 }
 
 .status {
-    color: #000000;
+    color: var(--text-color);
     margin-bottom: 20px;
     padding: 10px;
-    background-color: #6ec617;
+    background-color: var(--success-color);
     border-radius: 4px;
     display: none;
 }
 
 .room-card {
-    background-color: white;
+    background-color: var(--sub-container-color);
     padding: 16px;
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -87,7 +117,9 @@ input {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
 }
+
 
 .room-controls {
     display: flex;
@@ -160,17 +192,12 @@ input {
       bottom: 20px; /* Space from the bottom of the page */
       left: 50%; /* Center horizontally */
       transform: translateX(-50%); /* Center align the button */
-      padding: 10px 20px;
+      padding: 5px 30px;
       border: none;
       border-radius: 5px;
       font-size: 16px;
       cursor: pointer;
       text-decoration: none;
-    }
-
-    /* Style for the button when hovering */
-    .donate-button:hover {
-      background-color: #555;
     }
 
     .report-container {
@@ -201,7 +228,7 @@ input {
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
-    background: white;
+    background: var(--background-color);
     padding: 10px;
     border-radius: 4px;
     width: 200px;
@@ -266,7 +293,7 @@ textarea {
 }
 
 .error-message {
-    color: #e74c3c;
+    color: var(--error-color);
     margin-top: 10px;
     display: none;
 }
@@ -311,7 +338,7 @@ textarea {
     display: block;
     width: 100%;
     height: 3px;
-    background-color: rgba(61, 146, 255, 0.9);
+    background-color: var(menu-text);
     border-radius: 3px;
     transition: all 0.3s ease;
 }
@@ -335,7 +362,7 @@ textarea {
     right: -250px;
     width: 250px;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: var(--background-color);
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
     transition: right 0.3s ease;
     z-index: 1001;
@@ -350,7 +377,7 @@ textarea {
 .sidebar-link {
     display: block;
     padding: 15px 20px;
-    color: #1a365d;
+    color: var(--text-color);
     text-decoration: none;
     transition: background-color 0.3s ease;
     font-size: 16px;
@@ -385,7 +412,7 @@ textarea {
     right: 20px;
     cursor: pointer;
     z-index: 1002;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--button-color);
     padding: 8px 16px;
     border-radius: 6px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -396,7 +423,7 @@ textarea {
 }
 
 .menu-button:hover {
-    background-color: rgba(255, 255, 255, 1);
+    background-color: var(--hover-color);
 }
 
 .menu-button span {
@@ -421,7 +448,7 @@ textarea {
 }
 
 .menu-text {
-    color: #2563eb;
+    color: var(--text-color);
     font-size: 14px;
     font-weight: 500;
 }
@@ -429,7 +456,7 @@ textarea {
 .teams-button {
     display: flex;
     align-items: center;
-    background-color: #8182c8;
+    background-color: #4d4e83;
     color: white;
     border: none;
     padding: 7px 12px;
@@ -442,4 +469,92 @@ textarea {
     width: 24px;
     height: 24px;
     margin-right: 10px;
+}
+
+.toggle-switch {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 60px;
+    height: 34px;
+}
+
+.toggle-switch-checkbox {
+    display: none;
+}
+
+.toggle-switch-label {
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid #ddd;
+    border-radius: 34px;
+    position: relative;
+}
+
+.toggle-switch-inner {
+    display: block;
+    width: 200%;
+    margin-left: -100%;
+    transition: margin 0.25s ease-in-out 0s;
+    background-color: #ccc;
+}
+
+.toggle-switch-inner:before, .toggle-switch-inner:after {
+    display: block;
+    float: left;
+    width: 50%;
+    height: 30px;
+    padding: 0;
+    line-height: 30px;
+    font-size: 14px;
+    color: white;
+    font-family: Trebuchet, Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+.toggle-switch-inner:before {
+    content: "☀️";
+    padding-left: 5px;
+    background-color: #2563eb;
+    color: white;
+}
+
+.toggle-switch-inner:after {
+    content: "🌙";
+    padding-right: 5px;
+    padding-bottom: 5px;
+    background-color: #121212;
+    color: white;
+    text-align: right;
+}
+
+.toggle-switch-switch {
+    display: block;
+    width: 24px;
+    margin: 4px;
+    background: #fff;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 25px;
+    border: 1px solid #ddd;
+    border-radius: 34px;
+    transition: all 0.25s ease-in-out 0s;
+}
+
+.toggle-switch-checkbox:checked + .toggle-switch-label .toggle-switch-inner {
+    margin-left: 0;
+}
+
+.toggle-switch-checkbox:checked + .toggle-switch-label .toggle-switch-switch {
+    right: 0px;
+}
+
+.toggle-switch-label {
+    border: none; /* Remove border */
+}
+
+.toggle-switch-switch {
+    border: none; /* Remove border */
 }

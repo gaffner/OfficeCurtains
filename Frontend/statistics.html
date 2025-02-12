@@ -3,119 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/statistics_style.css">
     <title>Daily Curtain Control Statistics</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            background-image: url('Images/background.jpg');
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #1a365d;
-        }
-
-        .stats-container {
-            margin-bottom: 40px;
-        }
-
-        .date-header {
-            background-color: #2563eb;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px 8px 0 0;
-            margin-bottom: 0;
-            font-size: 18px;
-        }
-
-        .table-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 0 0 8px 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-top: 0;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        th {
-            background-color: #f3f4f6;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        tr:hover {
-            background-color: #f9fafb;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .no-data {
-            text-align: center;
-            padding: 20px;
-            color: #6b7280;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #4b5563;
-            font-size: 18px;
-        }
-
-        .error-message {
-            background-color: #fee2e2;
-            color: #dc2626;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .back-button {
-            display: inline-block;
-            padding: 8px 16px;
-            background-color: rgba(61, 146, 255, 0.9);
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            transition: background-color 0.3s;
-        }
-
-        .back-button:hover {
-            background-color: #1d4ed8;
-        }
-
-        /* Add totals row styling */
-        .totals-row {
-            font-weight: bold;
-            background-color: #f8fafc;
-        }
-    </style>
 </head>
 <body>
     <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
     <h1>Daily Curtain Control Statistics</h1>
-
     <div class="stats-container">
         <div class="date-header" id="currentDate"></div>
         <div class="table-container">
@@ -136,6 +29,13 @@
     </div>
 
     <script>
+
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+        }
+        
         function formatDate(date) {
             return date.toLocaleDateString('en-US', {
                 weekday: 'long',
