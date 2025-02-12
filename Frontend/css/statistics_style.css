@@ -9,9 +9,6 @@
     --success-color: #6ec617;
     --text-color: #000000;
     --hover-color: #f1f5f9;
-    --table-heading-background: #2563eb;
-    --table-heading-text: #ffffff;
-    --table-data-background: #ffffff;
 }
 
 .dark-mode {
@@ -25,10 +22,6 @@
     --success-color: #4ade80;
     --text-color: #ffffff;
     --hover-color: #323d4d;
-    --table-heading-background: #1d4ed8;
-    --table-heading-text: #ffffff;
-    --table-heading-background: #374151;
-    --table-data-text: #ffffff;
 }
 
 body {
@@ -82,34 +75,34 @@ th, td {
 }
 
 th {
-    background-color: var(--table-heading-background);
-    color: var(--table-heading-text);
+    background-color: lightblue;
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
     transition: right 0.3s ease;
     font-weight: 600;
+    color: #374151;
 }
 
 td {
-    background-color: var(--table-heading-background);
-    color: var(--table-heading-text);
+    background-color: #ffffff;
+    color: #000000;
 }
 
 .dark-mode th {
-    background-color: var(--table-heading-background);
-    color: var(--table-heading-text);
+    background-color: #1d4ed8;
+    color: #ffffff;
 }
 
 .dark-mode td {
-    background-color: var(--table-heading-background);
-    color: var(--table-heading-text);
+    background-color: #374151;
+    color: #ffffff;
 }
 
 .dark-mode tr:hover {
-    background-color: var(--hover-color);
+    background-color: #323d4d;
 }
 
 tr:hover {
-    background-color: var(--hover-color);
+    background-color: #f9fafb;
 }
 
 tr:last-child td {
