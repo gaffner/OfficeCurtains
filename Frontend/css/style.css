@@ -8,7 +8,9 @@
     --success-color: #6ec617;
     --text-color: #000000;
     --hover-color: #f1f5f9;
+    --success-message-background: #d4edda;
 }
+
 
 .dark-mode {
     --background-color: #121212;
@@ -21,6 +23,7 @@
     --success-color: #4ade80;
     --text-color: #ffffff;
     --hover-color: #323d4d;
+    --success-message-background: #2e7d32;
 }
 
 * {
@@ -287,9 +290,10 @@ textarea {
 }
 
 .success-message {
-    color: #27ae60;
+    color: var(--success-color);
     margin-top: 10px;
     display: none;
+    background-color: var(--success-message-background);
 }
 
 .error-message {
