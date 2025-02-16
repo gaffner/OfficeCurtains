@@ -5,3 +5,7 @@ venv/
 .env
 __pycache__/*
 .gitignore
+pyvenv.cfg
+.gitignore
+Scripts/pythonw.exe
+Scripts/python.exe
