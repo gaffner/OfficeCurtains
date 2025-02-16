@@ -195,7 +195,8 @@ input {
       bottom: 20px; /* Space from the bottom of the page */
       left: 50%; /* Center horizontally */
       transform: translateX(-50%); /* Center align the button */
-      padding: 5px 30px;
+      padding: 5px 80px;
+      margin-bottom: 30px;
       border: none;
       border-radius: 5px;
       font-size: 16px;
@@ -205,7 +206,6 @@ input {
 
     .report-container {
     position: fixed;
-    bottom: 70px; /* Position it above the donate button (which is at 20px) */
     left: 50%;
     transform: translateX(-50%);
     text-align: center;
@@ -561,4 +561,169 @@ textarea {
 
 .toggle-switch-switch {
     border: none; /* Remove border */
+}
+
+.bug-bounty-link {
+    position: fixed;
+    bottom: 20em; /* Increased to avoid overlap with 'Need Help' button */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 14px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    z-index: 1000;
+}
+
+.bug-bounty-link:hover {
+    background-color: var(--hover-color);
+}
+
+.bug-bounty-link img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+
+
+/* Adjust donate button position */
+.donate-button {
+    /*bottom: 20px;*/
+}
+
+.report-container {
+    position: fixed;
+    bottom: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 1001;  /* Increased to be above bug bounty link */
+}
+
+.bug-bounty-link {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /*padding: 8px 16px;*/
+    background-color: var(--background-color);
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 14px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    z-index: 1000;
+}
+.logo {
+    width: 180px;  /* Increased from 128px */
+    height: 180px; /* Increased from 128px */
+    object-fit: contain;
+    background: transparent;
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 30px; /* Slightly increased margin for better spacing */
+    padding-top: 30px;  /* Slightly increased padding for better spacing */
+}
+
+/* If you're using dark mode, ensure logo remains visible */
+.dark-mode .logo {
+    filter: brightness(1);
+}
+
+/* Update the bottom spacing for the donate button */
+.donate-button {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 5px 80px;
+    margin-bottom: 5px;  /* Reduced from 30px */
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* Update the Teams button container position */
+.report-container {
+    position: fixed;
+    bottom: 80px;  /* Adjusted from 140px */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 1001;
+}
+
+/* Update the bug bounty link position */
+.bug-bounty-link {
+    position: fixed;
+    bottom: 50px;  /* Adjusted from 100px */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 14px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    z-index: 1000;
+}
+
+/* Create a container for all bottom elements */
+.bottom-buttons-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;  /* Adds consistent spacing between elements */
+    padding: 1rem;
+    background: linear-gradient(to top, var(--background-color) 90%, transparent);
+}
+
+/* Update report container (Teams button) */
+.report-container {
+    position: static;  /* Remove fixed positioning */
+    transform: none;   /* Remove transform */
+    margin: 0;
+}
+
+/* Update bug bounty link */
+.bug-bounty-link {
+    position: static;  /* Remove fixed positioning */
+    transform: none;   /* Remove transform */
+    margin: 0;
+    width: fit-content;
+}
+
+/* Update donate button */
+.donate-button {
+    position: static;  /* Remove fixed positioning */
+    transform: none;   /* Remove transform */
+    margin: 0;
+    padding: 5px 80px;
+    width: fit-content;
 }

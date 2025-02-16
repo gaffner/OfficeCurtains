@@ -6,6 +6,8 @@
     <title>Curtain Control System</title>
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="Images/favicon.ico">
+    <link rel="alternate icon" type="image/png" href="Images/favicon.ico">
 </head>
 <body>
     <div class="toggle-switch">
@@ -15,7 +17,9 @@
             <span class="toggle-switch-switch"></span>
         </label>
     </div>
-    <h1 style="font-family: 'Roboto', sans-serif;">Curtain Control System</h1>
+    <div class="logo-container">
+        <img src="Images/logo.png" alt="Curtain Control System Logo" class="logo">
+    </div>
 
 <div class="input-container">
     <input type="text" id="roomInput" placeholder="Enter room number (e.g., 8B210)">
@@ -43,17 +47,19 @@
     <a href="/Frontend/all_statistics.html" class="sidebar-link">All Statistics</a>
     <a href="/Frontend/credits.html" class="sidebar-link">Credits</a>
 </div>
-
-<!-- Overlay -->
-<div class="overlay"></div>
-
-<a  href="https://github.com/gaffner/OfficeCurtains"  target="_blank" class="donate-button">
-  <img src="https://img.shields.io/badge/Donate_the_Code-GitHub-1f8ccf.svg" alt="Donate the Code on GitHub">
-</a>
-<div class="report-container">
-    <a href="https://teams.microsoft.com/l/chat/0/0?users=galtshuler@microsoft.com" class="teams-button">
-        <img src="Images/teams.png" alt="Teams Logo">
-        Need Help?
+<div class="bottom-buttons-container">
+    <div class="report-container">
+        <a href="https://teams.microsoft.com/l/chat/0/0?users=galtshuler@microsoft.com" class="teams-button">
+            <img src="Images/teams.png" alt="Teams Logo">
+            Need Help?
+        </a>
+    </div>
+    <div class="bug-bounty-link">
+        <img src="Images/cibus.png" alt="Cibus Logo">
+        Join our bug bounty program and win up to 25₪ in Cibus!
+    </div>
+    <a href="https://github.com/gaffner/OfficeCurtains" target="_blank" class="donate-button">
+        <img src="https://img.shields.io/badge/Donate_the_Code-GitHub-1f8ccf.svg" alt="Donate the Code on GitHub">
     </a>
 </div>
 </body>
