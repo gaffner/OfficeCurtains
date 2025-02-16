@@ -146,13 +146,11 @@ def control_curtain(request: Request, room_name: str, action: str, direction: st
 
 
 @app.get("/stats")
-@validate_isp()
 def get_stats(request: Request):
     """Get statistics for the current day"""
     return {"data": stats_manager.get_daily_stats()}
 
 @app.get("/stats/all")
-@validate_isp()
 def get_all_stats(request: Request):
     """Get statistics for all days"""
     return {"data": stats_manager.get_all_stats()}
