@@ -61,6 +61,9 @@
     <a href="https://github.com/gaffner/OfficeCurtains" target="_blank" class="donate-button">
         <img src="https://img.shields.io/badge/Donate_the_Code-GitHub-1f8ccf.svg" alt="Donate the Code on GitHub">
     </a>
+    <div class="shirt-campaign-dm">
+        <img id="shirt-campaign-img" src="Images/shirtpromo_lm_b.png" alt="Shirt Campaign">
+    </div>
 </div>
 </body>
 </html>
@@ -68,16 +71,27 @@
     document.addEventListener('DOMContentLoaded', function() {
         const toggleButton = document.getElementById('dark-mode-toggle');
         const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+        const shirtCampaignImg = document.getElementById('shirt-campaign-img');
 
-            if (isDarkMode) {
-                document.body.classList.add('dark-mode');
-                toggleButton.checked = true;
-            }
+        function updateShirtCampaignImage() {
+            if (toggleButton.checked)
+                shirtCampaignImg.src = 'Images/shirtpromo_dm.png';
+            else 
+                shirtCampaignImg.src = 'Images/shirtpromo_lm_b.png';
+        }
 
-            toggleButton.addEventListener('change', () => {
-                document.body.classList.toggle('dark-mode');
-                localStorage.setItem('dark-mode', toggleButton.checked);
-            });
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            toggleButton.checked = true;
+        }
+
+        updateShirtCampaignImage();
+
+        toggleButton.addEventListener('change', () => {
+            document.body.classList.toggle('dark-mode');
+            localStorage.setItem('dark-mode', toggleButton.checked);
+            updateShirtCampaignImage();
+        });
 
         const menuButton = document.querySelector('.menu-button');
         const sidebar = document.querySelector('.sidebar');

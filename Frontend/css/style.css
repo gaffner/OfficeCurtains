@@ -572,7 +572,7 @@ textarea {
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background-color: var(--background-color);
+    background-color: var(--button-color);
     color: var(--text-color);
     text-decoration: none;
     border-radius: 8px;
@@ -589,7 +589,6 @@ textarea {
 .bug-bounty-link img {
     width: 24px;
     height: 24px;
-    object-fit: contain;
 }
 
 
@@ -726,4 +725,17 @@ textarea {
     margin: 0;
     padding: 5px 80px;
     width: fit-content;
+}
+
+.shirt-campaign-dm {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.shirt-campaign-dm img {
+    max-width: 100%;
+    height: auto;
+    display: block;
 }
