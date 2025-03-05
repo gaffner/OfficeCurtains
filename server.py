@@ -5,7 +5,6 @@ from functools import lru_cache
 
 import requests
 import uvicorn
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
@@ -35,6 +34,18 @@ def submit_report(request: Request, report: str):
     report_entry = f"{current_time} - {user_ip} - {report}\n"
 
     with open(REPORTS_FILE, "a") as file:
+        file.write(report_entry)
+
+    return {"message": "Report submitted successfully"}
+
+
+@app.get("/submit-tshirt-request/{content}")
+def submit_report(request: Request, content: str):
+    user_ip = get_client_ip(request)
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    report_entry = f"{current_time} - {user_ip} - {content}\n"
+
+    with open(TSHIRT_REQUESTS_FILE, "a") as file:
         file.write(report_entry)
 
     return {"message": "Report submitted successfully"}
@@ -149,6 +160,7 @@ def control_curtain(request: Request, room_name: str, action: str, direction: st
 def get_stats(request: Request):
     """Get statistics for the current day"""
     return {"data": stats_manager.get_daily_stats()}
+
 
 @app.get("/stats/all")
 def get_all_stats(request: Request):

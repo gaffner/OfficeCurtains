@@ -1,136 +1,14 @@
 <!DOCTYPE html>
-<style>
-    .tshirt-container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
-}
-
-.option-container {
-    background-color: var(--sub-container-color);
-    padding: 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.option-container h2 {
-    color: var(--text-color);
-    margin-bottom: 16px;
-    font-size: 20px;
-}
-
-.option-container p {
-    color: var(--text-color);
-    margin-bottom: 16px;
-    line-height: 1.5;
-}
-
-.option-container ul {
-    list-style-type: disc;
-    margin-left: 20px;
-    margin-bottom: 16px;
-    color: var(--text-color);
-}
-
-.option-container li {
-    margin-bottom: 8px;
-    line-height: 1.5;
-}
-
-.action-button {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: var(--primary-color);
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-}
-
-.action-button:hover {
-    background-color: #1d4ed8;
-}
-
-.tshirt-form {
-    margin-top: 20px;
-}
-
-.form-group {
-    margin-bottom: 16px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--text-color);
-}
-
-.form-group input,
-.form-group textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--secondary-color);
-    border-radius: 4px;
-    background-color: var(--background-color);
-    color: var(--text-color);
-}
-
-.form-group textarea {
-    height: 120px;
-    resize: vertical;
-}
-
-.submit-button {
-    padding: 10px 20px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-.submit-button:hover {
-    background-color: #1d4ed8;
-}
-
-.success-message,
-.error-message {
-    display: none;
-    padding: 12px;
-    border-radius: 4px;
-    margin-top: 16px;
-    text-align: center;
-}
-
-.success-message {
-    background-color: var(--success-message-background);
-    color: white;
-}
-
-.error-message {
-    background-color: #fee2e2;
-    color: var(--error-color);
-}
-</style>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/tshirt_style.css">
     <title>How to win a T-shirt?</title>
 </head>
 <body>
-    <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
-    <div class="toggle-switch">
-        <input type="checkbox" id="dark-mode-toggle" class="toggle-switch-checkbox">
-        <label for="dark-mode-toggle" class="toggle-switch-label">
-            <span class="toggle-switch-inner"></span>
-            <span class="toggle-switch-switch"></span>
-        </label>
-    </div>
+    <a href="/Frontend/index.html" class="back-button action-button">← Back to Control Panel</a>
 
     <div class="tshirt-container">
         <h1>How to win a T-shirt?</h1>
@@ -159,27 +37,20 @@
                 </div>
                 <button type="submit" class="submit-button">Submit Application</button>
             </form>
-            <div id="formSuccess" class="success-message">Thank you for your submission!</div>
+            <div id="formSuccess" class="success-message-container">
+                <div class="success-message">
+                    <h3>Application Submitted Successfully!</h3>
+                    <p>Thank you for your submission. We have received your T-shirt application.</p>
+                    <p>Our team will review your application and notify you via Microsoft Teams about the results.</p>
+                    <p>Stay tuned and good luck!</p>
+                </div>
+            </div>
             <div id="formError" class="error-message">There was an error submitting your application. Please try again.</div>
         </div>
     </div>
 
     <script>
-        // Dark mode handling
         document.addEventListener('DOMContentLoaded', function() {
-            const toggleButton = document.getElementById('dark-mode-toggle');
-            const isDarkMode = localStorage.getItem('dark-mode') === 'true';
-
-            if (isDarkMode) {
-                document.body.classList.add('dark-mode');
-                toggleButton.checked = true;
-            }
-
-            toggleButton.addEventListener('change', () => {
-                document.body.classList.toggle('dark-mode');
-                localStorage.setItem('dark-mode', toggleButton.checked);
-            });
-
             // Form submission handling
             const form = document.getElementById('tshirtForm');
             const successMessage = document.getElementById('formSuccess');
@@ -192,21 +63,16 @@
 
                 try {
                     const report = `T-shirt Application - Alias: ${alias}, Reason: ${reason}`;
-                    const response = await fetch(`/submit-report/${encodeURIComponent(report)}`);
+                    const response = await fetch(`/submit-tshirt-request/${encodeURIComponent(report)}`);
 
                     if (response.ok) {
-                        form.reset();
+                        form.style.display = 'none';
                         successMessage.style.display = 'block';
-                        errorMessage.style.display = 'none';
-                        setTimeout(() => {
-                            successMessage.style.display = 'none';
-                        }, 3000);
                     } else {
                         throw new Error('Submission failed');
                     }
                 } catch (error) {
                     errorMessage.style.display = 'block';
-                    successMessage.style.display = 'none';
                     setTimeout(() => {
                         errorMessage.style.display = 'none';
                     }, 3000);
