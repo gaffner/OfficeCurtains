@@ -1,0 +1,114 @@
+.tshirt-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+}
+
+.option-container {
+    background-color: var(--sub-container-color);
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.option-container h2 {
+    color: var(--text-color);
+    margin-bottom: 16px;
+    font-size: 20px;
+}
+
+.option-container p {
+    color: var(--text-color);
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.option-container ul {
+    list-style-type: disc;
+    margin-left: 20px;
+    margin-bottom: 16px;
+    color: var(--text-color);
+}
+
+.option-container li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.action-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.action-button:hover {
+    background-color: #1d4ed8;
+}
+
+.tshirt-form {
+    margin-top: 20px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--secondary-color);
+    border-radius: 4px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.form-group textarea {
+    height: 120px;
+    resize: vertical;
+}
+
+.submit-button {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.submit-button:hover {
+    background-color: #1d4ed8;
+}
+
+.success-message,
+.error-message {
+    display: none;
+    padding: 12px;
+    border-radius: 4px;
+    margin-top: 16px;
+    text-align: center;
+}
+
+.success-message {
+    background-color: var(--success-message-background);
+    color: white;
+}
+
+.error-message {
+    background-color: #fee2e2;
+    color: var(--error-color);
+}
