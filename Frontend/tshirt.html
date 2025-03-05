@@ -23,7 +23,7 @@
             <a href="https://github.com/gaffner/OfficeCurtains/issues" target="_blank" class="action-button">View Issues on GitHub</a>
         </div>
 
-        <div class="option-container">
+        <div id="option2Container" class="option-container">
             <h2>Option 2: Tell Us Your Story</h2>
             <p>Share why you deserve to get a T-shirt!</p>
             <form id="tshirtForm" class="tshirt-form">
@@ -37,24 +37,21 @@
                 </div>
                 <button type="submit" class="submit-button">Submit Application</button>
             </form>
-            <div id="formSuccess" class="success-message-container">
-                <div class="success-message">
-                    <h3>Application Submitted Successfully!</h3>
-                    <p>Thank you for your submission. We have received your T-shirt application.</p>
-                    <p>Our team will review your application and notify you via Microsoft Teams about the results.</p>
-                    <p>Stay tuned and good luck!</p>
-                </div>
-            </div>
-            <div id="formError" class="error-message">There was an error submitting your application. Please try again.</div>
+        </div>
+
+        <div id="successMessage" class="success-notification">
+            <div class="success-icon">✓</div>
+            <h3>Submission Successful!</h3>
+            <p>Thank you for submitting your T-shirt application. Our team will review your submission and contact you via Microsoft Teams about the results.</p>
+            <p>We appreciate your interest in our project!</p>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Form submission handling
             const form = document.getElementById('tshirtForm');
-            const successMessage = document.getElementById('formSuccess');
-            const errorMessage = document.getElementById('formError');
+            const option2Container = document.getElementById('option2Container');
+            const successMessage = document.getElementById('successMessage');
 
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -66,16 +63,13 @@
                     const response = await fetch(`/submit-tshirt-request/${encodeURIComponent(report)}`);
 
                     if (response.ok) {
-                        form.style.display = 'none';
+                        option2Container.style.display = 'none';
                         successMessage.style.display = 'block';
                     } else {
                         throw new Error('Submission failed');
                     }
                 } catch (error) {
-                    errorMessage.style.display = 'block';
-                    setTimeout(() => {
-                        errorMessage.style.display = 'none';
-                    }, 3000);
+                    alert('There was an error submitting your application. Please try again.');
                 }
             });
         });
