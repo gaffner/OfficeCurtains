@@ -208,20 +208,20 @@ class CurtainControl {
     showError(message) {
         this.errorDiv.textContent = message;
         this.errorDiv.style.display = 'block';
-        this.disableTshirtCampaign();
+        // this.disableTshirtCampaign();
         setTimeout(() => {
             this.errorDiv.style.display = 'none';
-            this.enableTshirtCampaign();
+            // this.enableTshirtCampaign();
         }, 3000);
     }
 
     showStatus(message) {
         this.statusDiv.textContent = message;
         this.statusDiv.style.display = 'block';
-        this.disableTshirtCampaign();
+        // this.disableTshirtCampaign();
         setTimeout(() => {
             this.statusDiv.style.display = 'none';
-            this.enableTshirtCampaign();
+            // this.enableTshirtCampaign();
         }, 5000);
     }
 
