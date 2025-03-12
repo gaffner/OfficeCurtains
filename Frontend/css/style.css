@@ -111,6 +111,15 @@ input {
     display: none;
 }
 
+.filler {
+    color: var(--text-color);
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: var(--success-color);
+    border-radius: 4px;
+    visibility: hidden;
+}
+
 .room-card {
     background-color: var(--sub-container-color);
     padding: 16px;
