@@ -22,6 +22,7 @@ class CurtainControl {
         this.statusDiv = document.getElementById('status');
         this.roomsList = document.getElementById('roomsList');
         this.emptyState = document.getElementById('emptyState');
+        this.tshirtCampaign = document.getElementById('tshirtCampaign');
 
         const savedData = JSON.parse(localStorage.getItem('curtainData')) || {};
         this.favorites = savedData.favorites || [];
@@ -207,17 +208,31 @@ class CurtainControl {
     showError(message) {
         this.errorDiv.textContent = message;
         this.errorDiv.style.display = 'block';
+        this.disableTshirtCampaign();
         setTimeout(() => {
             this.errorDiv.style.display = 'none';
+            this.enableTshirtCampaign();
         }, 3000);
     }
 
     showStatus(message) {
         this.statusDiv.textContent = message;
         this.statusDiv.style.display = 'block';
+        this.disableTshirtCampaign();
         setTimeout(() => {
             this.statusDiv.style.display = 'none';
+            this.enableTshirtCampaign();
         }, 5000);
+    }
+
+    disableTshirtCampaign() {
+        this.tshirtCampaign.onclick = a => {};
+        this.tshirtCampaign.style.cursor = "auto";
+    }
+
+    enableTshirtCampaign() {
+        this.tshirtCampaign.onclick = a => {window.location.href='/Frontend/tshirt.html'};
+        this.tshirtCampaign.style.cursor = "pointer";
     }
 }
 
