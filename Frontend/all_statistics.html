@@ -92,8 +92,8 @@
 
                     container.innerHTML = data.data.map(day => `
                         <div class="stats-container">
-                            <h2 class="date-header">${day.date}</h2>
-                            <div class="stats-summary">
+                            <div class="date-header-container">
+                                <h2 class="date-header">${day.date}</h2>
                                 <span class="room-count">Unique Rooms: ${day.room_count}</span>
                             </div>
                             <div class="table-container">

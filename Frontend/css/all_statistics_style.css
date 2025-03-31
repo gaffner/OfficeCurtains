@@ -46,14 +46,33 @@ h1 {
     margin-bottom: 40px;
 }
 
-.date-header {
+.date-header-container {
     background-color: var(--button-color);
-    color: var(--text-color);
-    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
     border-radius: 8px 8px 0 0;
     margin-bottom: 0;
+}
+
+.date-header {
+    background-color: transparent;
+    color: var(--text-color);
+    padding: 12px 20px;
+    border-radius: 0;
+    margin: 0;
     font-size: 18px;
     font-weight: bold;
+}
+
+.room-count {
+    font-weight: 600;
+    display: inline-block;
+    padding: 4px 12px;
+    margin-right: 20px;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .table-container {
@@ -154,14 +173,6 @@ tr:last-child td {
     font-size: 16px;
     display: flex;
     justify-content: flex-end;
-}
-
-.room-count {
-    font-weight: 600;
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .dark-mode .room-count {
