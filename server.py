@@ -168,7 +168,10 @@ def get_stats(request: Request):
 @app.get("/stats/all")
 def get_all_stats(request: Request):
     """Get statistics for all days"""
-    return {"data": stats_manager.get_all_stats()}
+    return {
+        "data": stats_manager.get_all_stats(),
+        "total_unique_rooms": stats_manager.get_total_unique_rooms_count()
+    }
 
 
 def main():

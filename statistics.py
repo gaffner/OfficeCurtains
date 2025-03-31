@@ -34,7 +34,8 @@ class StatisticsManager:
                     all_stats.append({
                         'date': formatted_date,
                         'raw_date': date,
-                        'stats': df.to_dict('records')
+                        'stats': df.to_dict('records'),
+                        'room_count': len(df['room_number'].unique())
                     })
                 except Exception as e:
                     logging.error(f"Error reading stats file {filename}: {e}")
@@ -116,3 +117,24 @@ class StatisticsManager:
         except Exception as e:
             logging.error(f"Error counting rooms in statistics file: {e}")
             return 0
+
+    def get_total_unique_rooms_count(self):
+        """
+        Count the number of unique rooms across all statistics history
+        
+        Returns:
+            int: Total number of unique rooms that have used the curtain control
+        """
+        all_rooms = set()
+        stats_files = os.listdir(self.stats_dir)
+        
+        for filename in stats_files:
+            if filename.startswith('stats_') and filename.endswith('.csv'):
+                filepath = os.path.join(self.stats_dir, filename)
+                try:
+                    df = pd.read_csv(filepath)
+                    all_rooms.update(df['room_number'].unique())
+                except Exception as e:
+                    logging.error(f"Error reading stats file {filename}: {e}")
+                    
+        return len(all_rooms)

@@ -147,8 +147,57 @@ tr:last-child td {
     background-color: #1d4ed8;
 }
 
-/* Add totals row styling */
-.totals-row {
-    font-weight: bold;
-    background-color: #f8fafc;
+.stats-summary {
+    background-color: var(--button-color);
+    padding: 0 20px 12px;
+    color: var(--text-color);
+    font-size: 16px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.room-count {
+    font-weight: 600;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark-mode .room-count {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.total-stats-container {
+    background-color: var(--button-color);
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.total-unique-rooms {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+}
+
+.total-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.total-count {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-color);
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+}
+
+.dark-mode .total-count {
+    background-color: rgba(0, 0, 0, 0.2);
 }
