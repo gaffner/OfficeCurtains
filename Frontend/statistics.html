@@ -11,6 +11,7 @@
     <h1>Daily Curtain Control Statistics</h1>
     <div class="stats-container">
         <div class="date-header" id="currentDate"></div>
+        <div class="room-count">Unique Rooms Today: <span id="roomCount">0</span></div>
         <div class="table-container">
             <table>
                 <thead>
@@ -60,9 +61,13 @@
                 .then(data => {
                     const tbody = document.getElementById('statsBody');
                     const currentDate = document.getElementById('currentDate');
+                    const roomCountElement = document.getElementById('roomCount');
 
                     // Update date display
                     currentDate.textContent = formatDate(new Date());
+
+                    // Update room count
+                    roomCountElement.textContent = data.room_count || 0;
 
                     // Clear existing data
                     tbody.innerHTML = '';

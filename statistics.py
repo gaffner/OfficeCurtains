@@ -98,3 +98,21 @@ class StatisticsManager:
         except Exception as e:
             logging.error(f"Error reading statistics file: {e}")
             return []
+            
+    def get_room_count(self):
+        """
+        Count the number of unique rooms in today's statistics
+        
+        Returns:
+            int: Number of unique rooms that used the curtain control today
+        """
+        filename = self.get_stats_filename()
+        if not os.path.exists(filename):
+            return 0
+            
+        try:
+            df = pd.read_csv(filename)
+            return len(df['room_number'].unique())
+        except Exception as e:
+            logging.error(f"Error counting rooms in statistics file: {e}")
+            return 0
