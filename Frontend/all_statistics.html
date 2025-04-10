@@ -9,6 +9,9 @@
 <body>
     <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
     <h1>All Curtain Control Statistics</h1>
+    <div id="totalStatsContainer" class="total-stats-container">
+        <div class="loading">Loading total statistics...</div>
+    </div>
     <div id="statsContainer">
         <div class="loading">Loading statistics...</div>
     </div>
@@ -72,6 +75,15 @@
                 .then(response => response.json())
                 .then(data => {
                     const container = document.getElementById('statsContainer');
+                    const totalContainer = document.getElementById('totalStatsContainer');
+
+                    // Display total unique rooms count
+                    totalContainer.innerHTML = `
+                        <div class="total-unique-rooms">
+                            <span class="total-label">Total Unique Rooms (All Time):</span>
+                            <span class="total-count">${data.total_unique_rooms}</span>
+                        </div>
+                    `;
 
                     if (data.data.length === 0) {
                         container.innerHTML = '<div class="no-data">No statistics available</div>';
@@ -80,7 +92,10 @@
 
                     container.innerHTML = data.data.map(day => `
                         <div class="stats-container">
-                            <h2 class="date-header">${day.date}</h2>
+                            <div class="date-header-container">
+                                <h2 class="date-header">${day.date}</h2>
+                                <span class="room-count">Unique Rooms: ${day.room_count}</span>
+                            </div>
                             <div class="table-container">
                                 ${createTableHTML(day.stats)}
                             </div>
@@ -94,6 +109,7 @@
                             Error loading statistics. Please try again later.
                         </div>
                     `;
+                    document.getElementById('totalStatsContainer').innerHTML = '';
                 });
         }
 
