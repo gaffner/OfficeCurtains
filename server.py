@@ -8,6 +8,9 @@ import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from config import *
 from statistics import StatisticsManager
@@ -17,10 +20,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Setup the FastAPI app
 load_dotenv()
+
+# Setup rate limiting with SlowAPI
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(redirect_slashes=False)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Constants for the server and authentication
-
 
 app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
 
@@ -125,6 +132,7 @@ def get_states_by_direction(room_name, direction):
 
 
 @app.get("/control/{room_name}/{action}")
+@limiter.limit("10/minute")  # Stricter limit for curtain control
 @validate_isp()
 def control_curtain(request: Request, room_name: str, action: str, direction: str = None):
     room_name = room_name.upper()
