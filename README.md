@@ -9,8 +9,15 @@ No more stupid apps in order to control curtains. Lets get back to the good old 
     export SERVER_PORT_A=None
     export SERVER_PORT_B=None
     export SERVER_PORT_C=None
-    export USERNAME=""
-    export MD5_VALUE='' 
+    export USERNAME=''
+    export MD5_VALUE=''
+    
+    # Azure AD Configuration
+    export AZURE_CLIENT_ID=''
+    export AZURE_TENANT_ID=''
+    export AZURE_REDIRECT_URI='http://{{HOST}}/auth/callback'
+    export CERT_PATH=''
+    export CERT_THUMBPRINT='' 
     ```
 3. Then run the server in your prefer way, for example uvicorn + nginx
 ```bash
