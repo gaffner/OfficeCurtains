@@ -60,7 +60,18 @@
 
                 try {
                     const report = `T-shirt Application - Alias: ${alias}, Reason: ${reason}`;
-                    const response = await fetch(`/submit-tshirt-request/${encodeURIComponent(report)}`);
+                    const response = await fetch(`/submit-tshirt-request/${encodeURIComponent(report)}`, {
+                        method: 'GET',
+                        credentials: 'include',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (response.status === 401) {
+                        window.location.href = '/Frontend/index.html';
+                        return;
+                    }
 
                     if (response.ok) {
                         option2Container.style.display = 'none';
@@ -69,6 +80,18 @@
                         throw new Error('Submission failed');
                     }
                 } catch (error) {
+                    console.error('Error details:', {
+                        message: error.message,
+                        name: error.name,
+                        stack: error.stack
+                    });
+                    
+                    if (error.message.includes('Failed to fetch') || 
+                        error.name === 'TypeError' ||
+                        error.message.includes('Authentication required')) {
+                        window.location.href = '/Frontend/index.html';
+                        return;
+                    }
                     alert('There was an error submitting your application. Please try again.');
                 }
             });

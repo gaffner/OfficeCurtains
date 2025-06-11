@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Curtain Control Statistics</title>
-    <link rel="stylesheet" href="css/all_statistics_style.css">
+    <link rel="stylesheet" href="/Frontend/css/all_statistics_style.css">
 </head>
 <body>
     <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
@@ -70,47 +70,76 @@
             `;
         }
 
-        function loadAllStats() {
-            fetch('/stats/all')
-                .then(response => response.json())
-                .then(data => {
-                    const container = document.getElementById('statsContainer');
-                    const totalContainer = document.getElementById('totalStatsContainer');
-
-                    // Display total unique rooms count
-                    totalContainer.innerHTML = `
-                        <div class="total-unique-rooms">
-                            <span class="total-label">Total Unique Rooms (All Time):</span>
-                            <span class="total-count">${data.total_unique_rooms}</span>
-                        </div>
-                    `;
-
-                    if (data.data.length === 0) {
-                        container.innerHTML = '<div class="no-data">No statistics available</div>';
+        async function loadAllStats() {
+            try {
+                const response = await fetch('/stats/all', {
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/Frontend/index.html';
                         return;
                     }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                const container = document.getElementById('statsContainer');
+                const totalContainer = document.getElementById('totalStatsContainer');
 
-                    container.innerHTML = data.data.map(day => `
-                        <div class="stats-container">
-                            <div class="date-header-container">
-                                <h2 class="date-header">${day.date}</h2>
-                                <span class="room-count">Unique Rooms: ${day.room_count}</span>
-                            </div>
-                            <div class="table-container">
-                                ${createTableHTML(day.stats)}
-                            </div>
+                // Display total unique rooms count
+                totalContainer.innerHTML = `
+                    <div class="total-unique-rooms">
+                        <span class="total-label">Total Unique Rooms (All Time):</span>
+                        <span class="total-count">${data.total_unique_rooms}</span>
+                    </div>
+                `;
+
+                if (data.data.length === 0) {
+                    container.innerHTML = '<div class="no-data">No statistics available</div>';
+                    return;
+                }
+
+                container.innerHTML = data.data.map(day => `
+                    <div class="stats-container">
+                        <div class="date-header-container">
+                            <h2 class="date-header">${day.date}</h2>
+                            <span class="room-count">Unique Rooms: ${day.room_count}</span>
                         </div>
-                    `).join('');
-                })
-                .catch(error => {
-                    console.error('Error loading statistics:', error);
-                    document.getElementById('statsContainer').innerHTML = `
-                        <div class="error-message">
-                            Error loading statistics. Please try again later.
+                        <div class="table-container">
+                            ${createTableHTML(day.stats)}
                         </div>
-                    `;
-                    document.getElementById('totalStatsContainer').innerHTML = '';
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error details:', {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                    status: error.status
                 });
+                
+                // Check if it's a CORS or auth error
+                if (error.message.includes('Failed to fetch') || 
+                    error.name === 'TypeError' ||
+                    error.status === 401) {
+                    console.log('Authentication issue detected, redirecting to login...');
+                    window.location.href = '/Frontend/index.html';
+                    return;
+                }
+                
+                document.getElementById('statsContainer').innerHTML = `
+                    <div class="error-message">
+                        Error loading statistics: ${error.message}<br>
+                        Please try again later.
+                    </div>
+                `;
+                document.getElementById('totalStatsContainer').innerHTML = '';
+            }
         }
 
         // Load stats when page loads

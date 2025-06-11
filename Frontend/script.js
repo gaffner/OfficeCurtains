@@ -73,7 +73,11 @@ class CurtainControl {
         const encodedReport = encodeURIComponent(reportText);
 
         fetch(`/submit-report/${encodedReport}`, {
-            method: 'GET'
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json'
+            }
         })
         .then(response => {
             if (response.ok) {
@@ -97,11 +101,11 @@ class CurtainControl {
     async moveCurtain(room, direction) {
         try {
             const selectedDirection = this.roomDirections[room].selected;
-        const url = selectedDirection ?
+            const url = selectedDirection ?
                 `/control/${room}/${direction}?direction=${selectedDirection}` :
                 `/control/${room}/${direction}`;
 
-            console.log("Doing fetch to", url)
+            console.log("Doing fetch to", url);
 	    if (direction === "stop")
                 this.showStatus(`Curtain is stopping...`);
             else if (direction === "up")
@@ -109,7 +113,13 @@ class CurtainControl {
             else
                 this.showStatus(`Curtain is going down`);
 
-            const response = await fetch(url, { method: 'GET' });
+            const response = await fetch(url, { 
+                method: 'GET',
+                credentials: 'include',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
             if (!response.ok) {
                 throw new Error(response.statusText);
             }
@@ -131,7 +141,12 @@ class CurtainControl {
             return;
         }
 
-        fetch(`/register/${room}`).then(response => {
+        fetch(`/register/${room}`, {
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json'
+            }
+        }).then(response => {
             if (response.status === 404) {
                 this.showError(`Room ${room} not found`);
                 return;

@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curtain Control System</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="/Frontend/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/svg+xml" href="Images/favicon.ico">
-    <link rel="alternate icon" type="image/png" href="Images/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/Frontend/Images/favicon.ico">
+    <link rel="alternate icon" type="image/png" href="/Frontend/Images/favicon.ico">
 </head>
 <body>
     <div class="toggle-switch">
@@ -18,8 +18,9 @@
         </label>
     </div>
     <div class="logo-container">
-        <img src="Images/logo.png" alt="Curtain Control System Logo" class="logo">
+        <img src="/Frontend/Images/logo.png" alt="Curtain Control System Logo" class="logo">
     </div>
+    <div id="welcome-message" class="welcome-message"></div>
 
 <div class="input-container">
     <input type="text" id="roomInput" placeholder="Enter room number (e.g., 8B210)">
@@ -32,9 +33,9 @@
 <div id="emptyState" class="empty-state">No favorite rooms added yet. Add a room to get started!</div>
 <div class="filler">filler</div>
 <div id="tshirtCampaign" onclick="window.location.href='/Frontend/tshirt.html';" style="cursor: pointer;" class="shirt-campaign-dm">
-    <img id="shirt-campaign-img" src="Images/shirtpromo_lm_b.png" alt="Shirt Campaign">
+    <img id="shirt-campaign-img" src="/Frontend/Images/shirtpromo_lm_b.png" alt="Shirt Campaign">
 </div>
-<script src="script.js"></script>
+<script src="/Frontend/script.js"></script>
 <div class="menu-button">
     <div class="hamburger">
         <span></span>
@@ -43,6 +44,9 @@
     </div>
     <div class="menu-text">Menu</div>
 </div>
+
+<!-- Overlay for menu background -->
+<div class="overlay"></div>
 
 <!-- Sidebar -->
 <div class="sidebar">
@@ -54,12 +58,12 @@
 <div class="bottom-buttons-container">
 
     <div onclick="window.location.href='https://teams.microsoft.com/l/chat/0/0?users=galtshuler@microsoft.com';" style="cursor: pointer;" class="bug-bounty-link">
-        <img src="Images/cibus.png" alt="Cibus Logo">
+        <img src="/Frontend/Images/cibus.png" alt="Cibus Logo">
         Join our bug bounty program and win up to 25₪ in Cibus!
     </div>
     <div class="report-container">
         <a href="https://teams.microsoft.com/l/chat/0/0?users=galtshuler@microsoft.com" class="teams-button">
-            <img src="Images/teams.png" alt="Teams Logo">
+            <img src="/Frontend/Images/teams.png" alt="Teams Logo">
             Need Help?
         </a>
     </div>
@@ -78,9 +82,9 @@
 
         function updateShirtCampaignImage() {
             if (toggleButton.checked)
-                shirtCampaignImg.src = 'Images/shirtpromo_dm.png';
+                shirtCampaignImg.src = '/Frontend/Images/shirtpromo_dm.png';
             else 
-                shirtCampaignImg.src = 'Images/shirtpromo_lm_b.png';
+                shirtCampaignImg.src = '/Frontend/Images/shirtpromo_lm_b.png';
         }
 
         if (isDarkMode) {
@@ -101,12 +105,16 @@
         const overlay = document.querySelector('.overlay');
 
         function toggleMenu() {
-            menuButton.classList.toggle('active');
-            sidebar.classList.toggle('active');
-            overlay.classList.toggle('active');
-    }
+            if (menuButton) menuButton.classList.toggle('active');
+            if (sidebar) sidebar.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
+        }
 
-    menuButton.addEventListener('click', toggleMenu);
-    overlay.addEventListener('click', toggleMenu);
+    if (menuButton) {
+        menuButton.addEventListener('click', toggleMenu);
+    }
+    if (overlay) {
+        overlay.addEventListener('click', toggleMenu);
+    }
 });
 </script>

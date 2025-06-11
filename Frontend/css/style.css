@@ -326,7 +326,7 @@ textarea {
     text-decoration: none;
     border-radius: 4px;
     font-size: 14px;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .stats-button:hover {
@@ -443,21 +443,23 @@ textarea {
     display: block;
     width: 18px;
     height: 2px;
-    background-color: #2563eb;
+    background-color: var(--text-color);
     border-radius: 2px;
     margin: 3px 0;
+    transition: all 0.3s ease;
 }
 
 .menu-button.active span:nth-child(1) {
-    transform: translateY(5px) rotate(45deg);
+    transform: translateY(7px) rotate(45deg);
 }
 
 .menu-button.active span:nth-child(2) {
     opacity: 0;
+    transform: scale(0);
 }
 
 .menu-button.active span:nth-child(3) {
-    transform: translateY(-5px) rotate(-45deg);
+    transform: translateY(-7px) rotate(-45deg);
 }
 
 .menu-text {
@@ -652,6 +654,15 @@ textarea {
 /* If you're using dark mode, ensure logo remains visible */
 .dark-mode .logo {
     filter: brightness(1);
+}
+
+.welcome-message {
+    font-size: 1.5em;
+    color: var(--text-color);
+    text-align: center;
+    margin: 20px 0;
+    transition: color 0.5s ease;
+    font-weight: bold;
 }
 
 /* Update the bottom spacing for the donate button */

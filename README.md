@@ -11,6 +11,7 @@ No more stupid apps in order to control curtains. Lets get back to the good old 
     export SERVER_PORT_C=None
     export USERNAME=''
     export MD5_VALUE=''
+    export CORS_ORIGINS=''
     
     # Azure AD Configuration
     export AZURE_CLIENT_ID=''

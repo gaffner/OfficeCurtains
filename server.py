@@ -6,7 +6,7 @@ from functools import lru_cache
 import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
@@ -24,8 +24,9 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
             
         if request.url.path.startswith("/Frontend/"):
-            # If it's an HTML file under Frontend, check auth
+            # If it's an HTML file under Frontend
             if request.url.path.endswith('.html'):
+                # Check authentication first
                 if not request.session.get("user"):
                     auth_app = get_auth_app()
                     auth_url = auth_app.get_authorization_request_url(
@@ -33,13 +34,34 @@ class AuthMiddleware(BaseHTTPMiddleware):
                         redirect_uri=os.getenv('AZURE_REDIRECT_URI')
                     )
                     return RedirectResponse(url=auth_url, status_code=302)
-            # Allow other static files
+                
+                # For index.html, intercept and inject username
+                if request.url.path == "/Frontend/index.html":
+                    with open('Frontend/index.html', 'r') as f:
+                        content = f.read()
+                    
+                    username = request.session.get("user_name", "User")
+                    content = content.replace(
+                        '<div id="welcome-message" class="welcome-message"></div>',
+                        f'<div id="welcome-message" class="welcome-message">Hello {username}!</div>'
+                    )
+                    return HTMLResponse(content=content)
+            
+            # Allow all other static files
             return await call_next(request)
 
         try:
             # Check for authentication
             if not request.session.get("user"):
                 logging.debug(f"User not authenticated, redirecting from {request.url.path}")
+                # For API endpoints or XHR requests, return 401 instead of redirect
+                headers = dict(request.headers)
+                is_xhr = headers.get('accept') == 'application/json' or headers.get('x-requested-with') == 'XMLHttpRequest'
+                if is_xhr or request.url.path.startswith('/stats/'):
+                    raise HTTPException(
+                        status_code=401, 
+                        detail="Authentication required"
+                    )
                 auth_app = get_auth_app()
                 auth_url = auth_app.get_authorization_request_url(
                     scopes=['User.Read'],
@@ -63,15 +85,21 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Setup the FastAPI app
 load_dotenv()
+
+# Get CORS origins from environment variable
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:8000").split(",")
+logging.info(f"Configuring CORS with allowed origins: {CORS_ORIGINS}")
+
 app = FastAPI(redirect_slashes=False)
 
 # Order matters: session middleware should be last to wrap everything
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 app.add_middleware(AuthMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY", os.urandom(24)))
@@ -79,36 +107,94 @@ app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY",
 # Constants for the server and authentication
 
 
-# Mount static files
+# Mount static files after middleware setup - Do not change the order!!!
 app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
 
 stats_manager = StatisticsManager()
 
 
+@app.options("/submit-report/{report}")
+async def report_options(request: Request):
+    response = Response()
+    cors_headers = {
+        "Access-Control-Allow-Origin": CORS_ORIGINS[0],
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Accept, Authorization, Content-Type",
+        "Access-Control-Allow-Credentials": "true"
+    }
+    response.headers.update(cors_headers)
+    return response
+
 @app.get("/submit-report/{report}")
 @require_auth()
-def submit_report(request: Request, report: str):
-    user_name = request.session.get("user")
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    report_entry = f"{current_time} - {user_name} - {report}\n"
+async def submit_report(request: Request, report: str):
+    try:
+        user_name = request.session.get("user_name")
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        report_entry = f"{current_time} - {user_name} - {report}\n"
 
-    with open(REPORTS_FILE, "a") as file:
-        file.write(report_entry)
+        with open(REPORTS_FILE, "a") as file:
+            file.write(report_entry)
 
-    return {"message": "Report submitted successfully"}
+        response = JSONResponse(
+            content={"message": "Report submitted successfully"},
+            status_code=200
+        )
+        
+        cors_headers = {
+            "Access-Control-Allow-Origin": CORS_ORIGINS[0],
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Accept, Authorization, Content-Type"
+        }
+        
+        response.headers.update(cors_headers)
+        return response
+    except Exception as e:
+        logging.error(f"Error submitting report: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error submitting report")
 
+
+@app.options("/submit-tshirt-request/{content}")
+async def tshirt_request_options(request: Request):
+    response = Response()
+    cors_headers = {
+        "Access-Control-Allow-Origin": CORS_ORIGINS[0],
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Accept, Authorization, Content-Type",
+        "Access-Control-Allow-Credentials": "true"
+    }
+    response.headers.update(cors_headers)
+    return response
 
 @app.get("/submit-tshirt-request/{content}")
 @require_auth()
-def submit_report(request: Request, content: str):
-    user_name = request.session.get("user")
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    report_entry = f"{current_time} - {user_name} - {content}\n"
+async def submit_tshirt_request(request: Request, content: str):
+    try:
+        user_name = request.session.get("user_name")
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        report_entry = f"{current_time} - {user_name} - {content}\n"
 
-    with open(TSHIRT_REQUESTS_FILE, "a") as file:
-        file.write(report_entry)
+        with open(TSHIRT_REQUESTS_FILE, "a") as file:
+            file.write(report_entry)
 
-    return {"message": "Report submitted successfully"}
+        response = JSONResponse(
+            content={"message": "Report submitted successfully"},
+            status_code=200
+        )
+        
+        cors_headers = {
+            "Access-Control-Allow-Origin": CORS_ORIGINS[0],
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Accept, Authorization, Content-Type"
+        }
+        
+        response.headers.update(cors_headers)
+        return response
+    except Exception as e:
+        logging.error(f"Error submitting t-shirt request: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error submitting request")
 
 
 @app.get("/auth/callback")
@@ -156,7 +242,16 @@ async def auth_callback(request: Request, code: str = None, state: str = None, e
         request.session["user_name"] = graph_data.get("displayName", "User")
         
         logging.info(f"Successfully authenticated user: {request.session['user_name']}")
-        return RedirectResponse(url="/Frontend/index.html", status_code=302)
+        # Instead of redirecting, render index.html directly with username
+        with open('Frontend/index.html', 'r') as f:
+            content = f.read()
+        
+        username = request.session.get("user_name", "User")
+        content = content.replace(
+            '<div id="welcome-message" class="welcome-message"></div>',
+            f'<div id="welcome-message" class="welcome-message">Hello {username}!</div>'
+        )
+        return HTMLResponse(content=content)
         
     except Exception as e:
         logging.error(f"Unexpected error in auth callback: {str(e)}")
@@ -164,8 +259,18 @@ async def auth_callback(request: Request, code: str = None, state: str = None, e
 
 @app.get("/")
 @require_auth()
-def root(request: Request):
-    return RedirectResponse(url="/Frontend/index.html", status_code=302)
+async def root(request: Request):
+    """Root handler that injects username and redirects to index.html"""
+    with open('Frontend/index.html', 'r') as f:
+        content = f.read()
+    
+    username = request.session.get("user_name", "User")
+    content = content.replace(
+        '<div id="welcome-message" class="welcome-message"></div>',
+        f'<div id="welcome-message" class="welcome-message">Hello {username}!</div>'
+    )
+    return HTMLResponse(content=content)
+
 
 
 # Function to load room data from 'rooms.json' file
@@ -299,24 +404,91 @@ async def control_curtain(request: Request, room_name: str, action: str, directi
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.options("/stats")
+async def stats_options(request: Request):
+    logging.info(f"Handling OPTIONS request for stats from origin: {request.headers.get('origin', 'unknown')}")
+    response = Response()
+    cors_headers = {
+        "Access-Control-Allow-Origin": CORS_ORIGINS[0],
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Accept, Authorization, Content-Type",
+        "Access-Control-Allow-Credentials": "true"
+    }
+    logging.info(f"Responding to OPTIONS with CORS headers: {cors_headers}")
+    response.headers.update(cors_headers)
+    return response
+
 @app.get("/stats")
 @require_auth()
-def get_stats(request: Request):
+async def get_stats(request: Request):
     """Get statistics for the current day"""
-    return {
-        "data": stats_manager.get_daily_stats(),
-        "room_count": stats_manager.get_room_count()
-    }
+    try:
+        logging.info(f"Handling daily stats request from origin: {request.headers.get('origin', 'unknown')}")
+        response = JSONResponse(content={
+            "data": stats_manager.get_daily_stats(),
+            "room_count": stats_manager.get_room_count()
+        })
+        
+        cors_headers = {
+            "Access-Control-Allow-Origin": CORS_ORIGINS[0],
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Accept, Authorization, Content-Type"
+        }
+        
+        logging.info(f"Setting CORS headers for daily stats: {cors_headers}")
+        response.headers.update(cors_headers)
+        return response
+    except Exception as e:
+        logging.error(f"Error getting daily statistics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving daily statistics")
 
+
+@app.options("/stats/all")
+async def stats_all_options(request: Request):
+    logging.info(f"Handling OPTIONS request for stats/all from origin: {request.headers.get('origin', 'unknown')}")
+    response = Response()
+    cors_headers = {
+        "Access-Control-Allow-Origin": CORS_ORIGINS[0],
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Accept, Authorization, Content-Type",
+        "Access-Control-Allow-Credentials": "true"
+    }
+    logging.info(f"Responding to OPTIONS with CORS headers: {cors_headers}")
+    response.headers.update(cors_headers)
+    return response
 
 @app.get("/stats/all")
 @require_auth()
-def get_all_stats(request: Request):
+async def get_all_stats(request: Request):
     """Get statistics for all days"""
-    return {
-        "data": stats_manager.get_all_stats(),
-        "total_unique_rooms": stats_manager.get_total_unique_rooms_count()
-    }
+    try:
+        logging.info(f"Handling stats request from origin: {request.headers.get('origin', 'unknown')}")
+        data = stats_manager.get_all_stats()
+        total_rooms = stats_manager.get_total_unique_rooms_count()
+        
+        cors_headers = {
+            "Access-Control-Allow-Origin": CORS_ORIGINS[0],
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "Accept, Authorization, Content-Type"
+        }
+        
+        response = JSONResponse(
+            content={
+                "data": data,
+                "total_unique_rooms": total_rooms
+            },
+            status_code=200
+        )
+        
+        logging.info(f"Setting CORS headers: {cors_headers}")
+        response.headers.update(cors_headers)
+        return response
+        
+    except Exception as e:
+        logging.error(f"Error getting statistics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error retrieving statistics")
 
 
 def main():
