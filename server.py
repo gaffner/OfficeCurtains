@@ -13,6 +13,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import RedirectResponse
 
+
 from config import *
 from statistics import StatisticsManager
 from auth import require_auth, get_auth_app
@@ -86,11 +87,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # Setup the FastAPI app
 load_dotenv()
 
-# Get CORS origins from environment variable
 CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:8000").split(",")
 logging.info(f"Configuring CORS with allowed origins: {CORS_ORIGINS}")
 
 app = FastAPI(redirect_slashes=False)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Order matters: session middleware should be last to wrap everything
 app.add_middleware(
@@ -106,8 +108,6 @@ app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY",
 
 # Constants for the server and authentication
 
-
-# Mount static files after middleware setup - Do not change the order!!!
 app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
 
 stats_manager = StatisticsManager()
