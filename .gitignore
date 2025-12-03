@@ -2,6 +2,7 @@ rooms.json
 statistics.txt
 reports.txt
 venv/
+cert/
 .env
 __pycache__/*
 .gitignore
