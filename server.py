@@ -492,7 +492,7 @@ async def get_all_stats(request: Request):
 
 
 def main():
-    uvicorn.run(app, host='0.0.0.0', port=8080)
+    uvicorn.run(app, host='0.0.0.0', port=8000)
 
 
 # Running the FastAPI app (you can use `uvicorn` to run this in your terminal)
