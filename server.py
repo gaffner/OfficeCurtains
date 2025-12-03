@@ -1,86 +1,19 @@
-import json
 import logging
 from datetime import datetime
-from functools import lru_cache
 
 import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, Response
-from starlette.middleware.base import BaseHTTPMiddleware
+
+from fastapi.responses import JSONResponse, HTMLResponse
 from starlette.middleware.sessions import SessionMiddleware
-from starlette.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
 
-from auth import require_auth, get_auth_app
+from AuthMiddleware import CurtainsAuthMiddleware
+from auth import get_auth_app
 from config import *
+from helper import get_suffix, get_username, get_states_by_direction, send_message, get_room_states
 from statistics import StatisticsManager
-
-
-class AuthMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        if request.url.path == "/auth/callback":
-            return await call_next(request)
-
-        if request.url.path.startswith("/Frontend/"):
-            # If it's an HTML file under Frontend
-            if request.url.path.endswith('.html'):
-                # Check authentication first
-                if not request.session.get("user"):
-                    auth_app = get_auth_app()
-                    auth_url = auth_app.get_authorization_request_url(
-                        scopes=['User.Read'],
-                        redirect_uri=os.getenv('AZURE_REDIRECT_URI')
-                    )
-                    return RedirectResponse(url=auth_url, status_code=302)
-
-                # For index.html, intercept and inject username
-                if request.url.path == "/Frontend/index.html":
-                    with open('Frontend/index.html', 'r') as f:
-                        content = f.read()
-
-                    username = request.session.get("user_name", "User")
-                    content = content.replace(
-                        '<div id="welcome-message" class="welcome-message"></div>',
-                        f'<div id="welcome-message" class="welcome-message">Hello {username}!</div>'
-                    )
-                    return HTMLResponse(content=content)
-
-            # Allow all other static files
-            return await call_next(request)
-
-        try:
-            # Check for authentication
-            if not request.session.get("user"):
-                logging.debug(f"User not authenticated, redirecting from {request.url.path}")
-                # For API endpoints or XHR requests, return 401 instead of redirect
-                headers = dict(request.headers)
-                is_xhr = headers.get('accept') == 'application/json' or headers.get(
-                    'x-requested-with') == 'XMLHttpRequest'
-                if is_xhr or request.url.path.startswith('/stats/'):
-                    raise HTTPException(
-                        status_code=401,
-                        detail="Authentication required"
-                    )
-                auth_app = get_auth_app()
-                auth_url = auth_app.get_authorization_request_url(
-                    scopes=['User.Read'],
-                    redirect_uri=os.getenv('AZURE_REDIRECT_URI')
-                )
-                return RedirectResponse(url=auth_url, status_code=302)
-
-            # User is authenticated, proceed
-            return await call_next(request)
-
-        except Exception as e:
-            logging.error(f"Error in auth middleware: {str(e)}")
-            auth_app = get_auth_app()
-            auth_url = auth_app.get_authorization_request_url(
-                scopes=['User.Read'],
-                redirect_uri=os.getenv('AZURE_REDIRECT_URI')
-            )
-            return RedirectResponse(url=auth_url, status_code=302)
-
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -90,7 +23,7 @@ load_dotenv()
 app = FastAPI(redirect_slashes=False)
 
 # Order matters: session middleware should be last to wrap everything
-app.add_middleware(AuthMiddleware)
+app.add_middleware(CurtainsAuthMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY", os.urandom(24)))
 
 # Constants for the server and authentication
@@ -103,7 +36,6 @@ stats_manager = StatisticsManager()
 
 
 @app.get("/submit-report/{report}")
-@require_auth()
 async def submit_report(request: Request, report: str):
     try:
         user_name = request.session.get("user_name")
@@ -124,7 +56,6 @@ async def submit_report(request: Request, report: str):
 
 
 @app.get("/submit-tshirt-request/{content}")
-@require_auth()
 async def submit_tshirt_request(request: Request, content: str):
     try:
         user_name = request.session.get("user_name")
@@ -207,7 +138,6 @@ async def auth_callback(request: Request, code: str = None, state: str = None, e
 
 
 @app.get("/")
-@require_auth()
 async def root(request: Request):
     """Root handler that injects username and redirects to index.html"""
     with open('Frontend/index.html', 'r') as f:
@@ -221,41 +151,7 @@ async def root(request: Request):
     return HTMLResponse(content=content)
 
 
-# Function to load room data from 'rooms.json' file
-@lru_cache(maxsize=None)
-def load_rooms_data():
-    try:
-        with open('rooms.json', 'r', encoding='utf-8') as file:
-            return json.load(file)
-    except Exception as e:
-        logging.error(f"Error loading rooms.json: {e}")
-        return {}
-
-
-# Function to send POST requests to the server
-def send_message(group, command, creds, address):
-    url = f"https://{address[0]}:{address[1]}/iphone/send"
-    data = f"username={creds[0]}\r\npassword={creds[1]}\r\nsk=\r\nversion=2\r\nmd5={MD5_VALUE}\r\ngroup={group}\r\neis=1.001\r\nvalue={command}\r\n"
-    logging.info(f'Posting to: {url} with data: {data}')
-
-    res = requests.post(url, data=data, headers={'User-Agent': 'XXter/1.0'}, verify=False)
-    return res
-
-
-def get_room_states(room_name: str):
-    rooms = load_rooms_data()
-
-    if room_name not in rooms:
-        raise HTTPException(status_code=404, detail="Room not found")
-
-    return rooms[room_name]
-
-
-from fastapi.responses import JSONResponse
-
-
 @app.get("/register/{room_name}")
-@require_auth()
 async def register(request: Request, room_name: str):
     try:
         logging.info(f"Register request for room: {room_name}")
@@ -279,36 +175,7 @@ async def register(request: Request, room_name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-def get_suffix(room_name):
-    suffix = room_name[1]
-    if suffix not in ('A', 'B', 'C'):
-        raise HTTPException(status_code=404, detail=f"incorrect building {suffix}")
-
-    return suffix
-
-
-def get_username(room_name):
-    suffix = get_suffix(room_name)
-    username = CURTAINS_USERNAME + suffix
-    logging.info(f'username is {username}')
-
-    return username
-
-
-def get_states_by_direction(room_name, direction):
-    states = get_room_states(room_name)
-    # if this room have multiple directions, get the correct one
-    if direction and len(states) > 1:
-        for state in states:
-            if state['name'] == direction:
-                return state
-
-    # if not, return the only direction exists
-    return states[0]
-
-
 @app.get("/control/{room_name}/{action}")
-@require_auth()
 async def control_curtain(request: Request, room_name: str, action: str, direction: str = None):
     try:
         room_name = room_name.upper()
@@ -354,9 +221,7 @@ async def control_curtain(request: Request, room_name: str, action: str, directi
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
 @app.get("/stats")
-@require_auth()
 async def get_stats(request: Request):
     """Get statistics for the current day"""
     try:
@@ -373,7 +238,6 @@ async def get_stats(request: Request):
 
 
 @app.get("/stats/all")
-@require_auth()
 async def get_all_stats(request: Request):
     """Get statistics for all days"""
     try:
