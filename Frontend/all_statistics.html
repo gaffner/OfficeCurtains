@@ -123,8 +123,7 @@
                     status: error.status
                 });
                 
-                // Check if it's a CORS or auth error
-                if (error.message.includes('Failed to fetch') || 
+                if (error.message.includes('Failed to fetch') ||
                     error.name === 'TypeError' ||
                     error.status === 401) {
                     console.log('Authentication issue detected, redirecting to login...');
