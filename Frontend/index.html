@@ -10,47 +10,35 @@
     <link rel="alternate icon" type="image/png" href="Images/favicon.ico">
     <style>
         .auth-container {
-            position: absolute;
+            position: fixed;
             top: 1.25rem;
             right: calc(1.25rem + 7rem);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 0.625rem 0.9375rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-
-        .dark-mode .auth-container {
-            background: rgba(30, 30, 30, 0.9);
+            z-index: 1001;
         }
 
         .auth-message {
-            font-weight: 500;
-            font-size: 14px;
+            display: none;
         }
 
         .login-button {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: #ffffff;
-            border: 1px solid #8c8c8c;
-            border-radius: 4px;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--button-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 0.375rem;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 0.875rem;
             font-weight: 500;
-            color: #5e5e5e;
-            transition: all 0.2s;
+            transition: background-color 0.3s ease;
             text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .login-button:hover {
-            background: #f3f3f3;
-            border-color: #5e5e5e;
+            background-color: var(--hover-color);
         }
 
         .login-button img {
@@ -59,37 +47,38 @@
         }
 
         .logout-button {
-            padding: 6px 12px;
-            background: #f3f3f3;
-            border: 1px solid #d1d1d1;
-            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            background-color: var(--button-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 0.375rem;
             cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .logout-button:hover {
-            background: #e1e1e1;
+            background-color: var(--hover-color);
         }
 
-        .dark-mode .logout-button {
-            background: #3a3a3a;
-            border-color: #555;
-            color: #fff;
+        .welcome-message {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 1.25rem;
+            padding: 0.625rem;
+            display: none;
         }
 
-        .dark-mode .logout-button:hover {
-            background: #4a4a4a;
+        .welcome-message.visible {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <!-- Authentication status display -->
-    <div class="auth-container" id="authContainer">
-        <div class="auth-message" id="authMessage">Loading...</div>
-        <div id="authButton"></div>
-    </div>
-
     <div class="toggle-switch">
         <input type="checkbox" id="dark-mode-toggle" class="toggle-switch-checkbox">
         <label for="dark-mode-toggle" class="toggle-switch-label">
@@ -97,9 +86,15 @@
             <span class="toggle-switch-switch"></span>
         </label>
     </div>
+    <!-- Authentication status display -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-message" id="authMessage" style="display: none;"></div>
+        <div id="authButton"></div>
+    </div>
     <div class="logo-container">
         <img src="Images/logo.png" alt="Curtain Control System Logo" class="logo">
     </div>
+    <div class="welcome-message" id="welcomeMessage"></div>
 
 <div class="input-container">
     <input type="text" id="roomInput" placeholder="Enter room number (e.g., 8B210)">
@@ -111,9 +106,6 @@
 <div id="roomsList"></div>
 <div id="emptyState" class="empty-state">No favorite rooms added yet. Add a room to get started!</div>
 <div class="filler">filler</div>
-<div id="tshirtCampaign" onclick="window.location.href='/Frontend/tshirt.html';" style="cursor: pointer;" class="shirt-campaign-dm">
-    <img id="shirt-campaign-img" src="Images/shirtpromo_lm_b.png" alt="Shirt Campaign">
-</div>
 <script src="script.js"></script>
 <div class="menu-button">
     <div class="hamburger">
@@ -132,11 +124,6 @@
     <a href="/Frontend/tshirt.html" class="sidebar-link">Get a T-shirt!</a>
 </div>
 <div class="bottom-buttons-container">
-
-    <div onclick="window.location.href='https://teams.microsoft.com/l/chat/0/0?users=galtshuler@microsoft.com';" style="cursor: pointer;" class="bug-bounty-link">
-        <img src="Images/cibus.png" alt="Cibus Logo">
-        Join our bug bounty program and win up to 25₪ in Cibus!
-    </div>
     <div class="report-container">
         <a href="https://teams.microsoft.com/l/chat/0/0?users=galtshuler@microsoft.com" class="teams-button">
             <img src="Images/teams.png" alt="Teams Logo">
@@ -164,16 +151,20 @@
             const authMessage = document.getElementById('authMessage');
             const authButton = document.getElementById('authButton');
 
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            
             if (data.authenticated && data.username) {
-                // User is logged in
-                authMessage.textContent = `Hello, ${data.username}`;
+                // User is logged in - show only logout button
                 authButton.innerHTML = '<button class="logout-button" onclick="logout()">Logout</button>';
+
+                // Display welcome message
+                welcomeMessage.textContent = `Welcome ${data.username}`;
+                welcomeMessage.classList.add('visible');
 
                 // Store username in localStorage for persistence
                 localStorage.setItem('userName', data.username);
             } else {
-                // User is not logged in
-                authMessage.textContent = 'Please Login';
+                // User is not logged in - show login button
                 authButton.innerHTML = `
                     <a href="/login" class="login-button">
                         <img src="https://learn.microsoft.com/en-us/entra/identity-platform/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.svg" alt="Microsoft Logo">
@@ -181,21 +172,28 @@
                     </a>
                 `;
 
+                // Hide welcome message
+                welcomeMessage.classList.remove('visible');
+                welcomeMessage.textContent = '';
+
                 // Clear stored username
                 localStorage.removeItem('userName');
             }
         } catch (error) {
             console.error('Error checking auth status:', error);
-            const authMessage = document.getElementById('authMessage');
             const authButton = document.getElementById('authButton');
+            const welcomeMessage = document.getElementById('welcomeMessage');
 
-            authMessage.textContent = 'Please Login';
             authButton.innerHTML = `
                 <a href="/login" class="login-button">
                     <img src="https://learn.microsoft.com/en-us/entra/identity-platform/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.svg" alt="Microsoft Logo">
                     Sign in with Microsoft
                 </a>
             `;
+
+            // Hide welcome message on error
+            welcomeMessage.classList.remove('visible');
+            welcomeMessage.textContent = '';
         }
     }
 

@@ -63,9 +63,6 @@ def login(request: Request):
         # User already logged in, redirect to home
         return RedirectResponse(url="/Frontend/index.html")
 
-    request.session['user_name'] = 'gefen'
-    # return {'status': 'success'}
-
     # Generate authorization URL and redirect user to AAD login
     auth_url = get_auth_app().get_authorization_request_url(
         scopes=['User.Read'],
