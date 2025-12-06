@@ -32,7 +32,7 @@ def get_states_by_direction(room_name, direction):
             if state['name'] == direction:
                 return state
 
-    # if not, return the only direction exists
+    # if not, return the only direction ex~s
     return states[0]
 
 

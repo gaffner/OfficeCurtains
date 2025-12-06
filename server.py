@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime
 
-import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from starlette.staticfiles import StaticFiles
@@ -30,6 +29,7 @@ def submit_report(request: Request, report: str):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     report_entry = f"{current_time} - {user_ip} - {report}\n"
 
+    os.makedirs(os.path.dirname(REPORTS_FILE), exist_ok=True)
     with open(REPORTS_FILE, "a") as file:
         file.write(report_entry)
 
@@ -42,6 +42,7 @@ def submit_report(request: Request, content: str):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     report_entry = f"{current_time} - {user_ip} - {content}\n"
 
+    os.makedirs(os.path.dirname(TSHIRT_REQUESTS_FILE), exist_ok=True)
     with open(TSHIRT_REQUESTS_FILE, "a") as file:
         file.write(report_entry)
 
@@ -52,6 +53,7 @@ def submit_report(request: Request, content: str):
 @validate_isp()
 def root(request: Request):
     return RedirectResponse(url="/Frontend/index.html")
+
 
 @app.get("/register/{room_name}")
 @validate_isp()
@@ -110,12 +112,3 @@ def get_all_stats(request: Request):
         "data": stats_manager.get_all_stats(),
         "total_unique_rooms": stats_manager.get_total_unique_rooms_count()
     }
-
-
-def main():
-    uvicorn.run(app, host='0.0.0.0', port=8080)
-
-
-# Running the FastAPI app (you can use `uvicorn` to run this in your terminal)
-if __name__ == '__main__':
-    main()
