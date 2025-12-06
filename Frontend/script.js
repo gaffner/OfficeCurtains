@@ -113,13 +113,18 @@ class CurtainControl {
             else
                 this.showStatus(`Curtain is going down`);
 
-            const response = await fetch(url, { 
+            const response = await fetch(url, {
                 method: 'GET',
                 credentials: 'include',
                 headers: {
                     'Accept': 'application/json'
                 }
             });
+            if (response.status === 401) {
+                const data = await response.json();
+                this.showError(data.detail || 'You need to authenticate');
+                return;
+            }
             if (!response.ok) {
                 throw new Error(response.statusText);
             }
@@ -147,9 +152,15 @@ class CurtainControl {
                 'Accept': 'application/json'
             }
         }).then(response => {
+            if (response.status === 401) {
+                return response.json().then(data => {
+                    this.showError(data.detail || 'You need to authenticate');
+                    throw new Error('Authentication required');
+                });
+            }
             if (response.status === 404) {
                 this.showError(`Room ${room} not found`);
-                return;
+                throw new Error('Room not found');
             }
             if (!response.ok) {
                 throw new Error(`Failed to register ${response.status}`);

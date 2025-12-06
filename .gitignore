@@ -1,11 +1,15 @@
 rooms.json
 statistics.txt
-reports.txt
+data/
 venv/
+cert/
 .env
 __pycache__/*
 .gitignore
 pyvenv.cfg
 .gitignore
+stats/
 Scripts/pythonw.exe
 Scripts/python.exe
+reports.txt
+tshirt_requests.txt
