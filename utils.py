@@ -20,6 +20,7 @@ def is_allowed_isp(ip: str):
         logging.info(f'IP-API result: {result}, allowed isp is {ALLOWED_ISP}')
         return ip == '127.0.0.1' or result['isp'] == ALLOWED_ISP
     except KeyError:
+        logging.error(f'Client disallowed IP {ip}')
         return False
 
 
