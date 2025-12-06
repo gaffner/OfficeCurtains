@@ -12,6 +12,7 @@ TSHIRT_REQUESTS_FILE = os.getenv('TSHIRT_FILE')
 STATISTICS_FILE = os.getenv('STATISTICS_FILE')
 STATISTICS_FOLDER = "csv/"
 CSV_FORMAT = "Room,Up,Down"
+COOKIES_KEY = os.getenv('COOKIES_KEY')
 
 
 def get_server_port(suffix):
