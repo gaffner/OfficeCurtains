@@ -40,9 +40,28 @@ def setup_logging():
         # Create log directory if it doesn't exist
         os.makedirs(log_dir, exist_ok=True)
         
-        # Create timestamped log filename
+        # Find the next incremental number for the log file
+        next_number = 1
+        if os.path.exists(log_dir):
+            existing_files = os.listdir(log_dir)
+            # Extract numbers from filenames that match pattern: NNN_*.log
+            numbers = []
+            for filename in existing_files:
+                if filename.endswith('_run.log'):
+                    # Try to extract the number prefix
+                    parts = filename.split('_', 1)
+                    if len(parts) == 2:
+                        try:
+                            num = int(parts[0])
+                            numbers.append(num)
+                        except ValueError:
+                            pass
+            if numbers:
+                next_number = max(numbers) + 1
+        
+        # Create timestamped log filename with incremental prefix
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        log_file = os.path.join(log_dir, f'{timestamp}_run.log')
+        log_file = os.path.join(log_dir, f'{next_number:03d}_{timestamp}_run.log')
         
         # File handler
         file_handler = logging.FileHandler(log_file)
