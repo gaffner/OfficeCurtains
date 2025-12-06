@@ -527,14 +527,14 @@ textarea {
 }
 
 .toggle-switch-inner:before {
-    content: "☀️";
+    content: "â˜€ï¸";
     padding-left: 5px;
     background-color: #2563eb;
     color: white;
 }
 
 .toggle-switch-inner:after {
-    content: "🌙";
+    content: "ðŸŒ™";
     padding-right: 5px;
     padding-bottom: 5px;
     background-color: #121212;

@@ -4,15 +4,14 @@ from datetime import datetime
 import requests
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
-from starlette.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.staticfiles import StaticFiles
 
+from auth import get_auth_app
 from config import *
 from helper import get_suffix, get_username, get_states_by_direction, send_message, get_room_states
 from statistics import StatisticsManager
-from utils import validate_isp, get_client_ip
-
-from auth import require_auth, get_auth_app
+from utils import get_client_ip
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -21,7 +20,7 @@ load_dotenv()
 app = FastAPI(redirect_slashes=False)
 
 # Add session middleware with a secret key
-app.add_middleware(SessionMiddleware, secret_key=COOKIES_KEY)
+app.add_middleware(SessionMiddleware, secret_key=COOKIES_KEY, max_age=7 * 24 * 60 * 60)
 
 # Constants for the server and authentication
 
@@ -44,7 +43,7 @@ def submit_report(request: Request, report: str):
 
 
 @app.get("/submit-tshirt-request/{content}")
-def submit_report(request: Request, content: str):
+def submit_tshirt_request(request: Request, content: str):
     user_ip = get_client_ip(request)
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     report_entry = f"{current_time} - {user_ip} - {content}\n"
@@ -56,24 +55,72 @@ def submit_report(request: Request, content: str):
     return {"message": "Report submitted successfully"}
 
 
+@app.get("/login")
+def login(request: Request):
+    """Initiate AAD login flow"""
+    username = request.session.get('user_name')
+    if username:
+        # User already logged in, redirect to home
+        return RedirectResponse(url="/Frontend/index.html")
+
+    request.session['user_name'] = 'gefen'
+    # return {'status': 'success'}
+
+    # Generate authorization URL and redirect user to AAD login
+    auth_url = get_auth_app().get_authorization_request_url(
+        scopes=['User.Read'],
+        redirect_uri=os.getenv('AZURE_REDIRECT_URI')
+    )
+    return RedirectResponse(url=auth_url)
+
+
+@app.get("/check-auth")
+def check_auth(request: Request):
+    """Check if user is authenticated and return user info"""
+    username = request.session.get('user_name')
+    if not username:
+        return {
+            'authenticated': False,
+            'username': None
+        }
+
+    return {
+        'authenticated': True,
+        'username': username
+    }
+
+
+@app.get("/logout")
+def logout(request: Request):
+    """Clear user session"""
+    request.session.clear()
+    return RedirectResponse(url="/Frontend/index.html")
+
+
 @app.get("/")
-@require_auth()
 def root(request: Request):
     return RedirectResponse(url="/Frontend/index.html")
 
 
 @app.get("/register/{room_name}")
-@require_auth()
 def register(request: Request, room_name: str):
+    # Check if user is authenticated
+    username = request.session.get('user_name')
+    if not username:
+        raise HTTPException(status_code=401, detail="You need to authenticate")
+    
     states = get_room_states(room_name.upper())
     directions = [state['name'] for state in states]
-
     return directions
 
 
 @app.get("/control/{room_name}/{action}")
-@require_auth()
 def control_curtain(request: Request, room_name: str, action: str, direction: str = None):
+    # Check if user is authenticated
+    username = request.session.get('user_name')
+    if not username:
+        raise HTTPException(status_code=401, detail="You need to authenticate")
+    
     room_name = room_name.upper()
     suffix = get_suffix(room_name)
     creds = (get_username(room_name), CURTAINS_PASSWORD)
@@ -123,10 +170,9 @@ def get_all_stats(request: Request):
 
 @app.get("/auth/callback")
 def auth_callback(request: Request, code: str = None, state: str = None, error: str = None):
-    import logging
-
+    """Handle AAD authentication callback"""
     logging.info("Received auth callback")
-    logging.debug(f"Code: {code[:10]}... State: {state}")
+    logging.debug(f"Code: {code[:10] if code else 'None'}... State: {state}")
 
     if error:
         logging.error(f"Auth callback error: {error}")
@@ -154,7 +200,8 @@ def auth_callback(request: Request, code: str = None, state: str = None, error: 
             logging.error("No access token in response")
             raise HTTPException(status_code=401, detail="No access token received")
 
-        request.session["user"] = result["access_token"]
+        # Store access token in session
+        request.session["access_token"] = result["access_token"]
 
         # Get user info from Microsoft Graph
         graph_data = requests.get(
@@ -163,10 +210,14 @@ def auth_callback(request: Request, code: str = None, state: str = None, error: 
         ).json()
 
         # Store username in session
-        request.session["user_name"] = graph_data.get("displayName", "User")
-
+        username = graph_data.get("displayName", "Unknown User")
+        logging.info(f'Graph result: {graph_data}')
+        logging.info(f'Setting username to {username}')
+        request.session['user_name'] = username
         logging.info(f"Successfully authenticated user: {request.session['user_name']}")
 
+        # Redirect to home page after successful login
+        return RedirectResponse(url="/Frontend/index.html")
 
     except Exception as e:
         logging.error(f"Unexpected error in auth callback: {str(e)}")
