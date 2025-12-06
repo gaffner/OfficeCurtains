@@ -1,4 +1,5 @@
 import os
+import base64
 from functools import wraps
 
 from fastapi import HTTPException
@@ -15,7 +16,7 @@ def get_certificate_from_file():
     try:
         logging.info(f"Attempting to read certificate from: {cert_path}")
         with open(cert_path, 'rb') as cert_file:
-            pfx_data = cert_file.read()
+            pfx_data = base64.b64decode(cert_file.read())
             logging.info(f"Read PFX file, size: {len(pfx_data)} bytes")
 
             # Load PFX
