@@ -16,6 +16,18 @@
             z-index: 1001;
         }
 
+        /* Move auth button to bottom on mobile to prevent overlap */
+        @media (max-width: 768px) {
+            .auth-container {
+                position: fixed;
+                bottom: 8rem; /* Position above the bottom buttons container with more spacing */
+                top: auto;
+                right: 50%;
+                transform: translateX(50%); /* Center horizontally */
+                z-index: 1001;
+            }
+        }
+
         .auth-message {
             display: none;
         }
@@ -207,26 +219,15 @@
 
         const toggleButton = document.getElementById('dark-mode-toggle');
         const isDarkMode = localStorage.getItem('dark-mode') === 'true';
-        const shirtCampaignImg = document.getElementById('shirt-campaign-img');
-
-        function updateShirtCampaignImage() {
-            if (toggleButton.checked)
-                shirtCampaignImg.src = 'Images/shirtpromo_dm.png';
-            else
-                shirtCampaignImg.src = 'Images/shirtpromo_lm_b.png';
-        }
 
         if (isDarkMode) {
             document.body.classList.add('dark-mode');
             toggleButton.checked = true;
         }
 
-        updateShirtCampaignImage();
-
         toggleButton.addEventListener('change', () => {
             document.body.classList.toggle('dark-mode');
             localStorage.setItem('dark-mode', toggleButton.checked);
-            updateShirtCampaignImage();
         });
 
         const menuButton = document.querySelector('.menu-button');
