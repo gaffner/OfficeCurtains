@@ -9,6 +9,7 @@ __pycache__/*
 pyvenv.cfg
 .gitignore
 stats/
+logs/
 Scripts/pythonw.exe
 Scripts/python.exe
 reports.txt

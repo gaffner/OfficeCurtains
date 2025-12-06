@@ -11,9 +11,10 @@ from auth import get_auth_app
 from config import *
 from helper import get_suffix, get_username, get_states_by_direction, send_message, get_room_states
 from statistics import StatisticsManager
-from utils import get_client_ip
+from utils import get_client_ip, setup_logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Setup logging before anything else
+setup_logging()
 
 # Setup the FastAPI app
 load_dotenv()

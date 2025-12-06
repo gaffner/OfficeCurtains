@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from datetime import datetime
 from functools import wraps
 
 import requests
@@ -11,7 +12,48 @@ from fastapi.responses import RedirectResponse
 load_dotenv()
 ALLOWED_ISP = os.getenv('ALLOWED_ISP')
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def setup_logging():
+    """Setup logging to both stdout and a timestamped log file"""
+    # Create formatter
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    
+    # Get root logger
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    
+    # Remove existing handlers to avoid duplicates
+    logger.handlers.clear()
+    
+    # Console handler (stdout) - always add this first
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+    
+    # Try to setup file logging
+    try:
+        # Use logs folder in the project directory
+        project_root = os.path.dirname(os.path.abspath(__file__))
+        log_dir = os.path.join(project_root, 'logs')
+        
+        # Create log directory if it doesn't exist
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # Create timestamped log filename
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        log_file = os.path.join(log_dir, f'{timestamp}_run.log')
+        
+        # File handler
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        
+        logging.info(f"Logging initialized. Log file: {log_file}")
+    except Exception as e:
+        # If file logging fails, at least we have console logging
+        logging.warning(f"Failed to setup file logging: {e}. Continuing with console logging only.")
 
 
 def is_allowed_isp(ip: str):
