@@ -198,9 +198,6 @@ def auth_callback(request: Request, code: str = None, state: str = None, error: 
             logging.error("No access token in response")
             raise HTTPException(status_code=401, detail="No access token received")
 
-        # Store access token in session
-        request.session["access_token"] = result["access_token"]
-
         # Get user info from Microsoft Graph
         graph_data = requests.get(
             'https://graph.microsoft.com/v1.0/me',
