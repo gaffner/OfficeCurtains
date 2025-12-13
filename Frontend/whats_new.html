@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curtain Control System - What's New?</title>
+    <link rel="stylesheet" href="css/credits_style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .markdown-content {
+            margin-top: 2rem;
+        }
+        .markdown-content h1 {
+            text-align: left;
+            color: #2563eb;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .markdown-content h2 {
+            color: #1d4ed8;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        .markdown-content ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        .markdown-content strong {
+            color: var(--primary-color);
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-color);
+        }
+        .error {
+            color: var(--error-color);
+            text-align: center;
+            padding: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
+
+    <div class="container">
+        <div class="logo">
+            <svg viewBox="0 0 100 100">
+                <rect x="10" y="10" width="80" height="80" fill="#2563eb" rx="8"/>
+                <path d="M30 30 Q50 50 30 70" stroke="white" fill="none" stroke-width="4"/>
+                <path d="M70 30 Q50 50 70 70" stroke="white" fill="none" stroke-width="4"/>
+            </svg>
+        </div>
+
+        <div id="content" class="markdown-content">
+            <div class="loading">Loading what's new...</div>
+        </div>
+    </div>
+
+    <script>
+        // Apply dark mode if enabled
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Fetch and render markdown content
+        async function loadWhatsNew() {
+            const contentDiv = document.getElementById('content');
+            
+            try {
+                // Fetch version
+                const versionResponse = await fetch('/version');
+                let version = '1.0';
+                if (versionResponse.ok) {
+                    const versionData = await versionResponse.json();
+                    version = versionData.version;
+                }
+                
+                // Update page title with version
+                document.title = `Curtain Control System - What's New? (v${version})`;
+                
+                // Fetch markdown content
+                const response = await fetch('/whats-new');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load content');
+                }
+                
+                const markdown = await response.text();
+                
+                // Replace the title in markdown with version
+                const markdownWithVersion = markdown.replace(
+                    /^# What's New\?/,
+                    `# What's New? (Version ${version})`
+                );
+                
+                // Parse and render markdown using marked
+                if (typeof marked !== 'undefined' && marked.parse) {
+                    contentDiv.innerHTML = marked.parse(markdownWithVersion);
+                } else {
+                    // Fallback to basic rendering if marked is not available
+                    contentDiv.innerHTML = '<pre>' + markdownWithVersion + '</pre>';
+                }
+                
+            } catch (error) {
+                console.error('Error loading what\'s new:', error);
+                contentDiv.innerHTML = '<div class="error">Failed to load what\'s new content. Please try again later.</div>';
+            }
+        }
+
+        // Load content when page loads
+        document.addEventListener('DOMContentLoaded', loadWhatsNew);
+    </script>
+</body>
+</html>
