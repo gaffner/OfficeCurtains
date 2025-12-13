@@ -3,7 +3,7 @@ from datetime import datetime
 
 import requests
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, PlainTextResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
@@ -54,6 +54,40 @@ def submit_tshirt_request(request: Request, content: str):
         file.write(report_entry)
 
     return {"message": "Report submitted successfully"}
+
+
+@app.get("/whats-new")
+def get_whats_new():
+    """Serve the what's new markdown content"""
+    whats_new_file = "whats_new.md"
+    
+    if not os.path.exists(whats_new_file):
+        raise HTTPException(status_code=404, detail="What's new file not found")
+    
+    try:
+        with open(whats_new_file, "r", encoding="utf-8") as file:
+            content = file.read()
+        return PlainTextResponse(content=content, media_type="text/plain; charset=utf-8")
+    except Exception as e:
+        logging.error(f"Error reading what's new file: {e}")
+        raise HTTPException(status_code=500, detail="Failed to read what's new content")
+
+
+@app.get("/version")
+def get_version():
+    """Serve the current version from .version file"""
+    version_file = ".version"
+    
+    if not os.path.exists(version_file):
+        return {"version": "1.0"}
+    
+    try:
+        with open(version_file, "r", encoding="utf-8") as file:
+            version = file.read().strip()
+        return {"version": version}
+    except Exception as e:
+        logging.error(f"Error reading version file: {e}")
+        return {"version": "1.0"}
 
 
 @app.get("/login")
