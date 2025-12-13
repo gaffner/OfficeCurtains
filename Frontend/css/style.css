@@ -45,6 +45,24 @@ body {
     transition: background-color 0.5s ease, color 0.5s ease;
 }
 
+/* Mobile layout adjustments */
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 250px; /* Make room for bottom buttons */
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    .rooms-container {
+        flex: 1;
+        overflow-y: auto;
+        max-height: calc(100vh - 500px); /* Leave space for header, input, and bottom buttons */
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+    }
+}
+
 h1 {
     font-size: 24px;
     margin-bottom: 20px;
