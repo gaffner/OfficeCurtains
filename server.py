@@ -203,7 +203,7 @@ def auth_callback(request: Request, code: str = None, state: str = None, error: 
             'https://graph.microsoft.com/v1.0/me',
             headers={'Authorization': f'Bearer {result["access_token"]}'}
         ).json()
-
+ 
         # Store username in session
         username = graph_data.get("displayName", "Unknown User")
         logging.info(f'Graph result: {graph_data}')

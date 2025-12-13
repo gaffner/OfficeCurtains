@@ -134,6 +134,12 @@ class CurtainControl {
     }
 
     addRoom() {
+        // Check if user is authenticated
+        if (window.isAuthenticated === false) {
+            this.showError('Please sign in to add rooms');
+            return;
+        }
+        
         const room = this.roomInput.value.trim().toUpperCase();
 
         if (!this.isValidRoomNumber(room)) {

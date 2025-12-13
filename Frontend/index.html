@@ -16,15 +16,12 @@
             z-index: 1001;
         }
 
-        /* Move auth button to bottom on mobile to prevent overlap */
+        /* Place auth button in bottom container on mobile */
         @media (max-width: 768px) {
             .auth-container {
-                position: fixed;
-                bottom: 8rem; /* Position above the bottom buttons container with more spacing */
-                top: auto;
-                right: 50%;
-                transform: translateX(50%); /* Center horizontally */
-                z-index: 1001;
+                position: static;
+                order: -1; /* Place before other items in bottom container */
+                margin: 0 auto;
             }
         }
 
@@ -98,11 +95,6 @@
             <span class="toggle-switch-switch"></span>
         </label>
     </div>
-    <!-- Authentication status display -->
-    <div class="auth-container" id="authContainer">
-        <div class="auth-message" id="authMessage" style="display: none;"></div>
-        <div id="authButton"></div>
-    </div>
     <div class="logo-container">
         <img src="Images/logo.png" alt="Curtain Control System Logo" class="logo">
     </div>
@@ -115,8 +107,10 @@
 
 <div id="error" class="error"></div>
 <div id="status" class="status"></div>
-<div id="roomsList"></div>
-<div id="emptyState" class="empty-state">No favorite rooms added yet</div>
+<div class="rooms-container">
+    <div id="roomsList"></div>
+    <div id="emptyState" class="empty-state">No favorite rooms added yet</div>
+</div>
 <div class="filler">filler</div>
 <script src="script.js"></script>
 <div class="menu-button">
@@ -134,8 +128,16 @@
     <a href="/Frontend/all_statistics.html" class="sidebar-link">All Statistics</a>
     <a href="/Frontend/credits.html" class="sidebar-link">Credits</a>
     <a href="/Frontend/tshirt.html" class="sidebar-link">Get a T-shirt!</a>
+    <a href="#" class="sidebar-link sidebar-logout" id="sidebarLogout" onclick="logout(); return false;" style="display: none;">
+        <img src="https://img.icons8.com/material-outlined/24/ffffff/exit.png" alt="Logout" class="logout-icon">
+        Logout
+    </a>
 </div>
 <div class="bottom-buttons-container">
+    <div class="auth-container" id="authContainer">
+        <div class="auth-message" id="authMessage" style="display: none;"></div>
+        <div id="authButton"></div>
+    </div>
     <div class="report-container">
         <a href="https://teams.microsoft.com/l/chat/0/0?users=galtshuler@microsoft.com" class="teams-button">
             <img src="Images/teams.png" alt="Teams Logo">
@@ -162,12 +164,32 @@
             const data = await response.json();
             const authMessage = document.getElementById('authMessage');
             const authButton = document.getElementById('authButton');
+            const sidebarLogout = document.getElementById('sidebarLogout');
 
             const welcomeMessage = document.getElementById('welcomeMessage');
+            const roomsList = document.getElementById('roomsList');
+            const emptyState = document.getElementById('emptyState');
             
             if (data.authenticated && data.username) {
-                // User is logged in - show only logout button
-                authButton.innerHTML = '<button class="logout-button" onclick="logout()">Logout</button>';
+                // User is logged in - hide auth button on main screen (desktop only shows login, mobile uses sidebar)
+                authButton.innerHTML = '';
+                
+                // Show logout in sidebar for mobile
+                if (sidebarLogout) {
+                    sidebarLogout.style.display = 'flex';
+                }
+                
+                // Show rooms
+                if (roomsList) roomsList.style.display = 'block';
+                if (emptyState) emptyState.style.display = 'block';
+                
+                // Store authentication state
+                window.isAuthenticated = true;
+                
+                // Trigger room rendering
+                if (typeof curtainControl !== 'undefined') {
+                    curtainControl.renderRooms();
+                }
 
                 // Display welcome message
                 welcomeMessage.textContent = `Welcome ${data.username}`;
@@ -183,6 +205,18 @@
                         Sign in with Microsoft
                     </a>
                 `;
+                
+                // Hide logout in sidebar
+                if (sidebarLogout) {
+                    sidebarLogout.style.display = 'none';
+                }
+                
+                // Hide rooms when not logged in
+                if (roomsList) roomsList.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'none';
+                
+                // Store authentication state
+                window.isAuthenticated = false;
 
                 // Hide welcome message
                 welcomeMessage.classList.remove('visible');
@@ -194,7 +228,10 @@
         } catch (error) {
             console.error('Error checking auth status:', error);
             const authButton = document.getElementById('authButton');
+            const sidebarLogout = document.getElementById('sidebarLogout');
             const welcomeMessage = document.getElementById('welcomeMessage');
+            const roomsList = document.getElementById('roomsList');
+            const emptyState = document.getElementById('emptyState');
 
             authButton.innerHTML = `
                 <a href="/login" class="login-button">
@@ -202,6 +239,18 @@
                     Sign in with Microsoft
                 </a>
             `;
+            
+            // Hide logout in sidebar on error
+            if (sidebarLogout) {
+                sidebarLogout.style.display = 'none';
+            }
+            
+            // Hide rooms on error
+            if (roomsList) roomsList.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'none';
+            
+            // Store authentication state
+            window.isAuthenticated = false;
 
             // Hide welcome message on error
             welcomeMessage.classList.remove('visible');

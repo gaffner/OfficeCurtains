@@ -45,6 +45,26 @@ body {
     transition: background-color 0.5s ease, color 0.5s ease;
 }
 
+/* Mobile layout adjustments */
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 20px; /* Reduced since bottom buttons are hidden */
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    .rooms-container {
+        flex: 1;
+        overflow-y: auto;
+        max-height: none; /* Remove max-height to allow full expansion */
+        min-height: 300px; /* Minimum height to ensure scrollability */
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+}
+
 h1 {
     font-size: 24px;
     margin-bottom: 20px;
@@ -400,6 +420,27 @@ textarea {
     background-color: rgba(61, 146, 255, 0.1);
 }
 
+/* Logout button in sidebar - red color for visibility */
+.sidebar-logout {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid var(--secondary-color);
+    margin-top: 10px;
+    background-color: #dc2626 !important;
+    color: white !important;
+}
+
+.sidebar-logout:hover {
+    background-color: #b91c1c !important;
+}
+
+.sidebar-logout .logout-icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) saturate(100%) invert(1);
+}
+
 /* Overlay */
 .overlay {
     position: fixed;
@@ -721,6 +762,14 @@ textarea {
     gap: 1rem;  /* Adds consistent spacing between elements */
     padding: 1rem;
     background: linear-gradient(to top, var(--background-color) 90%, transparent);
+}
+
+/* Hide donate and help buttons on mobile */
+@media (max-width: 768px) {
+    .report-container,
+    .donate-button {
+        display: none !important;
+    }
 }
 
 /* Update report container (Teams button) */
