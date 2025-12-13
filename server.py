@@ -78,7 +78,6 @@ def submit_tshirt_request(request: Request, content: str):
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     report_entry = f"{current_time} - {user_ip} - {content}\n"
 
-    os.makedirs(os.path.dirname(TSHIRT_REQUESTS_FILE), exist_ok=True)
     with open(TSHIRT_REQUESTS_FILE, "a") as file:
         file.write(report_entry)
 
