@@ -48,7 +48,7 @@ body {
 /* Mobile layout adjustments */
 @media (max-width: 768px) {
     body {
-        padding-bottom: 250px; /* Make room for bottom buttons */
+        padding-bottom: 20px; /* Reduced since bottom buttons are hidden */
         display: flex;
         flex-direction: column;
         min-height: 100vh;
@@ -57,9 +57,11 @@ body {
     .rooms-container {
         flex: 1;
         overflow-y: auto;
-        max-height: calc(100vh - 500px); /* Leave space for header, input, and bottom buttons */
+        max-height: none; /* Remove max-height to allow full expansion */
+        min-height: 300px; /* Minimum height to ensure scrollability */
         margin-bottom: 20px;
         padding-bottom: 20px;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     }
 }
 
@@ -760,6 +762,14 @@ textarea {
     gap: 1rem;  /* Adds consistent spacing between elements */
     padding: 1rem;
     background: linear-gradient(to top, var(--background-color) 90%, transparent);
+}
+
+/* Hide donate and help buttons on mobile */
+@media (max-width: 768px) {
+    .report-container,
+    .donate-button {
+        display: none !important;
+    }
 }
 
 /* Update report container (Teams button) */
