@@ -165,6 +165,8 @@
             const sidebarLogout = document.getElementById('sidebarLogout');
 
             const welcomeMessage = document.getElementById('welcomeMessage');
+            const roomsList = document.getElementById('roomsList');
+            const emptyState = document.getElementById('emptyState');
             
             if (data.authenticated && data.username) {
                 // User is logged in - hide auth button on main screen (desktop only shows login, mobile uses sidebar)
@@ -173,6 +175,18 @@
                 // Show logout in sidebar for mobile
                 if (sidebarLogout) {
                     sidebarLogout.style.display = 'flex';
+                }
+                
+                // Show rooms
+                if (roomsList) roomsList.style.display = 'block';
+                if (emptyState) emptyState.style.display = 'block';
+                
+                // Store authentication state
+                window.isAuthenticated = true;
+                
+                // Trigger room rendering
+                if (typeof curtainControl !== 'undefined') {
+                    curtainControl.renderRooms();
                 }
 
                 // Display welcome message
@@ -194,6 +208,13 @@
                 if (sidebarLogout) {
                     sidebarLogout.style.display = 'none';
                 }
+                
+                // Hide rooms when not logged in
+                if (roomsList) roomsList.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'none';
+                
+                // Store authentication state
+                window.isAuthenticated = false;
 
                 // Hide welcome message
                 welcomeMessage.classList.remove('visible');
@@ -207,6 +228,8 @@
             const authButton = document.getElementById('authButton');
             const sidebarLogout = document.getElementById('sidebarLogout');
             const welcomeMessage = document.getElementById('welcomeMessage');
+            const roomsList = document.getElementById('roomsList');
+            const emptyState = document.getElementById('emptyState');
 
             authButton.innerHTML = `
                 <a href="/login" class="login-button">
@@ -219,6 +242,13 @@
             if (sidebarLogout) {
                 sidebarLogout.style.display = 'none';
             }
+            
+            // Hide rooms on error
+            if (roomsList) roomsList.style.display = 'none';
+            if (emptyState) emptyState.style.display = 'none';
+            
+            // Store authentication state
+            window.isAuthenticated = false;
 
             // Hide welcome message on error
             welcomeMessage.classList.remove('visible');
