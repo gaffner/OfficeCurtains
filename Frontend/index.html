@@ -124,8 +124,7 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <a href="/Frontend/statistics.html" class="sidebar-link">Daily Statistics</a>
-    <a href="/Frontend/all_statistics.html" class="sidebar-link">All Statistics</a>
+    <a href="#" class="sidebar-link" id="statsLink">Statistics</a>
     <a href="/Frontend/whats_new.html" class="sidebar-link">What's New?</a>
     <a href="/Frontend/credits.html" class="sidebar-link">Credits</a>
     <a href="/Frontend/tshirt.html" class="sidebar-link">Get a T-shirt!</a>
@@ -293,6 +292,25 @@
         menuButton.addEventListener('click', toggleMenu);
         if (overlay) {
             overlay.addEventListener('click', toggleMenu);
+        }
+
+        // Add click handler for statistics link
+        const statsLink = document.getElementById('statsLink');
+
+        if (statsLink) {
+            statsLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (window.isAuthenticated) {
+                    window.location.href = '/Frontend/all_statistics.html';
+                } else {
+                    const errorDiv = document.getElementById('error');
+                    errorDiv.textContent = 'Please sign in with Microsoft to view statistics.';
+                    errorDiv.style.display = 'block';
+                    setTimeout(() => {
+                        errorDiv.style.display = 'none';
+                    }, 5000);
+                }
+            });
         }
     });
 </script>

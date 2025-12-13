@@ -81,7 +81,10 @@
                 
                 if (!response.ok) {
                     if (response.status === 401) {
-                        window.location.href = '/Frontend/index.html';
+                        alert('You need to sign in to view statistics. Redirecting to login page...');
+                        setTimeout(() => {
+                            window.location.href = '/Frontend/index.html';
+                        }, 100);
                         return;
                     }
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -128,7 +131,10 @@
                     error.name === 'TypeError' ||
                     error.status === 401) {
                     console.log('Authentication issue detected, redirecting to login...');
-                    window.location.href = '/Frontend/index.html';
+                    alert('You need to sign in to view statistics. Redirecting to login page...');
+                    setTimeout(() => {
+                        window.location.href = '/Frontend/index.html';
+                    }, 100);
                     return;
                 }
                 

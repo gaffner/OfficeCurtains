@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from functools import wraps
 
 import requests
 from fastapi import FastAPI, HTTPException, Request
@@ -28,6 +29,34 @@ app.add_middleware(SessionMiddleware, secret_key=COOKIES_KEY, max_age=7 * 24 * 6
 app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
 
 stats_manager = StatisticsManager()
+
+
+# Authentication decorator
+def require_auth(func):
+    """Decorator to require authentication for endpoints"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Get request from kwargs
+        request = kwargs.get('request')
+        if not request:
+            # Try to find request in args
+            for arg in args:
+                if isinstance(arg, Request):
+                    request = arg
+                    break
+        
+        if not request:
+            raise HTTPException(status_code=500, detail="Request object not found")
+        
+        # Check if user is authenticated
+        username = request.session.get('user_name')
+        if not username:
+            raise HTTPException(status_code=401, detail="You need to authenticate")
+        
+        # Call the original function
+        return func(*args, **kwargs)
+    
+    return wrapper
 
 
 @app.get("/submit-report/{report}")
@@ -135,24 +164,16 @@ def root(request: Request):
 
 
 @app.get("/register/{room_name}")
+@require_auth
 def register(request: Request, room_name: str):
-    # Check if user is authenticated
-    username = request.session.get('user_name')
-    if not username:
-        raise HTTPException(status_code=401, detail="You need to authenticate")
-    
     states = get_room_states(room_name.upper())
     directions = [state['name'] for state in states]
     return directions
 
 
 @app.get("/control/{room_name}/{action}")
+@require_auth
 def control_curtain(request: Request, room_name: str, action: str, direction: str = None):
-    # Check if user is authenticated
-    username = request.session.get('user_name')
-    if not username:
-        raise HTTPException(status_code=401, detail="You need to authenticate")
-    
     room_name = room_name.upper()
     suffix = get_suffix(room_name)
     creds = (get_username(room_name), CURTAINS_PASSWORD)
@@ -182,16 +203,8 @@ def control_curtain(request: Request, room_name: str, action: str, direction: st
         raise HTTPException(status_code=res.status_code, detail=f"Failed to send command {res.text}")
 
 
-@app.get("/stats")
-def get_stats(request: Request):
-    """Get statistics for the current day"""
-    return {
-        "data": stats_manager.get_daily_stats(),
-        "room_count": stats_manager.get_room_count()
-    }
-
-
 @app.get("/stats/all")
+@require_auth
 def get_all_stats(request: Request):
     """Get statistics for all days"""
     return {
