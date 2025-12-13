@@ -73,6 +73,7 @@ def submit_report(request: Request, report: str):
 
 
 @app.get("/submit-tshirt-request/{content}")
+@require_auth
 def submit_tshirt_request(request: Request, content: str):
     user_ip = get_client_ip(request)
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
