@@ -400,6 +400,27 @@ textarea {
     background-color: rgba(61, 146, 255, 0.1);
 }
 
+/* Logout button in sidebar - red color for visibility */
+.sidebar-logout {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid var(--secondary-color);
+    margin-top: 10px;
+    background-color: #dc2626 !important;
+    color: white !important;
+}
+
+.sidebar-logout:hover {
+    background-color: #b91c1c !important;
+}
+
+.sidebar-logout .logout-icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) saturate(100%) invert(1);
+}
+
 /* Overlay */
 .overlay {
     position: fixed;
