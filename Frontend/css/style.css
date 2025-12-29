@@ -808,3 +808,51 @@ textarea {
     height: auto;
     display: block;
 }
+
+/* Nickname feature styles */
+.room-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.room-nickname {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background-color: transparent;
+    color: var(--text-color);
+    font-size: 14px;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.room-nickname:hover {
+    background-color: var(--background-color);
+    border-color: var(--secondary-color);
+}
+
+.room-nickname:focus {
+    background-color: var(--background-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.room-nickname::placeholder {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+.room-number {
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 60px;
+}
+
+.room-card {
+    flex-wrap: wrap;
+    gap: 12px;
+}
