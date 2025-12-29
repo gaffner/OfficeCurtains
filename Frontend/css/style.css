@@ -811,7 +811,7 @@ textarea {
 
 /* Nickname feature styles */
 .room-info {
-    display: flex;
+    display: block;
     align-items: center;
     gap: 12px;
     flex: 1;
