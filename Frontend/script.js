@@ -236,7 +236,7 @@ class CurtainControl {
                 <div class="room-info">
                     <span class="room-number">${room}</span>
                     <input 
-                        type="text" 
+                        type="search" 
                         class="room-nickname" 
                         placeholder="Add nickname..."
                         value="${nickname}"
