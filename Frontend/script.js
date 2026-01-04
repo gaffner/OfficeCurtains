@@ -2,6 +2,7 @@ class CurtainControl {
     constructor() {
         this.favorites = [];
         this.roomDirections = {};
+        this.roomNicknames = {};
         this.roomInput = null;
         this.errorDiv = null;
         this.statusDiv = null;
@@ -12,6 +13,7 @@ class CurtainControl {
         this.removeRoom = this.removeRoom.bind(this);
         this.moveCurtain = this.moveCurtain.bind(this);
         this.handleDirectionChange = this.handleDirectionChange.bind(this);
+        this.setNickname = this.setNickname.bind(this);
 
         document.addEventListener('DOMContentLoaded', () => this.init());
     }
@@ -27,6 +29,7 @@ class CurtainControl {
         const savedData = JSON.parse(localStorage.getItem('curtainData')) || {};
         this.favorites = savedData.favorites || [];
         this.roomDirections = savedData.roomDirections || {};
+        this.roomNicknames = savedData.roomNicknames || {};
 
         this.roomInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.addRoom();
@@ -38,7 +41,8 @@ class CurtainControl {
     saveToLocalStorage() {
         const dataToSave = {
             favorites: this.favorites,
-            roomDirections: this.roomDirections
+            roomDirections: this.roomDirections,
+            roomNicknames: this.roomNicknames
         };
         localStorage.setItem('curtainData', JSON.stringify(dataToSave));
     }
@@ -193,8 +197,18 @@ class CurtainControl {
     removeRoom(room) {
         this.favorites = this.favorites.filter(r => r !== room);
         delete this.roomDirections[room];
+        delete this.roomNicknames[room];
         this.saveToLocalStorage();
         this.renderRooms();
+    }
+
+    setNickname(room, nickname) {
+        if (nickname.trim()) {
+            this.roomNicknames[room] = nickname.trim();
+        } else {
+            delete this.roomNicknames[room];
+        }
+        this.saveToLocalStorage();
     }
 
     renderRooms() {
@@ -204,6 +218,7 @@ class CurtainControl {
         this.favorites.forEach(room => {
             const directions = this.roomDirections[room]?.directions || [];
             const selected = this.roomDirections[room]?.selected;
+            const nickname = this.roomNicknames[room] || '';
 
             const directionDropdown = directions.length > 1 ? `
                 <select id="direction-${room}" class="room-directions" onchange="curtainControl.handleDirectionChange('${room}')">
@@ -218,7 +233,18 @@ class CurtainControl {
             const card = document.createElement('div');
             card.className = 'room-card';
             card.innerHTML = `
-                <span class="room-number">${room}</span>
+                <div class="room-info">
+                    <span class="room-number">${room}</span>
+                    <input 
+                        type="search" 
+                        class="room-nickname" 
+                        placeholder="Add nickname..."
+                        value="${nickname}"
+                        id="nickname-${room}"
+                        onblur="curtainControl.setNickname('${room}', this.value)"
+                        onkeypress="if(event.key === 'Enter') this.blur()"
+                    />
+                </div>
                 <div class="room-controls">
                     ${directionDropdown}
                     <button class="control-button btn-up" onclick="curtainControl.moveCurtain('${room}', 'up')">☝️</button>
