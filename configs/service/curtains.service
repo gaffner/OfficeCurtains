@@ -1,14 +1,14 @@
 [Unit]
-Description=FastAPI application
+Description=Office Curtains Control FastAPI Application
 After=network.target
 
 [Service]
-Type=notify
+Type=simple
 User=www
 Group=www
 WorkingDirectory=/home/www/curtains/OfficeCurtains
 Environment="PATH=/home/www/.local/bin:/usr/bin"
-ExecStart=/home/www/.local/bin/gunicorn -k uvicorn.workers.UvicornWorker -w 4 -b 127.0.0.1:8000 server:app
+ExecStart=/usr/bin/gunicorn server:app -k uvicorn.workers.UvicornWorker -w 4 -b 127.0.0.1:8000
 Restart=always
 RestartSec=10
 
