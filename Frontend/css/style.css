@@ -764,14 +764,6 @@ textarea {
     background: linear-gradient(to top, var(--background-color) 90%, transparent);
 }
 
-/* Hide help button, donate button, and premium button on mobile and tablets */
-@media (max-width: 1200px) {
-    .report-container,
-    .donate-button {
-        display: none !important;
-    }
-}
-
 /* Update report container (Teams button) */
 .report-container {
     position: static;  /* Remove fixed positioning */
@@ -855,4 +847,12 @@ textarea {
 .room-card {
     flex-wrap: wrap;
     gap: 12px;
+}
+
+/* Hide help button, donate button, and premium button on mobile and tablets - MUST BE LAST */
+@media (max-width: 1200px) {
+    .report-container,
+    .donate-button {
+        display: none !important;
+    }
 }
