@@ -31,3 +31,4 @@ python-dotenv~=1.0.1
 msal==1.25.0
 itsdangerous==2.1.2
 cryptography==42.0.5
+gunicorn==21.2.0
