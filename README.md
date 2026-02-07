@@ -137,4 +137,4 @@ sudo systemctl restart curtains
 
 ## Screenshot
 
-![Office Curtains Control](Images/example.png)
+![Office Curtains Control](Images/example.png?raw=true)
