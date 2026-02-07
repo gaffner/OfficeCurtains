@@ -765,7 +765,7 @@ textarea {
 }
 
 /* Hide help button, donate button, and premium button on mobile and tablets */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
     .report-container,
     .donate-button {
         display: none !important;
