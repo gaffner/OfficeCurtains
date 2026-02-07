@@ -854,7 +854,7 @@ textarea {
     display: none !important;
 }
 
-@media (min-width: 1400px) {
+@media (min-width: 1920px) {
     .donate-button {
         display: block !important;
     }
