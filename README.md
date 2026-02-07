@@ -132,6 +132,9 @@ sudo systemctl restart curtains
 - Never commit `.env` file to git (already in `.gitignore`)
 - Keep `COOKIES_KEY` secret and unique per deployment
 - Use HTTPS only in production
-- Restrict admin access by configuring `ADMIN_USERS` carefully
+- Restrict admin access by configuring `ADMIN_USERS` carefully (case-insensitive)
 - Regular security updates: `sudo apt update && sudo apt upgrade`
-![example.png](Images/example.png)
+
+## Screenshot
+
+![Office Curtains Control](Images/example.png)
