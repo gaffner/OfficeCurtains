@@ -85,8 +85,8 @@ def require_admin(func):
         if not username:
             raise HTTPException(status_code=401, detail="You need to authenticate")
         
-        # Check if user is admin
-        if username not in ADMIN_USERS:
+        # Check if user is admin (case-insensitive)
+        if username.lower() not in ADMIN_USERS:
             raise HTTPException(status_code=403, detail="Admin access required")
         
         # Call the original function
@@ -231,7 +231,7 @@ def check_auth(request: Request):
         'username': username,
         'is_premium': users.is_premium(username),
         'points': users.get_points(username),
-        'is_admin': username in ADMIN_USERS
+        'is_admin': username.lower() in ADMIN_USERS
     }
 
 

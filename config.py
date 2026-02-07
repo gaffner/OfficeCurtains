@@ -30,8 +30,8 @@ else:
     STATISTICS_FILE = os.getenv('STATISTICS_FILE')
     COOKIES_KEY = os.getenv('COOKIES_KEY')
 
-# Admin users (parsed from comma-separated list)
-ADMIN_USERS = [user.strip() for user in os.getenv('ADMIN_USERS', 'developer').split(',') if user.strip()]
+# Admin users (parsed from comma-separated list, stored lowercase for case-insensitive comparison)
+ADMIN_USERS = [user.strip().lower() for user in os.getenv('ADMIN_USERS', 'developer').split(',') if user.strip()]
 
 STATISTICS_FOLDER = "csv/"
 CSV_FORMAT = "Room,Up,Down"
