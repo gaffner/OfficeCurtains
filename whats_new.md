@@ -1,5 +1,15 @@
 # What's New?
 
+## February 2026
+
+### Version 2.1.0 - Curtains Premium Launch
+- **Curtains Premium**: Introducing the new premium membership program!
+- **Referral System**: Share your unique referral link - when a friend signs up, you get Premium!
+- **User Tracking**: Simple user tracking - keeps track of your name and rooms you've controlled
+- **Premium Page**: New dedicated page for premium features
+- **WhatsApp Community**: Join our WhatsApp group for updates and support
+- **Version Display**: App version now shown in the bottom right corner
+
 ## December 2025
 
 ### Version 2.0 - Major Mobile UI Update

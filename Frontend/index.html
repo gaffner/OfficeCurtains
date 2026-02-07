@@ -9,6 +9,49 @@
     <link rel="icon" type="image/svg+xml" href="Images/favicon.ico">
     <link rel="alternate icon" type="image/png" href="Images/favicon.ico">
     <style>
+        .premium-button {
+            position: fixed;
+            top: 1.25rem;
+            left: 1.25rem;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .premium-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+        }
+
+        .premium-button.is-premium {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+        }
+
+        .premium-button.is-premium:hover {
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .premium-button {
+                position: static;
+                font-size: 0.75rem;
+                padding: 0.4rem 0.8rem;
+            }
+        }
+
         .version-display {
             position: fixed;
             bottom: 0.5rem;
@@ -21,6 +64,195 @@
 
         .dark-mode .version-display {
             color: #9ca3af;
+        }
+
+        .referral-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 20vh;
+            z-index: 9999;
+        }
+
+        .referral-popup-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: popIn 0.3s ease;
+            position: relative;
+        }
+
+        .referral-popup-content.success {
+            border: 3px solid #10b981;
+            background: linear-gradient(to bottom, #d1fae5 0%, white 20%);
+        }
+
+        .referral-popup-content.warning {
+            border: 3px solid #f59e0b;
+            background: linear-gradient(to bottom, #fef3c7 0%, white 20%);
+        }
+
+        .referral-popup-content.failure {
+            border: 3px solid #ef4444;
+            background: linear-gradient(to bottom, #fee2e2 0%, white 20%);
+        }
+
+        .dark-mode .referral-popup-content.success {
+            background: linear-gradient(to bottom, #065f46 0%, #1f2937 20%);
+        }
+
+        .dark-mode .referral-popup-content.warning {
+            background: linear-gradient(to bottom, #78350f 0%, #1f2937 20%);
+        }
+
+        .dark-mode .referral-popup-content.failure {
+            background: linear-gradient(to bottom, #7f1d1d 0%, #1f2937 20%);
+        }
+
+        .referral-popup-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .referral-popup-close:hover {
+            background: #f0f0f0;
+            color: #000;
+        }
+
+        .dark-mode .referral-popup-close {
+            color: #aaa;
+        }
+
+        .dark-mode .referral-popup-close:hover {
+            background: #374151;
+            color: #fff;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .dark-mode .referral-popup-content {
+            background: #1f2937;
+            color: white;
+        }
+
+        .referral-popup-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .referral-popup h2 {
+            color: #f59e0b;
+            margin-bottom: 0.5rem;
+        }
+
+        .referral-popup p {
+            margin-bottom: 1.5rem;
+            color: #6b7280;
+        }
+
+        .dark-mode .referral-popup p {
+            color: #9ca3af;
+        }
+
+        .referral-popup button {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .referral-popup button:hover {
+            background: #d97706;
+        }
+
+        .referral-popup input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .dark-mode .referral-popup input {
+            background: #374151;
+            border-color: #4b5563;
+            color: white;
+        }
+
+        .pending-referral-banner {
+            position: fixed;
+            bottom: 5rem;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            padding: 1.25rem 2rem;
+            text-align: center;
+            z-index: 9998;
+            border-top: 3px solid #f59e0b;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 -4px 12px rgba(245, 158, 11, 0.3);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #78350f;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .pending-referral-banner strong {
+            color: #92400e;
+            font-weight: 700;
+        }
+
+        .dark-mode .pending-referral-banner {
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            color: #fef3c7;
+            border-top-color: #fbbf24;
+        }
+
+        .dark-mode .pending-referral-banner strong {
+            color: #fde68a;
+        }
+
+        @media (max-width: 768px) {
+            .pending-referral-banner {
+                bottom: 10rem;
+                font-size: 1rem;
+                padding: 1rem 1.5rem;
+            }
         }
 
         .auth-container {
@@ -36,6 +268,11 @@
                 position: static;
                 order: -1; /* Place before other items in bottom container */
                 margin: 0 auto;
+            }
+
+            .pending-referral-banner {
+                bottom: 10rem;
+                font-size: 0.875rem;
             }
         }
 
@@ -109,6 +346,7 @@
             <span class="toggle-switch-switch"></span>
         </label>
     </div>
+    
     <div class="logo-container">
         <img src="Images/logo.png" alt="Curtain Control System Logo" class="logo">
     </div>
@@ -140,6 +378,7 @@
 <!-- Sidebar -->
 <div class="sidebar">
     <a href="#" class="sidebar-link" id="statsLink">Statistics</a>
+    <a href="/Frontend/premium.html" class="sidebar-link" style="color: #f59e0b;">👑 Curtains Premium</a>
     <a href="/Frontend/whats_new.html" class="sidebar-link">What's New?</a>
     <a href="/Frontend/credits.html" class="sidebar-link">Credits</a>
     <a href="/Frontend/tshirt.html" class="sidebar-link">Get a T-shirt!</a>
@@ -162,12 +401,15 @@
     <a href="https://github.com/gaffner/OfficeCurtains" target="_blank" class="donate-button">
         <img src="https://img.shields.io/badge/Donate_the_Code-GitHub-1f8ccf.svg" alt="Donate the Code on GitHub">
     </a>
-
+    <a href="/Frontend/premium.html" class="premium-button" id="premiumButton">
+        👑 Get Premium
+    </a>
 </div>
 
 <script>
     // Check authentication status on page load
     async function checkAuthStatus() {
+        console.log('checkAuthStatus: Starting...');
         try {
             const response = await fetch('/check-auth', {
                 credentials: 'include',
@@ -177,6 +419,7 @@
             });
 
             const data = await response.json();
+            console.log('checkAuthStatus: Received data:', data);
             const authMessage = document.getElementById('authMessage');
             const authButton = document.getElementById('authButton');
             const sidebarLogout = document.getElementById('sidebarLogout');
@@ -210,8 +453,18 @@
                 welcomeMessage.textContent = `Welcome ${data.username}`;
                 welcomeMessage.classList.add('visible');
 
+                // Update premium button based on status
+                const premiumButton = document.getElementById('premiumButton');
+                if (premiumButton && data.is_premium) {
+                    premiumButton.innerHTML = '✨ Premium Member';
+                    premiumButton.classList.add('is-premium');
+                }
+
                 // Store username in localStorage for persistence
                 localStorage.setItem('userName', data.username);
+
+                // Fetch and display pending messages
+                fetchAndDisplayMessages();
             } else {
                 // User is not logged in - show login button
                 authButton.innerHTML = `
@@ -277,9 +530,141 @@
         window.location.href = '/logout';
     }
 
+    // Fetch and display pending messages
+    async function fetchAndDisplayMessages() {
+        try {
+            console.log('fetchAndDisplayMessages: Starting...');
+            const response = await fetch('/api/messages', {
+                credentials: 'include'
+            });
+            
+            console.log('fetchAndDisplayMessages: Response status:', response.status);
+            
+            if (!response.ok) {
+                console.log('No messages or not authenticated');
+                return;
+            }
+            
+            const data = await response.json();
+            console.log('Received messages:', data.messages);
+            
+            if (data.messages && data.messages.length > 0) {
+                console.log(`Displaying ${data.messages.length} messages`);
+                // Display messages one by one with delay
+                for (let i = 0; i < data.messages.length; i++) {
+                    setTimeout(() => {
+                        console.log(`Showing message ${i+1}:`, data.messages[i]);
+                        showMessage(data.messages[i]);
+                    }, i * 500); // Stagger popups by 500ms
+                }
+            } else {
+                console.log('No messages to display');
+            }
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        }
+    }
+
+    function showMessage(message) {
+        const { type, title, text } = message;
+        
+        // Determine emoji based on type
+        let emoji;
+        if (type === 'success') {
+            emoji = '😊'; // Happy emoji for success
+        } else if (type === 'warning') {
+            emoji = '😢'; // Sad emoji for warning
+        } else if (type === 'failure') {
+            emoji = '❌';
+        } else {
+            emoji = 'ℹ️';
+        }
+        
+        console.log(`Showing ${type} popup:`, title, text);
+        
+        const popup = document.createElement('div');
+        popup.className = 'referral-popup';
+        popup.innerHTML = `
+            <div class="referral-popup-content ${type}">
+                <button class="referral-popup-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                <div class="referral-popup-icon">${emoji}</div>
+                <h2>${title}</h2>
+                <p>${text}</p>
+                <button onclick="this.parentElement.parentElement.remove()">Got it!</button>
+            </div>
+        `;
+        document.body.appendChild(popup);
+        
+        // Close on background click
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) popup.remove();
+        });
+    }
+
+    function showTestLoginPopup() {
+        const popup = document.createElement('div');
+        popup.className = 'referral-popup';
+        popup.innerHTML = `
+            <div class="referral-popup-content">
+                <button class="referral-popup-close" onclick="this.parentElement.parentElement.remove()">×</button>
+                <div class="referral-popup-icon">🧪</div>
+                <h2>Test Mode Login</h2>
+                <p>Enter a username to simulate login:</p>
+                <input type="text" id="testUsername" placeholder="Enter username (e.g., John Doe)" autofocus>
+                <button onclick="submitTestLogin()">Login</button>
+            </div>
+        `;
+        document.body.appendChild(popup);
+        
+        // Handle Enter key
+        const input = document.getElementById('testUsername');
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') submitTestLogin();
+        });
+        input.focus();
+    }
+
+    function submitTestLogin() {
+        const username = document.getElementById('testUsername').value.trim() || 'Developer';
+        window.location.href = '/login/test?username=' + encodeURIComponent(username);
+    }
+
+    function showPendingReferralBanner(referrerName) {
+        const banner = document.createElement('div');
+        banner.className = 'pending-referral-banner';
+        banner.innerHTML = `
+            🎁 You got a referral from <strong>${referrerName}</strong>! 
+            Sign in for the first time to give them Premium.
+        `;
+        document.body.prepend(banner);
+        
+        // Auto-dismiss after 10 seconds
+        setTimeout(() => {
+            banner.style.animation = 'slideUp 0.3s ease reverse';
+            setTimeout(() => banner.remove(), 300);
+        }, 10000);
+    }
+
     // Run auth check on page load
     document.addEventListener('DOMContentLoaded', function() {
         checkAuthStatus();
+        
+        // Check for query params
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Check for pending referral (before login)
+        const pendingReferral = urlParams.get('pendingReferral');
+        if (pendingReferral) {
+            showPendingReferralBanner(pendingReferral);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        // Check for test login prompt
+        const showTestLogin = urlParams.get('showTestLogin');
+        if (showTestLogin === 'true') {
+            showTestLoginPopup();
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
         
         // Fetch and display version
         fetch('/version')

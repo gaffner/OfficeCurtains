@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curtains Premium</title>
+    <link rel="stylesheet" href="css/credits_style.css">
+    <link rel="icon" type="image/svg+xml" href="Images/favicon.ico">
+    <style>
+        .premium-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .premium-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .premium-header h1 {
+            color: #f59e0b;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .premium-header .crown {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .premium-status {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            border: 2px solid #f59e0b;
+        }
+
+        .premium-status.active {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-color: #28a745;
+        }
+
+        .premium-status h2 {
+            color: #92400e;
+            margin-bottom: 0.5rem;
+        }
+
+        .premium-status.active h2 {
+            color: #155724;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .option-card {
+            background: var(--card-bg, #ffffff);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .option-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .option-card h3 {
+            color: var(--primary-color, #2563eb);
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .option-card p {
+            color: var(--text-color, #374151);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .option-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color, #2563eb);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.3s ease;
+        }
+
+        .option-button:hover {
+            background: var(--hover-color, #1d4ed8);
+        }
+
+        .option-button.whatsapp {
+            background: #25D366;
+        }
+
+        .option-button.whatsapp:hover {
+            background: #128C7E;
+        }
+
+        .option-button.github {
+            background: #333;
+        }
+
+        .option-button.github:hover {
+            background: #000;
+        }
+
+        .rooms-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f3f4f6;
+            border-radius: 1rem;
+        }
+
+        .dark-mode .rooms-section {
+            background: #374151;
+        }
+
+        .rooms-section h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color, #2563eb);
+        }
+
+        .rooms-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .room-tag {
+            background: #e5e7eb;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+
+        .dark-mode .room-tag {
+            background: #4b5563;
+            color: #e5e7eb;
+        }
+
+        .login-prompt {
+            text-align: center;
+            padding: 2rem;
+            background: #fef3c7;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .login-prompt a {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .referral-link-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .referral-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            background: #f9fafb;
+        }
+
+        .dark-mode .referral-input {
+            background: #374151;
+            border-color: #4b5563;
+            color: #e5e7eb;
+        }
+
+        .copy-btn {
+            background: #f59e0b !important;
+        }
+
+        .copy-btn:hover {
+            background: #d97706 !important;
+        }
+
+        .copy-btn.copied {
+            background: #10b981 !important;
+        }
+
+        /* Dark mode */
+        .dark-mode .option-card {
+            background: #1f2937;
+        }
+
+        .dark-mode .premium-status {
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+        }
+
+        .dark-mode .premium-status h2 {
+            color: #fef3c7;
+        }
+
+        .dark-mode .login-prompt {
+            background: #78350f;
+            color: #fef3c7;
+        }
+    </style>
+</head>
+<body>
+    <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
+
+    <div class="premium-container">
+        <div class="premium-header">
+            <div class="crown">👑</div>
+            <h1>Curtains Premium</h1>
+            <p>Unlock exclusive features and support the project!</p>
+        </div>
+
+        <div id="premiumStatus" class="premium-status" style="display: none;">
+            <h2 id="statusTitle">Loading...</h2>
+            <p id="statusMessage"></p>
+        </div>
+
+        <div id="loginPrompt" class="login-prompt" style="display: none;">
+            <p>Please <a href="/login">sign in with Microsoft</a> to view your premium status.</p>
+        </div>
+
+        <div class="options-grid">
+            <!-- Option 1: WhatsApp Group -->
+            <div class="option-card">
+                <div class="option-icon">📱</div>
+                <h3>Join the WhatsApp Group</h3>
+                <p>Stay updated with the latest features, get support from the community, and be the first to know about new releases!</p>
+                <a href="https://chat.whatsapp.com/DSfbPdIVDKm5srwiifLCN5?mode=gi_t" target="_blank" class="option-button whatsapp">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    Join WhatsApp Group
+                </a>
+            </div>
+
+            <!-- Option 2: Donate to Code -->
+            <div class="option-card">
+                <div class="option-icon">💻</div>
+                <h3>Donate to the Code</h3>
+                <p>Support the development by starring the repo, contributing code, or spreading the word. Every contribution helps!</p>
+                <a href="https://github.com/gaffner/OfficeCurtains" target="_blank" class="option-button github">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    View on GitHub
+                </a>
+            </div>
+
+            <!-- Option 3: Referral Link -->
+            <div class="option-card" id="referralCard" style="display: none;">
+                <div class="option-icon">🎁</div>
+                <h3>Invite a Friend</h3>
+                <p>Share your unique referral link with a friend. When they sign up, YOU get Curtains Premium!</p>
+                <div class="referral-link-container">
+                    <input type="text" id="referralLink" class="referral-input" readonly>
+                    <button onclick="copyReferralLink()" class="option-button copy-btn" id="copyBtn">📋 Copy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User's rooms section -->
+        <div id="roomsSection" class="rooms-section" style="display: none;">
+            <h3>🏢 Rooms You've Controlled</h3>
+            <div id="roomsList" class="rooms-list">
+                <!-- Rooms will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Apply dark mode if enabled
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Check authentication and load user data
+        async function loadUserData() {
+            try {
+                const response = await fetch('/check-auth', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                const premiumStatus = document.getElementById('premiumStatus');
+                const loginPrompt = document.getElementById('loginPrompt');
+                const roomsSection = document.getElementById('roomsSection');
+
+                if (data.authenticated) {
+                    loginPrompt.style.display = 'none';
+                    premiumStatus.style.display = 'block';
+
+                    // Update premium status
+                    const statusTitle = document.getElementById('statusTitle');
+                    const statusMessage = document.getElementById('statusMessage');
+
+                    if (data.is_premium) {
+                        premiumStatus.classList.add('active');
+                        statusTitle.textContent = '✨ You have Curtains Premium! ✨';
+                        statusMessage.textContent = 'Thank you for being a premium member!';
+                    } else {
+                        statusTitle.textContent = 'You don\'t have Premium yet';
+                        statusMessage.textContent = 'Complete one of the options below to unlock Premium!';
+                    }
+
+                    // Load user's rooms and referral link
+                    loadUserRooms();
+                    loadReferralLink();
+                } else {
+                    loginPrompt.style.display = 'block';
+                    premiumStatus.style.display = 'none';
+                    roomsSection.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        async function loadUserRooms() {
+            try {
+                const response = await fetch('/api/user/rooms', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const roomsSection = document.getElementById('roomsSection');
+                    const roomsList = document.getElementById('roomsList');
+                    
+                    if (data.rooms && data.rooms.length > 0) {
+                        roomsSection.style.display = 'block';
+                        roomsList.innerHTML = data.rooms.map(room => 
+                            `<span class="room-tag">${room}</span>`
+                        ).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading rooms:', error);
+            }
+        }
+
+        async function loadReferralLink() {
+            try {
+                const response = await fetch('/api/user/referral', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const referralCard = document.getElementById('referralCard');
+                    const referralInput = document.getElementById('referralLink');
+                    
+                    referralCard.style.display = 'block';
+                    referralInput.value = window.location.origin + data.referral_link;
+                }
+            } catch (error) {
+                console.error('Error loading referral link:', error);
+            }
+        }
+
+        function copyReferralLink() {
+            const input = document.getElementById('referralLink');
+            const btn = document.getElementById('copyBtn');
+            
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value);
+            
+            btn.textContent = '✓ Copied!';
+            btn.classList.add('copied');
+            
+            setTimeout(() => {
+                btn.textContent = '📋 Copy';
+                btn.classList.remove('copied');
+            }, 2000);
+        }
+
+        // Load user data on page load
+        document.addEventListener('DOMContentLoaded', loadUserData);
+    </script>
+</body>
+</html>

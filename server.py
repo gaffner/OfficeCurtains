@@ -4,7 +4,7 @@ from functools import wraps
 
 import requests
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import RedirectResponse, PlainTextResponse
+from fastapi.responses import RedirectResponse, PlainTextResponse, JSONResponse
 from starlette.middleware.sessions import SessionMiddleware
 from starlette.staticfiles import StaticFiles
 
@@ -13,6 +13,7 @@ from config import *
 from helper import get_suffix, get_username, get_states_by_direction, send_message, get_room_states
 from statistics import StatisticsManager
 from utils import get_client_ip, setup_logging
+import users
 
 # Setup logging before anything else
 setup_logging()
@@ -22,7 +23,10 @@ load_dotenv()
 app = FastAPI(redirect_slashes=False)
 
 # Add session middleware with a secret key
-app.add_middleware(SessionMiddleware, secret_key=COOKIES_KEY, max_age=7 * 24 * 60 * 60)
+# In test mode, use session cookies (expire when browser closes)
+# In production, persist for 7 days
+session_max_age = None if IS_TEST else 7 * 24 * 60 * 60
+app.add_middleware(SessionMiddleware, secret_key=COOKIES_KEY, max_age=session_max_age)
 
 # Constants for the server and authentication
 
@@ -122,6 +126,10 @@ def get_version():
 @app.get("/login")
 def login(request: Request):
     """Initiate AAD login flow"""
+    # Test mode - always show login popup (don't check existing session)
+    if IS_TEST:
+        return RedirectResponse(url="/Frontend/index.html?showTestLogin=true")
+    
     username = request.session.get('user_name')
     if username:
         # User already logged in, redirect to home
@@ -135,20 +143,88 @@ def login(request: Request):
     return RedirectResponse(url=auth_url)
 
 
+@app.get("/login/test")
+def test_login(request: Request, username: str):
+    """Test mode login with custom username"""
+    if not IS_TEST:
+        raise HTTPException(status_code=403, detail="Test login only available in test mode")
+    
+    # Save pending referral BEFORE clearing session
+    pending_referral = request.session.get('pending_referral')
+    logging.info(f"Test login: Saved pending_referral from session: {pending_referral}")
+    
+    # Clear any existing session
+    request.session.clear()
+    
+    if not username or username.strip() == '':
+        username = 'Developer'
+    
+    request.session['user_name'] = username
+    
+    # Check if user is NEW before creating
+    is_new_user = not users.user_exists(username)
+    logging.info(f"Test mode login: username={username}, is_new_user={is_new_user}")
+    
+    users.get_or_create_user(username)
+    logging.info(f"Test mode: logged in as {username} (new: {is_new_user})")
+    
+    # Process pending referral ONLY if this is a new user
+    logging.info(f"Pending referral: {pending_referral}, is_new_user: {is_new_user}")
+    if pending_referral and pending_referral != username and is_new_user:
+        logging.info(f"Processing referral for {pending_referral} from NEW user {username}")
+        users.process_referral(pending_referral, username)
+        
+        # Add success messages to both users
+        users.add_message(
+            pending_referral,
+            "success",
+            "Congratulations!",
+            f"{username} just signed up using your referral link! You've been granted Premium status! ✨"
+        )
+        users.add_message(
+            username,
+            "success",
+            "Thank You!",
+            f"{pending_referral} shared their referral link with you. They just received Premium status thanks to you! 🎉"
+        )
+        
+        logging.info(f"Processed referral for {pending_referral} from NEW user {username}")
+    
+    return RedirectResponse(url="/Frontend/index.html")
+
+
 @app.get("/check-auth")
 def check_auth(request: Request):
-    """Check if user is authenticated and return user info"""
+    """Check if user is authenticated and return user info including premium status"""
     username = request.session.get('user_name')
     if not username:
         return {
             'authenticated': False,
-            'username': None
+            'username': None,
+            'is_premium': False
         }
 
     return {
         'authenticated': True,
-        'username': username
+        'username': username,
+        'is_premium': users.is_premium(username)
     }
+
+
+@app.get("/api/messages")
+@require_auth
+def get_messages(request: Request):
+    """Get all pending messages for the current user and clear them."""
+    username = request.session.get('user_name')
+    if not username:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    messages = users.get_and_clear_messages(username)
+    logging.info(f"API /api/messages - Retrieved {len(messages)} messages for {username}")
+    if messages:
+        for msg in messages:
+            logging.info(f"  Message: {msg['type']} - {msg['title']}")
+    return {"messages": messages}
 
 
 @app.get("/logout")
@@ -166,6 +242,9 @@ def root(request: Request):
 @app.get("/register/{room_name}")
 @require_auth
 def register(request: Request, room_name: str):
+    # In test mode, don't check if room exists
+    if IS_TEST:
+        return ['up', 'down', 'stop']
     states = get_room_states(room_name.upper())
     directions = [state['name'] for state in states]
     return directions
@@ -175,6 +254,14 @@ def register(request: Request, room_name: str):
 @require_auth
 def control_curtain(request: Request, room_name: str, action: str, direction: str = None):
     room_name = room_name.upper()
+    
+    # In test mode, just return success
+    if IS_TEST:
+        username = request.session.get('user_name')
+        if username:
+            users.add_room(username, room_name)
+        return {"status": "success", "message": f"Curtain in room {room_name} {action} command sent."}
+    
     suffix = get_suffix(room_name)
     creds = (get_username(room_name), CURTAINS_PASSWORD)
     address = (SERVER_IP, get_server_port(suffix))
@@ -198,6 +285,15 @@ def control_curtain(request: Request, room_name: str, action: str, direction: st
     res = send_message(operation_type, lift_direction, creds, address)
     if res.status_code == 200 or res.status_code == 202:
         stats_manager.update_stats(room_name, action)
+        
+        # Track room for user
+        username = request.session.get('user_name')
+        if username:
+            try:
+                users.add_room(username, room_name)
+            except Exception as e:
+                logging.error(f"Failed to track room: {e}")
+        
         return {"status": "success", "message": f"Curtain in room {room_name} {action} command sent successfully."}
     else:
         raise HTTPException(status_code=res.status_code, detail=f"Failed to send command {res.text}")
@@ -256,7 +352,36 @@ def auth_callback(request: Request, code: str = None, state: str = None, error: 
         logging.info(f'Graph result: {graph_data}')
         logging.info(f'Setting username to {username}')
         request.session['user_name'] = username
-        logging.info(f"Successfully authenticated user: {request.session['user_name']}")
+        
+        # Check if user is NEW before creating
+        is_new_user = not users.user_exists(username)
+        
+        # Save user to premium service
+        users.get_or_create_user(username)
+        
+        # Process pending referral ONLY if this is a new user
+        pending_referral = request.session.get('pending_referral')
+        if pending_referral and pending_referral != username and is_new_user:
+            users.process_referral(pending_referral, username)
+            
+            # Add success messages to both users
+            users.add_message(
+                pending_referral,
+                "success",
+                "Congratulations!",
+                f"{username} just signed up using your referral link! You've been granted Premium status! ✨"
+            )
+            users.add_message(
+                username,
+                "success",
+                "Thank You!",
+                f"{pending_referral} shared their referral link with you. They just received Premium status thanks to you! 🎉"
+            )
+            
+            logging.info(f"Processed referral for {pending_referral} from NEW user {username}")
+            request.session.pop('pending_referral', None)
+        
+        logging.info(f"Successfully authenticated user: {username}")
 
         # Redirect to home page after successful login
         return RedirectResponse(url="/Frontend/index.html")
@@ -264,3 +389,122 @@ def auth_callback(request: Request, code: str = None, state: str = None, error: 
     except Exception as e:
         logging.error(f"Unexpected error in auth callback: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Authentication error: {str(e)}")
+
+
+# ============== Premium Endpoints ==============
+
+@app.get("/api/user/profile")
+@require_auth
+def get_user_profile(request: Request):
+    """Get the current user's profile including premium status."""
+    username = request.session.get('user_name')
+    
+    if not username:
+        raise HTTPException(status_code=401, detail="User not found in session")
+    
+    user = users.get_user(username)
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {
+        "username": username,
+        "is_premium": user['is_premium'],
+        "rooms": user['rooms']
+    }
+
+
+@app.get("/api/premium/status")
+@require_auth
+def get_premium_status(request: Request):
+    """Check if the current user has premium status."""
+    username = request.session.get('user_name')
+    
+    if not username:
+        raise HTTPException(status_code=401, detail="User not found in session")
+    
+    return {
+        "is_premium": users.is_premium(username),
+        "rooms": users.get_rooms(username)
+    }
+
+
+@app.get("/api/user/rooms")
+@require_auth
+def get_user_rooms(request: Request):
+    """Get list of rooms the user has controlled."""
+    username = request.session.get('user_name')
+    
+    if not username:
+        raise HTTPException(status_code=401, detail="User not found in session")
+    
+    return {
+        "rooms": users.get_rooms(username)
+    }
+
+
+@app.get("/api/user/referral")
+@require_auth
+def get_referral_link(request: Request):
+    """Get the user's unique referral link."""
+    username = request.session.get('user_name')
+    
+    if not username:
+        raise HTTPException(status_code=401, detail="User not found in session")
+    
+    referral_code = users.get_referral_code(username)
+    
+    return {
+        "referral_code": referral_code,
+        "referral_link": f"/referral/{referral_code}"
+    }
+
+
+@app.get("/referral/{code}")
+def handle_referral(request: Request, code: str):
+    """Handle referral link - grant premium to referrer when a new user signs up."""
+    referrer_username = users.get_username_from_referral(code)
+    
+    if not referrer_username:
+        logging.warning(f"Invalid referral code: {code}")
+        return RedirectResponse(url="/Frontend/index.html")
+    
+    # Check if current user is already logged in
+    current_user = request.session.get('user_name')
+    
+    if current_user:
+        # User is logged in - if they're different from referrer and NEW, grant premium to referrer
+        if current_user != referrer_username:
+            is_new_user = not users.user_exists(current_user)
+            if is_new_user:
+                users.process_referral(referrer_username, current_user)
+                
+                # Add success messages to both users
+                users.add_message(
+                    referrer_username,
+                    "success",
+                    "Congratulations!",
+                    f"{current_user} just signed up using your referral link! You've been granted Premium status! ✨"
+                )
+                users.add_message(
+                    current_user,
+                    "success",
+                    "Thank You!",
+                    f"{referrer_username} shared their referral link with you. They just received Premium status thanks to you! 🎉"
+                )
+                
+                logging.info(f"NEW user {current_user} used referral from {referrer_username}")
+            else:
+                # Existing user tried to use referral - send warning message
+                users.add_message(
+                    current_user,
+                    "warning",
+                    "Already Registered",
+                    f"You can't give premium to {referrer_username} because you are not a new user. Referral links only work for first-time sign-ups. 🙏"
+                )
+                logging.info(f"Existing user {current_user} tried to use referral from {referrer_username} - ignored")
+        return RedirectResponse(url="/Frontend/index.html")
+    
+    # User not logged in - store referral and show message on home page
+    request.session['pending_referral'] = referrer_username
+    return RedirectResponse(url=f"/Frontend/index.html?pendingReferral={referrer_username}")
