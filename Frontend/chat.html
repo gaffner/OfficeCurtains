@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curtains Chat</title>
+    <link rel="stylesheet" href="css/credits_style.css">
+    <link rel="icon" type="image/svg+xml" href="Images/favicon.ico">
+    <style>
+        .chat-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 4rem);
+        }
+
+        .chat-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chat-header h1 {
+            color: #2563eb;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-header p {
+            color: #6b7280;
+        }
+
+        .dark-mode .chat-header h1 {
+            color: #60a5fa;
+        }
+
+        .dark-mode .chat-header p {
+            color: #9ca3af;
+        }
+
+        .chat-messages {
+            flex: 1;
+            background: var(--card-bg, #ffffff);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .dark-mode .chat-messages {
+            background: #1f2937;
+        }
+
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            background: #f3f4f6;
+            border-left: 3px solid #d1d5db;
+        }
+
+        .dark-mode .message {
+            background: #374151;
+            border-left-color: #4b5563;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-username {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
+        .message-text {
+            color: #374151;
+            line-height: 1.5;
+        }
+
+        .dark-mode .message-text {
+            color: #d1d5db;
+        }
+
+        /* Premium user styling */
+        .message.premium {
+            border-left-color: #10b981;
+            background: linear-gradient(to right, #d1fae5 0%, #f3f4f6 10%);
+        }
+
+        .dark-mode .message.premium {
+            background: linear-gradient(to right, #065f46 0%, #374151 10%);
+        }
+
+        .message.premium .message-text {
+            color: #059669;
+            font-weight: 500;
+        }
+
+        .dark-mode .message.premium .message-text {
+            color: #34d399;
+        }
+
+        .message.premium .message-username {
+            color: #059669;
+        }
+
+        .dark-mode .message.premium .message-username {
+            color: #34d399;
+        }
+
+        .crown-icon {
+            color: #f59e0b;
+            font-size: 1rem;
+        }
+
+        .chat-input-container {
+            background: var(--card-bg, #ffffff);
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .dark-mode .chat-input-container {
+            background: #1f2937;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .dark-mode .chat-input {
+            background: #374151;
+            border-color: #4b5563;
+            color: white;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .dark-mode .chat-input:focus {
+            border-color: #60a5fa;
+        }
+
+        .send-button {
+            padding: 0.75rem 2rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: #1d4ed8;
+        }
+
+        .send-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #9ca3af;
+            padding: 2rem;
+            font-style: italic;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color, #2563eb);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            transition: background 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #1d4ed8;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                padding: 1rem;
+                height: calc(100vh - 2rem);
+            }
+
+            .chat-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .chat-messages {
+                padding: 1rem;
+            }
+
+            .send-button {
+                padding: 0.75rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <a href="/Frontend/index.html" class="back-button">
+            ← Back to Control
+        </a>
+
+        <div class="chat-header">
+            <h1>💬 Curtains Chat</h1>
+            <p>Chat with other curtain controllers</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="empty-state">Loading messages...</div>
+        </div>
+
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                class="chat-input" 
+                id="messageInput" 
+                placeholder="Type your message..."
+                maxlength="500"
+            >
+            <button class="send-button" id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let lastMessageCount = 0;
+
+        async function loadMessages() {
+            try {
+                const response = await fetch('/api/chat/messages', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load messages');
+                }
+
+                const data = await response.json();
+                const messagesContainer = document.getElementById('chatMessages');
+
+                if (data.messages.length === 0) {
+                    messagesContainer.innerHTML = '<div class="empty-state">No messages yet. Be the first to say something!</div>';
+                    return;
+                }
+
+                // Only update if message count changed
+                if (data.messages.length !== lastMessageCount) {
+                    lastMessageCount = data.messages.length;
+                    
+                    messagesContainer.innerHTML = data.messages.map(msg => {
+                        const messageTime = new Date(msg.timestamp).toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
+
+                        const premiumClass = msg.is_premium ? 'premium' : '';
+                        const crownIcon = msg.is_premium ? '<span class="crown-icon">👑</span>' : '';
+
+                        return `
+                            <div class="message ${premiumClass}">
+                                <div class="message-header">
+                                    ${crownIcon}
+                                    <span class="message-username">${escapeHtml(msg.username)}</span>
+                                    <span class="message-time">${messageTime}</span>
+                                </div>
+                                <div class="message-text">${escapeHtml(msg.message)}</div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    // Scroll to bottom
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+
+            try {
+                const response = await fetch('/api/chat/send', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to send message');
+                }
+
+                input.value = '';
+                await loadMessages();
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message. Please try again.');
+            } finally {
+                sendButton.disabled = false;
+                input.focus();
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Send on Enter key
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Send on button click
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        // Load messages on page load
+        loadMessages();
+
+        // Auto-refresh messages every 3 seconds
+        setInterval(loadMessages, 3000);
+
+        // Apply dark mode if set
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+</body>
+</html>

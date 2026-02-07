@@ -63,7 +63,40 @@ def require_auth(func):
     return wrapper
 
 
+# Admin decorator
+def require_admin(func):
+    """Decorator to require admin authentication for endpoints"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        # Get request from kwargs
+        request = kwargs.get('request')
+        if not request:
+            # Try to find request in args
+            for arg in args:
+                if isinstance(arg, Request):
+                    request = arg
+                    break
+        
+        if not request:
+            raise HTTPException(status_code=500, detail="Request object not found")
+        
+        # Check if user is authenticated
+        username = request.session.get('user_name')
+        if not username:
+            raise HTTPException(status_code=401, detail="You need to authenticate")
+        
+        # Check if user is admin
+        if username not in ADMIN_USERS:
+            raise HTTPException(status_code=403, detail="Admin access required")
+        
+        # Call the original function
+        return func(*args, **kwargs)
+    
+    return wrapper
+
+
 @app.get("/submit-report/{report}")
+@require_auth
 def submit_report(request: Request, report: str):
     user_ip = get_client_ip(request)
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -71,19 +104,6 @@ def submit_report(request: Request, report: str):
 
     os.makedirs(os.path.dirname(REPORTS_FILE), exist_ok=True)
     with open(REPORTS_FILE, "a") as file:
-        file.write(report_entry)
-
-    return {"message": "Report submitted successfully"}
-
-
-@app.get("/submit-tshirt-request/{content}")
-@require_auth
-def submit_tshirt_request(request: Request, content: str):
-    user_ip = get_client_ip(request)
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    report_entry = f"{current_time} - {user_ip} - {content}\n"
-
-    with open(TSHIRT_REQUESTS_FILE, "a") as file:
         file.write(report_entry)
 
     return {"message": "Report submitted successfully"}
@@ -173,19 +193,20 @@ def test_login(request: Request, username: str):
     if pending_referral and pending_referral != username and is_new_user:
         logging.info(f"Processing referral for {pending_referral} from NEW user {username}")
         users.process_referral(pending_referral, username)
+        users.add_points(pending_referral, 20)  # Grant 20 points for referral
         
         # Add success messages to both users
         users.add_message(
             pending_referral,
             "success",
             "Congratulations!",
-            f"{username} just signed up using your referral link! You've been granted Premium status! ✨"
+            f"{username} just signed up using your referral link! You got 20 points (you need 60 points to get Premium)! ✨"
         )
         users.add_message(
             username,
             "success",
             "Thank You!",
-            f"{pending_referral} shared their referral link with you. They just received Premium status thanks to you! 🎉"
+            f"{pending_referral} shared their referral link with you. They just earned 20 points thanks to you! 🎉"
         )
         
         logging.info(f"Processed referral for {pending_referral} from NEW user {username}")
@@ -201,13 +222,16 @@ def check_auth(request: Request):
         return {
             'authenticated': False,
             'username': None,
-            'is_premium': False
+            'is_premium': False,
+            'is_admin': False
         }
 
     return {
         'authenticated': True,
         'username': username,
-        'is_premium': users.is_premium(username)
+        'is_premium': users.is_premium(username),
+        'points': users.get_points(username),
+        'is_admin': username in ADMIN_USERS
     }
 
 
@@ -363,19 +387,20 @@ def auth_callback(request: Request, code: str = None, state: str = None, error: 
         pending_referral = request.session.get('pending_referral')
         if pending_referral and pending_referral != username and is_new_user:
             users.process_referral(pending_referral, username)
+            users.add_points(pending_referral, 20)  # Grant 20 points for referral
             
             # Add success messages to both users
             users.add_message(
                 pending_referral,
                 "success",
                 "Congratulations!",
-                f"{username} just signed up using your referral link! You've been granted Premium status! ✨"
+                f"{username} just signed up using your referral link! You got 20 points (you need 60 points to get Premium)! ✨"
             )
             users.add_message(
                 username,
                 "success",
                 "Thank You!",
-                f"{pending_referral} shared their referral link with you. They just received Premium status thanks to you! 🎉"
+                f"{pending_referral} shared their referral link with you. They just earned 20 points thanks to you! 🎉"
             )
             
             logging.info(f"Processed referral for {pending_referral} from NEW user {username}")
@@ -476,35 +501,129 @@ def handle_referral(request: Request, code: str):
         # User is logged in - if they're different from referrer and NEW, grant premium to referrer
         if current_user != referrer_username:
             is_new_user = not users.user_exists(current_user)
+            logging.info(f"Referral check: current_user={current_user}, referrer={referrer_username}, is_new={is_new_user}")
             if is_new_user:
                 users.process_referral(referrer_username, current_user)
+                users.add_points(referrer_username, 20)  # Grant 20 points for referral
                 
                 # Add success messages to both users
                 users.add_message(
                     referrer_username,
                     "success",
                     "Congratulations!",
-                    f"{current_user} just signed up using your referral link! You've been granted Premium status! ✨"
+                    f"{current_user} just signed up using your referral link! You got 20 points (you need 60 points to get Premium)! ✨"
                 )
                 users.add_message(
                     current_user,
                     "success",
                     "Thank You!",
-                    f"{referrer_username} shared their referral link with you. They just received Premium status thanks to you! 🎉"
+                    f"{referrer_username} shared their referral link with you. They just earned 20 points thanks to you! 🎉"
                 )
                 
                 logging.info(f"NEW user {current_user} used referral from {referrer_username}")
             else:
                 # Existing user tried to use referral - send warning message
+                logging.info(f"Adding warning message to {current_user} about {referrer_username}")
                 users.add_message(
                     current_user,
                     "warning",
                     "Already Registered",
                     f"You can't give premium to {referrer_username} because you are not a new user. Referral links only work for first-time sign-ups. 🙏"
                 )
-                logging.info(f"Existing user {current_user} tried to use referral from {referrer_username} - ignored")
+                logging.info(f"Existing user {current_user} tried to use referral from {referrer_username} - warning message added")
         return RedirectResponse(url="/Frontend/index.html")
     
     # User not logged in - store referral and show message on home page
     request.session['pending_referral'] = referrer_username
     return RedirectResponse(url=f"/Frontend/index.html?pendingReferral={referrer_username}")
+
+
+# ============== Chat Endpoints ==============
+
+@app.get("/api/chat/messages")
+@require_auth
+def get_chat_messages(request: Request):
+    """Get all chat messages."""
+    messages = users.get_chat_messages()
+    return {"messages": messages}
+
+
+@app.post("/api/chat/send")
+@require_auth
+def send_chat_message(request: Request, message: dict):
+    """Send a chat message."""
+    username = request.session.get('user_name')
+    
+    if not username:
+        raise HTTPException(status_code=401, detail="User not found in session")
+    
+    message_text = message.get('message', '').strip()
+    
+    if not message_text:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    
+    if len(message_text) > 500:
+        raise HTTPException(status_code=400, detail="Message too long (max 500 characters)")
+    
+    is_premium = users.is_premium(username)
+    users.add_chat_message(username, message_text, is_premium)
+    
+    return {"status": "success", "message": "Message sent"}
+
+
+# ============== Admin Endpoints ==============
+
+@app.get("/api/admin/users")
+@require_admin
+def get_all_users_admin(request: Request):
+    """Get all users data (admin only)."""
+    all_users = users.get_all_users()
+    return {"users": all_users}
+
+
+@app.get("/api/admin/grant-points/{username}/{points}")
+@require_admin
+def grant_points_admin(request: Request, username: str, points: int):
+    """Grant points to a user (admin only)."""
+    if points < 0:
+        raise HTTPException(status_code=400, detail="Points must be positive")
+    
+    if not users.user_exists(username):
+        raise HTTPException(status_code=404, detail=f"User {username} not found")
+    
+    users.add_points(username, points)
+    
+    return {
+        "status": "success",
+        "message": f"Granted {points} points to {username}",
+        "new_total": users.get_points(username)
+    }
+
+
+@app.post("/api/admin/send-message")
+@require_admin
+def send_message_admin(request: Request, message_data: dict):
+    """Send a message to a user (admin only)."""
+    username = message_data.get('username', '').strip()
+    message_type = message_data.get('type', 'success')
+    title = message_data.get('title', '').strip()
+    text = message_data.get('text', '').strip()
+    
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
+    
+    if not users.user_exists(username):
+        raise HTTPException(status_code=404, detail=f"User {username} not found")
+    
+    if message_type not in ['success', 'warning', 'failure']:
+        raise HTTPException(status_code=400, detail="Message type must be 'success', 'warning', or 'failure'")
+    
+    if not title or not text:
+        raise HTTPException(status_code=400, detail="Title and text are required")
+    
+    users.add_message(username, message_type, title, text)
+    
+    return {
+        "status": "success",
+        "message": f"Message sent to {username}"
+    }

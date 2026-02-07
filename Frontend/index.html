@@ -262,12 +262,33 @@
             z-index: 1001;
         }
 
+        .points-display {
+            position: fixed;
+            top: 1.5rem;
+            right: 9rem;
+            font-weight: 600;
+            color: var(--text-color);
+            z-index: 1001;
+            display: none;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        .points-icon {
+            font-size: 1rem;
+        }
+
         /* Place auth button in bottom container on mobile */
         @media (max-width: 768px) {
             .auth-container {
                 position: static;
                 order: -1; /* Place before other items in bottom container */
                 margin: 0 auto;
+            }
+
+            .points-display {
+                font-size: 0.85rem;
             }
 
             .pending-referral-banner {
@@ -377,15 +398,20 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <a href="#" class="sidebar-link" id="statsLink">Statistics</a>
+    <a href="#" class="sidebar-link" id="statsLink">📊 Statistics</a>
     <a href="/Frontend/premium.html" class="sidebar-link" style="color: #f59e0b;">👑 Curtains Premium</a>
-    <a href="/Frontend/whats_new.html" class="sidebar-link">What's New?</a>
-    <a href="/Frontend/credits.html" class="sidebar-link">Credits</a>
-    <a href="/Frontend/tshirt.html" class="sidebar-link">Get a T-shirt!</a>
+    <a href="/Frontend/chat.html" class="sidebar-link">💬 Curtains Chat</a>
+    <a href="/Frontend/admin.html" class="sidebar-link" id="adminLink" style="display: none; color: #dc2626;">🔐 Admin Panel</a>
+    <a href="/Frontend/whats_new.html" class="sidebar-link">✨ What's New?</a>
+    <a href="/Frontend/credits.html" class="sidebar-link">❤️ Credits</a>
     <a href="#" class="sidebar-link sidebar-logout" id="sidebarLogout" onclick="logout(); return false;" style="display: none;">
         <img src="https://img.icons8.com/material-outlined/24/ffffff/exit.png" alt="Logout" class="logout-icon">
         Logout
     </a>
+</div>
+<div class="points-display" id="pointsDisplay">
+    <span class="points-icon">🎯</span>
+    <span id="pointsValue">0</span> points
 </div>
 <div class="bottom-buttons-container">
     <div class="auth-container" id="authContainer">
@@ -450,7 +476,11 @@
                 }
 
                 // Display welcome message
-                welcomeMessage.textContent = `Welcome ${data.username}`;
+                if (data.is_admin) {
+                    welcomeMessage.innerHTML = `Welcome ${data.username}, <span style="color: #dc2626; font-weight: bold;">Admin!</span>`;
+                } else {
+                    welcomeMessage.textContent = `Welcome ${data.username}`;
+                }
                 welcomeMessage.classList.add('visible');
 
                 // Update premium button based on status
@@ -458,6 +488,20 @@
                 if (premiumButton && data.is_premium) {
                     premiumButton.innerHTML = '✨ Premium Member';
                     premiumButton.classList.add('is-premium');
+                }
+
+                // Display points
+                const pointsDisplay = document.getElementById('pointsDisplay');
+                const pointsValue = document.getElementById('pointsValue');
+                if (pointsDisplay && pointsValue) {
+                    pointsValue.textContent = data.points || 0;
+                    pointsDisplay.style.display = 'flex';
+                }
+
+                // Show admin link if user is admin
+                const adminLink = document.getElementById('adminLink');
+                if (adminLink && data.is_admin) {
+                    adminLink.style.display = 'flex';
                 }
 
                 // Store username in localStorage for persistence
@@ -489,6 +533,18 @@
                 // Hide welcome message
                 welcomeMessage.classList.remove('visible');
                 welcomeMessage.textContent = '';
+
+                // Hide points display
+                const pointsDisplay = document.getElementById('pointsDisplay');
+                if (pointsDisplay) {
+                    pointsDisplay.style.display = 'none';
+                }
+
+                // Hide admin link
+                const adminLink = document.getElementById('adminLink');
+                if (adminLink) {
+                    adminLink.style.display = 'none';
+                }
 
                 // Clear stored username
                 localStorage.removeItem('userName');
@@ -573,7 +629,7 @@
         if (type === 'success') {
             emoji = '😊'; // Happy emoji for success
         } else if (type === 'warning') {
-            emoji = '😢'; // Sad emoji for warning
+            emoji = '⚠️'; // Warning emoji
         } else if (type === 'failure') {
             emoji = '❌';
         } else {
@@ -648,6 +704,11 @@
     // Run auth check on page load
     document.addEventListener('DOMContentLoaded', function() {
         checkAuthStatus();
+        
+        // Also fetch messages separately to catch any immediate redirects
+        setTimeout(() => {
+            fetchAndDisplayMessages();
+        }, 500);
         
         // Check for query params
         const urlParams = new URLSearchParams(window.location.search);

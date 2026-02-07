@@ -2,6 +2,20 @@
 
 ## February 2026
 
+### Version 3.0.0 - Points System & Admin Panel
+- **Points Mechanism**: Earn 20 points for each successful referral!
+- **Premium at 60 Points**: Automatically receive Premium status when you reach 60 points (3 referrals)
+- **Admin Panel**: Comprehensive admin-only panel for system management
+  - View all users sorted by points (highest first)
+  - Grant points to any user
+  - Send custom messages to users (success/warning/failure types)
+  - Expandable room lists for cleaner data presentation
+- **Admin Identification**: Admins see "Admin!" in red text on welcome message
+- **Enhanced Menu**: All menu items now have emojis for better navigation
+- **Improved Security**: All private endpoints require authentication, admin endpoints require admin role
+- **Streamlined Interface**: Removed store and t-shirt pages for cleaner user experience
+- **Better Messaging**: Updated referral notifications to focus on points earned
+
 ### Version 2.1.0 - Curtains Premium Launch
 - **Curtains Premium**: Introducing the new premium membership program!
 - **Referral System**: Share your unique referral link - when a friend signs up, you get Premium!

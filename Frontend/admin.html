@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Curtain Control System</title>
+    <link rel="stylesheet" href="css/credits_style.css">
+    <link rel="icon" type="image/svg+xml" href="Images/favicon.ico">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-header h1 {
+            color: #dc2626;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .admin-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+        }
+
+        .dark-mode .admin-header h1 {
+            color: #ef4444;
+        }
+
+        .dark-mode .admin-header p {
+            color: #9ca3af;
+        }
+
+        .grant-points-section {
+            background: var(--card-bg, #ffffff);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode .grant-points-section {
+            background: #1f2937;
+        }
+
+        .grant-points-section h2 {
+            margin-bottom: 1rem;
+            color: #2563eb;
+        }
+
+        .dark-mode .grant-points-section h2 {
+            color: #60a5fa;
+        }
+
+        .grant-form {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .form-group input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            min-width: 200px;
+        }
+
+        .form-group select {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            min-width: 150px;
+        }
+
+        .dark-mode .form-group input,
+        .dark-mode .form-group select {
+            background: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
+        }
+
+        .grant-button {
+            padding: 0.5rem 1.5rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .grant-button:hover {
+            background: #1d4ed8;
+        }
+
+        .users-table-section {
+            background: var(--card-bg, #ffffff);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .dark-mode .users-table-section {
+            background: #1f2937;
+        }
+
+        .users-table-section h2 {
+            margin-bottom: 1rem;
+            color: #2563eb;
+        }
+
+        .dark-mode .users-table-section h2 {
+            color: #60a5fa;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .users-table th,
+        .users-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .dark-mode .users-table th,
+        .dark-mode .users-table td {
+            border-bottom-color: #374151;
+        }
+
+        .users-table th {
+            font-weight: 600;
+            background: #f3f4f6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .dark-mode .users-table th {
+            background: #374151;
+        }
+
+        .users-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .dark-mode .users-table tr:hover {
+            background: #374151;
+        }
+
+        .premium-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #78350f;
+        }
+
+        .dark-mode .premium-badge {
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            color: #fef3c7;
+        }
+
+        .rooms-list {
+            display: none;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            max-width: 300px;
+            margin-top: 0.5rem;
+        }
+
+        .rooms-list.expanded {
+            display: flex;
+        }
+
+        .rooms-toggle {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .rooms-toggle:hover {
+            background: #1d4ed8;
+        }
+
+        .dark-mode .rooms-toggle {
+            background: #3b82f6;
+        }
+
+        .dark-mode .rooms-toggle:hover {
+            background: #2563eb;
+        }
+
+        .room-tag {
+            padding: 0.125rem 0.5rem;
+            background: #dbeafe;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            color: #1e40af;
+        }
+
+        .dark-mode .room-tag {
+            background: #1e3a8a;
+            color: #bfdbfe;
+        }
+
+        .message-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+        }
+
+        .message-box.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .dark-mode .message-box.success {
+            background: #064e3b;
+            color: #a7f3d0;
+        }
+
+        .message-box.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .dark-mode .message-box.error {
+            background: #7f1d1d;
+            color: #fecaca;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        .dark-mode .loading {
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
+
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🔐 Admin Panel</h1>
+            <p>Manage users, grant points, and view system statistics</p>
+        </div>
+
+        <!-- Grant Points Section -->
+        <div class="grant-points-section">
+            <h2>Grant Points</h2>
+            <form class="grant-form" onsubmit="grantPoints(event)">
+                <div class="form-group">
+                    <label for="targetUsername">Username</label>
+                    <input type="text" id="targetUsername" required placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label for="pointsAmount">Points</label>
+                    <input type="number" id="pointsAmount" required min="1" placeholder="Enter points">
+                </div>
+                <button type="submit" class="grant-button">Grant Points</button>
+            </form>
+            <div id="grantMessage" class="message-box"></div>
+        </div>
+
+        <!-- Send Message Section -->
+        <div class="grant-points-section">
+            <h2>Send Message to User</h2>
+            <form class="grant-form" onsubmit="sendMessage(event)">
+                <div class="form-group">
+                    <label for="messageUsername">Username</label>
+                    <input type="text" id="messageUsername" required placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label for="messageType">Type</label>
+                    <select id="messageType" required>
+                        <option value="success">Success</option>
+                        <option value="warning">Warning</option>
+                        <option value="failure">Failure</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="messageTitle">Title</label>
+                    <input type="text" id="messageTitle" required placeholder="Message title">
+                </div>
+                <div class="form-group">
+                    <label for="messageText">Message</label>
+                    <input type="text" id="messageText" required placeholder="Message content" style="min-width: 300px;">
+                </div>
+                <button type="submit" class="grant-button">Send Message</button>
+            </form>
+            <div id="sendMessageBox" class="message-box"></div>
+        </div>
+
+        <!-- Users Table Section -->
+        <div class="users-table-section">
+            <h2>All Users</h2>
+            <div id="usersTableContainer">
+                <div class="loading">Loading users...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Apply dark mode if enabled
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+        }
+
+        // Load users data
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/admin/users', {
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        document.getElementById('usersTableContainer').innerHTML = 
+                            '<div class="loading" style="color: #dc2626;">Access Denied: Admin privileges required</div>';
+                        return;
+                    }
+                    throw new Error('Failed to load users');
+                }
+
+                const data = await response.json();
+                displayUsers(data.users);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersTableContainer').innerHTML = 
+                    '<div class="loading" style="color: #dc2626;">Error loading users data</div>';
+            }
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById('usersTableContainer');
+            
+            if (!users || Object.keys(users).length === 0) {
+                container.innerHTML = '<div class="loading">No users found</div>';
+                return;
+            }
+
+            // Convert to array and sort by points (descending)
+            const usersArray = Object.entries(users).map(([username, userData]) => ({
+                username,
+                ...userData
+            }));
+            
+            usersArray.sort((a, b) => (b.points || 0) - (a.points || 0));
+
+            let tableHTML = `
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Premium</th>
+                            <th>Points</th>
+                            <th>Rooms Controlled</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            usersArray.forEach((user, index) => {
+                const isPremium = user.is_premium || false;
+                const points = user.points || 0;
+                const rooms = user.rooms || [];
+                const roomsId = `rooms-${index}`;
+
+                tableHTML += `
+                    <tr>
+                        <td><strong>${user.username}</strong></td>
+                        <td>
+                            ${isPremium ? '<span class="premium-badge">👑 Premium</span>' : '—'}
+                        </td>
+                        <td>${points} 🎯</td>
+                        <td>
+                            ${rooms.length > 0 ? `
+                                <button class="rooms-toggle" onclick="toggleRooms('${roomsId}')">
+                                    🏛 ${rooms.length} room${rooms.length !== 1 ? 's' : ''}
+                                </button>
+                                <div id="${roomsId}" class="rooms-list">
+                                    ${rooms.map(room => `<span class="room-tag">${room}</span>`).join('')}
+                                </div>
+                            ` : '—'}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        function toggleRooms(roomsId) {
+            const roomsList = document.getElementById(roomsId);
+            if (roomsList) {
+                roomsList.classList.toggle('expanded');
+            }
+        }
+
+        async function grantPoints(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('targetUsername').value.trim();
+            const points = parseInt(document.getElementById('pointsAmount').value);
+
+            if (!username || isNaN(points) || points < 1) {
+                showMessageBox('Please enter valid username and points', 'error', 'grantMessage');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/admin/grant-points/${encodeURIComponent(username)}/${points}`, {
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessageBox(`✅ ${data.message}. New total: ${data.new_total} points`, 'success', 'grantMessage');
+                    document.getElementById('targetUsername').value = '';
+                    document.getElementById('pointsAmount').value = '';
+                    // Reload users table
+                    loadUsers();
+                } else {
+                    showMessageBox(`❌ ${data.detail || 'Failed to grant points'}`, 'error', 'grantMessage');
+                }
+            } catch (error) {
+                console.error('Error granting points:', error);
+                showMessageBox('❌ Error granting points', 'error', 'grantMessage');
+            }
+        }
+
+        async function sendMessage(event) {
+            event.preventDefault();
+            
+            const username = document.getElementById('messageUsername').value.trim();
+            const messageType = document.getElementById('messageType').value;
+            const title = document.getElementById('messageTitle').value.trim();
+            const text = document.getElementById('messageText').value.trim();
+
+            if (!username || !title || !text) {
+                showMessageBox('Please fill in all fields', 'error', 'sendMessageBox');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/send-message', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        type: messageType,
+                        title: title,
+                        text: text
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessageBox(`✅ ${data.message}`, 'success', 'sendMessageBox');
+                    document.getElementById('messageUsername').value = '';
+                    document.getElementById('messageTitle').value = '';
+                    document.getElementById('messageText').value = '';
+                    document.getElementById('messageType').value = 'success';
+                } else {
+                    showMessageBox(`❌ ${data.detail || 'Failed to send message'}`, 'error', 'sendMessageBox');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showMessageBox('❌ Error sending message', 'error', 'sendMessageBox');
+            }
+        }
+
+        function showMessageBox(text, type, boxId) {
+            const messageBox = document.getElementById(boxId);
+            messageBox.textContent = text;
+            messageBox.className = `message-box ${type}`;
+            messageBox.style.display = 'block';
+            
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 5000);
+        }
+
+        // Load users on page load
+        loadUsers();
+    </script>
+</body>
+</html>
