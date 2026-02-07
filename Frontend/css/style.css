@@ -764,10 +764,9 @@ textarea {
     background: linear-gradient(to top, var(--background-color) 90%, transparent);
 }
 
-/* Hide donate and help buttons on mobile and tablets */
+/* Hide help button on mobile and tablets */
 @media (max-width: 1024px) {
-    .report-container,
-    .donate-button {
+    .report-container {
         display: none !important;
     }
 }
