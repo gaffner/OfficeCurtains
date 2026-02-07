@@ -10,6 +10,10 @@
     <link rel="alternate icon" type="image/png" href="Images/favicon.ico">
     <style>
         .premium-button {
+            position: fixed;
+            top: 20px;
+            left: 100px;
+            z-index: 1001;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -433,13 +437,13 @@
             Need Help?
         </a>
     </div>
-    <a href="/Frontend/premium.html" class="premium-button" id="premiumButton">
-        👑 Get Premium
-    </a>
     <a href="https://github.com/gaffner/OfficeCurtains" target="_blank" class="donate-button" id="donateButton">
         <img src="https://img.shields.io/badge/Donate_the_Code-GitHub-1f8ccf.svg" alt="Donate the Code on GitHub">
     </a>
 </div>
+<a href="/Frontend/premium.html" class="premium-button" id="premiumButton">
+    👑 Get Premium
+</a>
 
 <script>
     // Check authentication status on page load
