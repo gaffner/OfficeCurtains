@@ -45,9 +45,39 @@
         }
 
         @media (max-width: 768px) {
-            .premium-button {
+            .premium-button,
+            .donate-button {
                 display: none !important;
             }
+        }
+
+        .donate-button {
+            position: fixed;
+            top: 1.25rem;
+            left: calc(1.25rem + 140px);
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: #1f8ccf;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(31, 140, 207, 0.4);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .donate-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(31, 140, 207, 0.5);
+        }
+
+        .donate-button img {
+            height: 20px;
         }
 
         .version-display {
@@ -424,6 +454,9 @@
     </div>
     <a href="/Frontend/premium.html" class="premium-button" id="premiumButton">
         👑 Get Premium
+    </a>
+    <a href="https://github.com/gaffner/OfficeCurtains" target="_blank" class="donate-button" id="donateButton">
+        <img src="https://img.shields.io/badge/Donate_the_Code-GitHub-1f8ccf.svg" alt="Donate the Code on GitHub">
     </a>
 </div>
 
