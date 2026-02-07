@@ -849,10 +849,20 @@ textarea {
     gap: 12px;
 }
 
-/* Hide help button, donate button, and premium button on mobile and tablets - MUST BE LAST */
-@media (max-width: 1200px) {
-    .report-container,
+/* Hide donate button by default, show only on large screens (PC) */
+.donate-button {
+    display: none !important;
+}
+
+@media (min-width: 1400px) {
     .donate-button {
+        display: block !important;
+    }
+}
+
+/* Hide help button on smaller screens */
+@media (max-width: 1200px) {
+    .report-container {
         display: none !important;
     }
 }
