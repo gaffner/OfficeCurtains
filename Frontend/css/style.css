@@ -218,21 +218,6 @@ input {
     font-weight: 500;
 }
 
-    /* Style for the button */
-    .donate-button {
-      position: fixed; /* Fix the button to the bottom of the page */
-      bottom: 20px; /* Space from the bottom of the page */
-      left: 50%; /* Center horizontally */
-      transform: translateX(-50%); /* Center align the button */
-      padding: 5px 80px;
-      margin-bottom: 30px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-      text-decoration: none;
-    }
-
     .report-container {
     position: fixed;
     left: 50%;
@@ -645,11 +630,6 @@ textarea {
 
 
 
-/* Adjust donate button position */
-.donate-button {
-    /*bottom: 20px;*/
-}
-
 .report-container {
     position: fixed;
     bottom: 140px;
@@ -704,21 +684,6 @@ textarea {
     margin: 20px 0;
     transition: color 0.5s ease;
     font-weight: bold;
-}
-
-/* Update the bottom spacing for the donate button */
-.donate-button {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 5px 80px;
-    margin-bottom: 5px;  /* Reduced from 30px */
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    text-decoration: none;
 }
 
 /* Update the Teams button container position */
@@ -776,15 +741,6 @@ textarea {
     position: static;  /* Remove fixed positioning */
     transform: none;   /* Remove transform */
     margin: 0;
-    width: fit-content;
-}
-
-/* Update donate button */
-.donate-button {
-    position: static;  /* Remove fixed positioning */
-    transform: none;   /* Remove transform */
-    margin: 0;
-    padding: 5px 80px;
     width: fit-content;
 }
 
@@ -847,17 +803,6 @@ textarea {
 .room-card {
     flex-wrap: wrap;
     gap: 12px;
-}
-
-/* Hide donate button by default, show only on large screens (PC) */
-.donate-button {
-    display: none !important;
-}
-
-@media (min-width: 1920px) {
-    .donate-button {
-        display: block !important;
-    }
 }
 
 /* Hide help button on smaller screens */
