@@ -524,10 +524,10 @@
             } else {
                 // User is not logged in - show login button
                 authButton.innerHTML = `
-                    <a href="/login" class="login-button">
+                    <button class="login-button" disabled style="opacity: 0.6; cursor: not-allowed;">
                         <img src="https://learn.microsoft.com/en-us/entra/identity-platform/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.svg" alt="Microsoft Logo">
-                        Sign in with Microsoft
-                    </a>
+                        Sign-in temporarily disabled
+                    </button>
                 `;
                 
                 // Hide logout in sidebar
@@ -570,10 +570,10 @@
             const emptyState = document.getElementById('emptyState');
 
             authButton.innerHTML = `
-                <a href="/login" class="login-button">
+                <button class="login-button" disabled style="opacity: 0.6; cursor: not-allowed;">
                     <img src="https://learn.microsoft.com/en-us/entra/identity-platform/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.svg" alt="Microsoft Logo">
-                    Sign in with Microsoft
-                </a>
+                    Sign-in temporarily disabled
+                </button>
             `;
             
             // Hide logout in sidebar on error
