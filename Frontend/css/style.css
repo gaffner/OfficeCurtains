@@ -1,36 +1,8 @@
-:root {
-    --background-color: #FFFAF0;
-    --text-color: #000000;
-    --primary-color: #2563eb;
-    --secondary-color: #e5e7eb;
-    --sub-container-color: #f0f0f0;
-    --error-color: #dc2626;
-    --success-color: #6ec617;
-    --text-color: #000000;
-    --hover-color: #f1f5f9;
-    --success-message-background: #d4edda;
-}
-
-
-.dark-mode {
-    --background-color: #121212;
-    --text-color: #ffffff;
-    --primary-color: #1d4ed8;
-    --secondary-color: #374151;
-    --sub-container-color: #2d3748;
-    --button-color: #1f2937;
-    --error-color: #f87171;
-    --success-color: #4ade80;
-    --text-color: #ffffff;
-    --hover-color: #323d4d;
-    --success-message-background: #2e7d32;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+/*
+ * Page styles for index.html (Control Panel).
+ * Theme variables and base resets live in theme.css.
+ * Reusable components live in components.css.
+ */
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -95,30 +67,17 @@ input {
     padding: 4px 10px;
 }
 
-.add-button {
-    padding: 8px 16px;
-    background-color: var(--primary-color);
-    color: var(--text-color);
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
-}
+/*
+ * .add-button is styled via components.css (.btn-primary + .btn-primary--sm).
+ * Add `.btn-primary--sm` to any new compact button.
+ */
 
-.add-button:hover {
-    background-color: #1d4ed8;
-}
-
-.error {
-    color: var(--error-color);
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #fee2e2;
-    border-radius: 4px;
+/*
+ * Page-level override: on the Control Panel the inline error block
+ * starts empty and is shown by JS. components.css renders .error as
+ * visible by default (used by whats_new.html), so we hide it here.
+ */
+#error {
     display: none;
 }
 
@@ -207,88 +166,18 @@ input {
     background-color: #f3f4f6;
 }
 
-.empty-state {
-    text-align: center;
-    color: #6b7280;
-    margin-top: 40px;
-}
+/* .empty-state lives in components.css */
 
-.room-number {
-    font-size: 16px;
-    font-weight: 500;
-}
+/* .room-number / .room-card consolidated definitions are below near .room-nickname */
 
-    .report-container {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    z-index: 1000;
-}
-
-.report-form {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    width: 300px;
-    margin-bottom: 10px;
-    display: none;
-}
-
-.success-message, .error-message {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--background-color);
-    padding: 10px;
-    border-radius: 4px;
-    width: 200px;
-    margin-bottom: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
+/*
+ * Wrapper around the "Need Help?" Teams button. Lives inside
+ * .bottom-buttons-container which already centers and positions
+ * its children, so this just provides a hook for spacing.
+ */
 .report-container {
     text-align: center;
-    margin: 20px 0;
-}
-
-.report-button {
-    padding: 8px 16px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.report-button:hover {
-    background-color: #2980b9;
-}
-
-.report-form {
-    display: none;
-    margin-top: 20px;
-}
-
-.submit-report-button {
-    padding: 8px 16px;
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.submit-report-button:hover {
-    background-color: #27ae60;
+    z-index: 1001;
 }
 
 textarea {
@@ -301,19 +190,6 @@ textarea {
     border-radius: 4px;
     resize: vertical;
     font-family: inherit;
-}
-
-.success-message {
-    color: var(--success-color);
-    margin-top: 10px;
-    display: none;
-    background-color: var(--success-message-background);
-}
-
-.error-message {
-    color: var(--error-color);
-    margin-top: 10px;
-    display: none;
 }
 
 .stats-buttons-container {
@@ -356,7 +232,7 @@ textarea {
     display: block;
     width: 100%;
     height: 3px;
-    background-color: var(menu-text);
+    background-color: var(--text-color);
     border-radius: 3px;
     transition: all 0.3s ease;
 }
@@ -557,7 +433,7 @@ textarea {
 .toggle-switch-inner:before {
     content: "☀️";
     padding-left: 5px;
-    background-color: #2563eb;
+    background-color: var(--primary-color);
     color: white;
 }
 
@@ -600,63 +476,11 @@ textarea {
     border: none; /* Remove border */
 }
 
-.bug-bounty-link {
-    position: fixed;
-    bottom: 20em; /* Increased to avoid overlap with 'Need Help' button */
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    background-color: var(--button-color);
-    color: var(--text-color);
-    text-decoration: none;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    font-size: 14px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    z-index: 1000;
-}
+/*
+ * .bug-bounty-link styles removed: no markup currently uses this
+ * class. Re-add a single definition here if the link returns.
+ */
 
-.bug-bounty-link:hover {
-    background-color: var(--hover-color);
-}
-
-.bug-bounty-link img {
-    width: 24px;
-    height: 24px;
-}
-
-
-
-.report-container {
-    position: fixed;
-    bottom: 140px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    z-index: 1001;  /* Increased to be above bug bounty link */
-}
-
-.bug-bounty-link {
-    position: fixed;
-    bottom: 100px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    /*padding: 8px 16px;*/
-    background-color: var(--background-color);
-    color: var(--text-color);
-    text-decoration: none;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    font-size: 14px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    z-index: 1000;
-}
 .logo {
     width: 180px;  /* Increased from 128px */
     height: 180px; /* Increased from 128px */
@@ -672,10 +496,7 @@ textarea {
     padding-top: 30px;  /* Slightly increased padding for better spacing */
 }
 
-/* If you're using dark mode, ensure logo remains visible */
-.dark-mode .logo {
-    filter: brightness(1);
-}
+/* .dark-mode .logo override removed — filter: brightness(1) is the default */
 
 .welcome-message {
     font-size: 1.5em;
@@ -686,36 +507,7 @@ textarea {
     font-weight: bold;
 }
 
-/* Update the Teams button container position */
-.report-container {
-    position: fixed;
-    bottom: 80px;  /* Adjusted from 140px */
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    z-index: 1001;
-}
-
-/* Update the bug bounty link position */
-.bug-bounty-link {
-    position: fixed;
-    bottom: 50px;  /* Adjusted from 100px */
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    text-decoration: none;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    font-size: 14px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-    z-index: 1000;
-}
-
-/* Create a container for all bottom elements */
+/* Container for all bottom-anchored elements (Need Help, etc.) */
 .bottom-buttons-container {
     position: fixed;
     bottom: 0;
@@ -724,24 +516,9 @@ textarea {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;  /* Adds consistent spacing between elements */
+    gap: 1rem;
     padding: 1rem;
     background: linear-gradient(to top, var(--background-color) 90%, transparent);
-}
-
-/* Update report container (Teams button) */
-.report-container {
-    position: static;  /* Remove fixed positioning */
-    transform: none;   /* Remove transform */
-    margin: 0;
-}
-
-/* Update bug bounty link */
-.bug-bounty-link {
-    position: static;  /* Remove fixed positioning */
-    transform: none;   /* Remove transform */
-    margin: 0;
-    width: fit-content;
 }
 
 .shirt-campaign-dm {
@@ -795,6 +572,7 @@ textarea {
 }
 
 .room-number {
+    font-size: 16px;
     font-weight: 600;
     white-space: nowrap;
     min-width: 60px;
@@ -807,7 +585,5 @@ textarea {
 
 /* Hide help button on smaller screens */
 @media (max-width: 1200px) {
-    .report-container {
-        /* Keep Need Help button visible on mobile */
-    }
+    /* Keep Need Help button visible on mobile — no override needed */
 }

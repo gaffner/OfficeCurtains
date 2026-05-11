@@ -1,30 +1,8 @@
-:root {
-    --background-color: #FFFAF0;
-    --container-color: #f7eee1;
-    --sub-container-color: #f0f0f0;
-    --text-color: #000000;
-    --primary-color: #2563eb;
-    --secondary-color: #e5e7eb;
-    --error-color: #dc2626;
-    --success-color: #6ec617;
-    --text-color: #000000;
-    --hover-color: #f1f5f9;
-}
-
-.dark-mode {
-    --background-color: #121212;
-    --container-color: #1a202c;
-    --sub-container-color: #2d3748;
-    --text-color: #ffffff;
-    --primary-color: #1d4ed8;
-    --secondary-color: #374151;
-    --button-color: #1f2937;
-    --error-color: #f87171;
-    --success-color: #4ade80;
-    --text-color: #ffffff;
-    --hover-color: #323d4d;
-}
-
+/*
+ * Page styles for credits/admin/chat/premium/whats_new pages.
+ * Theme variables live in theme.css; reusable components live
+ * in components.css.
+ */
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -60,7 +38,7 @@ body {
 
 h1 {
     text-align: center;
-    color: #2563eb;
+    color: var(--primary-color);
     margin-bottom: 1.5rem;
     font-size: 2.5rem;
 }
@@ -70,8 +48,8 @@ h1 {
 }
 
 .section h2 {
-    color: #1d4ed8;
-    border-bottom: 2px solid #e5e7eb;
+    color: var(--primary-hover);
+    border-bottom: 2px solid var(--secondary-color);
     padding-bottom: 0.5rem;
     margin-bottom: 1rem;
 }
@@ -100,20 +78,7 @@ h1 {
     border-radius: 4px;
 }
 
-.back-button {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: var(--sub-container-color);
-    color: var(--text-color);
-    text-decoration: none;
-    border-radius: 4px;
-    margin-bottom: 20px;
-    transition: background-color 0.3s;
-}
-
-.back-button:hover {
-    background-color: #1d4ed8;
-}
+/* .back-button is defined in components.css */
 
 .contribute-section {
     background-color: var(--sub-container-color);
@@ -123,6 +88,6 @@ h1 {
 }
 
 .contribute-section h3 {
-    color: #1d4ed8;
+    color: var(--primary-hover);
     margin-bottom: 1rem;
 }

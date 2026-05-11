@@ -4,47 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curtain Control System - What's New?</title>
+    <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/credits_style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="icon" type="image/svg+xml" href="/Frontend/Images/favicon.ico">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <style>
-        .markdown-content {
-            margin-top: 2rem;
-        }
-        .markdown-content h1 {
-            text-align: left;
-            color: #2563eb;
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-        .markdown-content h2 {
-            color: #1d4ed8;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.5rem;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            font-size: 1.5rem;
-        }
-        .markdown-content ul {
-            margin-left: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        .markdown-content li {
-            margin-bottom: 0.5rem;
-        }
-        .markdown-content strong {
-            color: var(--primary-color);
-        }
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-color);
-        }
-        .error {
-            color: var(--error-color);
-            text-align: center;
-            padding: 2rem;
-        }
-    </style>
+    <link rel="stylesheet" href="css/whats_new.css">
+    <script src="js/chrome.js" defer></script>
 </head>
 <body>
     <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
@@ -64,12 +30,6 @@
     </div>
 
     <script>
-        // Apply dark mode if enabled
-        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
-        if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-        }
-
         // Fetch and render markdown content
         async function loadWhatsNew() {
             const contentDiv = document.getElementById('content');

@@ -1,0 +1,112 @@
+/*
+ * Admin panel page styles.
+ * Shared classes (.admin-header alias of .page-header, .form-group input,
+ * .premium-badge, .room-tag, .message-box, .btn-primary alias .grant-button)
+ * come from components.css. Theme variables come from theme.css.
+ */
+
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Admin header uses red instead of the default blue */
+.admin-header h1 {
+    color: var(--error-color);
+}
+
+/* Section spacing for stacked panels */
+.grant-points-section,
+.users-table-section {
+    margin-bottom: 2rem;
+}
+
+.grant-points-section h2,
+.users-table-section h2 {
+    margin-bottom: 1rem;
+    color: var(--primary-emphasis);
+}
+
+/* ---- Grant points form ---- */
+.grant-form {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.form-group input {
+    min-width: 200px;
+}
+
+.form-group select {
+    min-width: 150px;
+}
+
+/* ---- Users table ---- */
+.users-table-section {
+    overflow-x: auto;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.users-table th,
+.users-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--secondary-color);
+}
+
+.users-table th {
+    font-weight: 600;
+    background: var(--surface-2);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.users-table tr:hover {
+    background: var(--surface-hover);
+}
+
+/* ---- Rooms list (admin: collapsed by default, expandable) ---- */
+.rooms-list {
+    display: none;
+    max-width: 300px;
+    margin-top: 0.5rem;
+}
+
+.rooms-list.expanded {
+    display: flex;
+}
+
+.rooms-toggle {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.rooms-toggle:hover {
+    background: var(--primary-hover);
+}

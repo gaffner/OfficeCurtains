@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curtain Control System - Credits</title>
+    <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/credits_style.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="icon" type="image/svg+xml" href="/Frontend/Images/favicon.ico">
+    <script src="js/chrome.js" defer></script>
 </head>
 <body>
     <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
@@ -47,12 +51,6 @@
             </ul>
         </div>
     </div>
-    <script>
-        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
-
-        if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-        }
-        </script>
+    <!-- Dark mode handled by js/chrome.js -->
 </body>
 </html>

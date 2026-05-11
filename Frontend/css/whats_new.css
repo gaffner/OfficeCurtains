@@ -1,0 +1,36 @@
+/*
+ * What's New page styles.
+ * Shared component styles come from components.css.
+ */
+
+.markdown-content {
+    line-height: 1.8;
+}
+
+.markdown-content h1 {
+    color: var(--primary-emphasis);
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content h2 {
+    color: var(--text-color);
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.markdown-content ul {
+    margin-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content li {
+    margin-bottom: 0.25rem;
+}
+
+.markdown-content strong {
+    color: var(--primary-emphasis);
+}
+
+/* .error is provided by components.css */

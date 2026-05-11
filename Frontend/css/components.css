@@ -1,0 +1,408 @@
+/*
+ * Reusable UI components for the Curtain Control System.
+ *
+ * Component classes defined here are intended to be shared across
+ * multiple pages. Avoid redefining these classes inside individual
+ * page <style> blocks or other stylesheets — extend or override
+ * specific properties only when a page truly needs to differ.
+ *
+ * Conventions:
+ *   - Components rely on the CSS custom properties declared in
+ *     style.css / credits_style.css (e.g. --primary-color,
+ *     --text-color, --sub-container-color, --error-color).
+ *   - Dark-mode variants use the `.dark-mode` body class.
+ */
+
+
+/* ---------------------------------------------------------------
+ * Back button
+ * Used at the top of secondary pages to navigate back to the
+ * Control Panel (index.html).
+ * --------------------------------------------------------------- */
+.back-button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: var(--sub-container-color);
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: var(--primary-hover);
+    color: #ffffff;
+}
+
+
+/* ---------------------------------------------------------------
+ * Loading state
+ * Centered text shown while async content is being fetched.
+ * --------------------------------------------------------------- */
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--muted-text);
+}
+
+
+/* ---------------------------------------------------------------
+ * Empty state
+ * Centered, muted text shown when a list/section has no content.
+ * --------------------------------------------------------------- */
+.empty-state {
+    text-align: center;
+    color: var(--muted-text-soft);
+    padding: 2rem;
+    font-style: italic;
+}
+
+
+/* ---------------------------------------------------------------
+ * Inline status messages
+ * Generic success / error text used by forms.
+ * --------------------------------------------------------------- */
+.success-message {
+    color: var(--success-color);
+    margin-top: 10px;
+    display: none;
+}
+
+.error-message {
+    color: var(--error-color);
+    margin-top: 10px;
+    display: none;
+}
+
+/*
+ * Inline error block.
+ * Used as a standalone visible message (whats_new.html) or as an
+ * initially-empty placeholder toggled by JS (index.html — see
+ * `#error { display: none }` in style.css for that page's variant).
+ */
+.error {
+    color: var(--error-color);
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: var(--error-bg);
+    border-radius: 4px;
+}
+
+
+/* ---------------------------------------------------------------
+ * Section divider
+ * Horizontal rule used to separate logical sections on a page.
+ * --------------------------------------------------------------- */
+.section-divider {
+    border: none;
+    border-top: 2px solid var(--secondary-color);
+    margin: 2rem 0;
+}
+
+
+/* ---------------------------------------------------------------
+ * Primary button
+ * The standard blue call-to-action used across forms and panels.
+ * Use as either <button class="btn-primary"> or
+ * <a class="btn-primary">. Variants: .btn-primary--lg for the
+ * larger pill style used on premium / chat send buttons.
+ *
+ * Legacy class names (.grant-button, .send-button, .pm-send-button,
+ * .option-button, .action-button) are aliased here so existing
+ * markup keeps working without per-page duplication. Use
+ * .btn-primary for any NEW markup.
+ * --------------------------------------------------------------- */
+.btn-primary,
+.grant-button,
+.send-button,
+.pm-send-button,
+.option-button,
+.action-button,
+.add-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    background: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.btn-primary:hover,
+.grant-button:hover,
+.send-button:hover,
+.pm-send-button:hover,
+.option-button:hover,
+.action-button:hover,
+.add-button:hover {
+    background: var(--primary-hover);
+}
+
+.btn-primary:disabled,
+.send-button:disabled,
+.pm-send-button:disabled {
+    background: var(--muted-text-soft);
+    cursor: not-allowed;
+}
+
+/* Larger pill variant (chat send button, premium option buttons) */
+.btn-primary--lg,
+.send-button,
+.option-button {
+    padding: 0.75rem 1.5rem;
+}
+
+.send-button {
+    padding: 0.75rem 2rem;
+}
+
+.pm-send-button {
+    width: 100%;
+    font-size: 0.875rem;
+}
+
+/*
+ * Smaller variant used by the Control Panel "Add Room" button and any
+ * compact action that needs to fit alongside an input.
+ */
+.btn-primary--sm,
+.add-button {
+    padding: 8px 16px;
+    font-size: 14px;
+    gap: 5px;
+}
+
+
+/* ---------------------------------------------------------------
+ * Card / panel
+ * Generic raised surface used for sections like option cards,
+ * grant-points, contribution panels, etc.
+ *
+ * Legacy class aliases: .option-card, .grant-points-section,
+ * .users-table-section, .chat-messages, .chat-input-container,
+ * .pm-form. New markup should use `.card` or `.card .card--interactive`.
+ * --------------------------------------------------------------- */
+.card,
+.option-card,
+.grant-points-section,
+.users-table-section,
+.chat-messages,
+.chat-input-container,
+.pm-form {
+    background: var(--card-bg);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card--interactive,
+.option-card {
+    border: 2px solid transparent;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card--interactive:hover,
+.option-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+
+/* ---------------------------------------------------------------
+ * Status banner
+ * Inline success / error message block (with a background fill).
+ * Distinct from .success-message / .error-message which are plain
+ * text variants.
+ *
+ * Legacy aliases:
+ *   .message-box  -> admin grant feedback (toggled by JS via .success/.error)
+ *   .pm-status    -> chat private-message feedback
+ * The base rule keeps them hidden; adding `.success` / `.error`
+ * (or `.is-visible` on `.banner`) reveals them.
+ * --------------------------------------------------------------- */
+.banner,
+.message-box,
+.pm-status {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: none;
+}
+
+.banner.is-visible,
+.message-box.success,
+.message-box.error,
+.pm-status.success,
+.pm-status.error {
+    display: block;
+}
+
+.banner--success,
+.message-box.success,
+.pm-status.success {
+    background: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-bg-strong);
+}
+
+.banner--error,
+.message-box.error,
+.pm-status.error {
+    background: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid var(--error-bg-strong);
+}
+
+
+/* ---------------------------------------------------------------
+ * Form input
+ * Standard text input / select / textarea styling used across
+ * admin, chat, premium, and the referral popup.
+ *
+ * Legacy aliases: .chat-input, .referral-input, .pm-form input,
+ * .pm-form select, .pm-form textarea, .form-group input,
+ * .form-group select.
+ * --------------------------------------------------------------- */
+.input,
+.chat-input,
+.referral-input,
+.pm-form select,
+.pm-form textarea,
+.pm-form input[type="text"],
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--input-border);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    background: var(--input-bg);
+    color: var(--text-color);
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+.input:focus,
+.chat-input:focus,
+.referral-input:focus,
+.pm-form select:focus,
+.pm-form textarea:focus,
+.pm-form input[type="text"]:focus,
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-emphasis);
+}
+
+
+/* ---------------------------------------------------------------
+ * Page header
+ * Centered title + muted subtitle used at the top of secondary
+ * pages (admin, premium, chat sections).
+ *
+ * Legacy aliases: .admin-header, .premium-header, .section-header.
+ * --------------------------------------------------------------- */
+.page-header,
+.admin-header,
+.premium-header,
+.section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1,
+.admin-header h1,
+.premium-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.page-header h2,
+.section-header h2 {
+    color: var(--primary-emphasis);
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.page-header p,
+.admin-header p,
+.premium-header p,
+.section-header p {
+    color: var(--muted-text);
+    font-size: 1.1rem;
+}
+
+
+/* ---------------------------------------------------------------
+ * Room tag list
+ * Chips representing rooms a user follows. Two visual variants
+ * exist: compact chips (admin panel) and full-width pills
+ * (premium page). Default style is the compact chip; add
+ * `.rooms-list--pills` on the wrapper for the larger pill variant.
+ * --------------------------------------------------------------- */
+.rooms-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.room-tag {
+    padding: 0.125rem 0.5rem;
+    background: #dbeafe;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    color: #1e40af;
+}
+
+.dark-mode .room-tag {
+    background: #1e3a8a;
+    color: #bfdbfe;
+}
+
+.rooms-list--pills {
+    gap: 0.5rem;
+}
+
+.rooms-list--pills .room-tag {
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.875rem;
+    background: var(--secondary-color);
+    color: var(--muted-text);
+}
+
+.dark-mode .rooms-list--pills .room-tag {
+    background: var(--input-border);
+    color: var(--secondary-color);
+}
+
+
+/* ---------------------------------------------------------------
+ * Premium badge / accents
+ * Gold-themed pill used to mark premium users and crown icons.
+ * --------------------------------------------------------------- */
+.premium-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--gradient-premium);
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gold-text);
+}
+
+.crown,
+.crown-icon {
+    color: var(--gold);
+}

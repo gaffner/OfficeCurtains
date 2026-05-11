@@ -1,0 +1,105 @@
+/*
+ * Global theme variables and base resets for the Curtain Control System.
+ *
+ * This stylesheet must be loaded BEFORE any other CSS so its variables
+ * are available everywhere. Component, page, and inline styles should
+ * reference these variables instead of hard-coded colors.
+ */
+
+:root {
+    /* Surfaces */
+    --background-color: #FFFAF0;
+    --container-color: #f7eee1;
+    --sub-container-color: #f0f0f0;
+    --card-bg: #ffffff;
+    --surface-2: #f3f4f6;          /* slightly recessed surface (table headers, message bubbles) */
+    --surface-hover: #f9fafb;      /* row hover */
+
+    /* Text */
+    --text-color: #000000;
+    --muted-text: #6b7280;         /* secondary / helper text */
+    --muted-text-soft: #9ca3af;    /* tertiary text, disabled states, placeholders */
+
+    /* Brand */
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-emphasis: #2563eb;   /* heading accent (lighter in dark mode) */
+
+    /* Inputs / borders */
+    --input-bg: #ffffff;
+    --input-border: #e5e7eb;
+    --border-strong: #d1d5db;
+
+    /* Neutrals */
+    --secondary-color: #e5e7eb;
+    --hover-color: #f1f5f9;
+    --button-color: #e5e7eb;
+
+    /* Status */
+    --error-color: #dc2626;
+    --success-color: #6ec617;
+    --success-message-background: #d4edda;
+
+    /* Status banners (success / error backgrounds + accents) */
+    --success-bg: #d1fae5;
+    --success-bg-strong: #10b981;
+    --success-text: #065f46;
+    --error-bg: #fee2e2;
+    --error-bg-strong: #ef4444;
+    --error-text: #991b1b;
+
+    /* Premium / gold accent */
+    --gold: #f59e0b;
+    --gold-hover: #d97706;
+    --gold-text: #78350f;
+    --gradient-premium: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+}
+
+.dark-mode {
+    --background-color: #121212;
+    --container-color: #1a202c;
+    --sub-container-color: #2d3748;
+    --card-bg: #1f2937;
+    --surface-2: #374151;
+    --surface-hover: #374151;
+
+    --text-color: #ffffff;
+    --muted-text: #d1d5db;
+    --muted-text-soft: #9ca3af;
+
+    --primary-color: #1d4ed8;
+    --primary-hover: #2563eb;
+    --primary-emphasis: #60a5fa;   /* lighter blue reads better on dark surfaces */
+
+    --input-bg: #374151;
+    --input-border: #4b5563;
+    --border-strong: #4b5563;
+
+    --secondary-color: #374151;
+    --hover-color: #323d4d;
+    --button-color: #1f2937;
+
+    --error-color: #f87171;
+    --success-color: #4ade80;
+    --success-message-background: #2e7d32;
+
+    --success-bg: #064e3b;
+    --success-bg-strong: #10b981;
+    --success-text: #a7f3d0;
+    --error-bg: #7f1d1d;
+    --error-bg-strong: #ef4444;
+    --error-text: #fecaca;
+
+    --gold: #f59e0b;
+    --gold-hover: #d97706;
+    --gold-text: #fef3c7;
+    --gradient-premium: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+}
+
+
+/* Universal reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}

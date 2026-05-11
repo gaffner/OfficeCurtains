@@ -4,225 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Curtains Premium</title>
+    <link rel="stylesheet" href="css/theme.css">
     <link rel="stylesheet" href="css/credits_style.css">
-    <link rel="icon" type="image/svg+xml" href="Images/favicon.ico">
-    <style>
-        .premium-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        .premium-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        .premium-header h1 {
-            color: #f59e0b;
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .premium-header .crown {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .premium-status {
-            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            text-align: center;
-            border: 2px solid #f59e0b;
-        }
-
-        .premium-status.active {
-            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-            border-color: #28a745;
-        }
-
-        .premium-status h2 {
-            color: #92400e;
-            margin-bottom: 0.5rem;
-        }
-
-        .premium-status.active h2 {
-            color: #155724;
-        }
-
-        .options-grid {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .option-card {
-            background: var(--card-bg, #ffffff);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .option-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
-        }
-
-        .option-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .option-card h3 {
-            color: var(--primary-color, #2563eb);
-            margin-bottom: 0.75rem;
-            font-size: 1.25rem;
-        }
-
-        .option-card p {
-            color: var(--text-color, #374151);
-            margin-bottom: 1rem;
-            line-height: 1.6;
-        }
-
-        .option-button {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
-            background: var(--primary-color, #2563eb);
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: background 0.3s ease;
-        }
-
-        .option-button:hover {
-            background: var(--hover-color, #1d4ed8);
-        }
-
-        .option-button.whatsapp {
-            background: #25D366;
-        }
-
-        .option-button.whatsapp:hover {
-            background: #128C7E;
-        }
-
-        .option-button.github {
-            background: #333;
-        }
-
-        .option-button.github:hover {
-            background: #000;
-        }
-
-        .rooms-section {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: #f3f4f6;
-            border-radius: 1rem;
-        }
-
-        .dark-mode .rooms-section {
-            background: #374151;
-        }
-
-        .rooms-section h3 {
-            margin-bottom: 1rem;
-            color: var(--primary-color, #2563eb);
-        }
-
-        .rooms-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .room-tag {
-            background: #e5e7eb;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.875rem;
-            color: #374151;
-        }
-
-        .dark-mode .room-tag {
-            background: #4b5563;
-            color: #e5e7eb;
-        }
-
-        .login-prompt {
-            text-align: center;
-            padding: 2rem;
-            background: #fef3c7;
-            border-radius: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .login-prompt a {
-            color: #2563eb;
-            font-weight: 600;
-        }
-
-        .referral-link-container {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .referral-input {
-            flex: 1;
-            padding: 0.75rem;
-            border: 2px solid #e5e7eb;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            background: #f9fafb;
-        }
-
-        .dark-mode .referral-input {
-            background: #374151;
-            border-color: #4b5563;
-            color: #e5e7eb;
-        }
-
-        .copy-btn {
-            background: #f59e0b !important;
-        }
-
-        .copy-btn:hover {
-            background: #d97706 !important;
-        }
-
-        .copy-btn.copied {
-            background: #10b981 !important;
-        }
-
-        /* Dark mode */
-        .dark-mode .option-card {
-            background: #1f2937;
-        }
-
-        .dark-mode .premium-status {
-            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
-        }
-
-        .dark-mode .premium-status h2 {
-            color: #fef3c7;
-        }
-
-        .dark-mode .login-prompt {
-            background: #78350f;
-            color: #fef3c7;
-        }
-    </style>
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="icon" type="image/svg+xml" href="/Frontend/Images/favicon.ico">
+    <link rel="stylesheet" href="css/premium.css">
+    <script src="js/chrome.js" defer></script>
 </head>
 <body>
     <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
@@ -285,19 +72,13 @@
         <!-- User's rooms section -->
         <div id="roomsSection" class="rooms-section" style="display: none;">
             <h3>🏢 Rooms You've Controlled</h3>
-            <div id="roomsList" class="rooms-list">
+            <div id="roomsList" class="rooms-list rooms-list--pills">
                 <!-- Rooms will be populated here -->
             </div>
         </div>
     </div>
 
     <script>
-        // Apply dark mode if enabled
-        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
-        if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-        }
-
         // Check authentication and load user data
         async function loadUserData() {
             try {
