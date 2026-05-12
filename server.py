@@ -265,6 +265,11 @@ def root(request: Request):
     return RedirectResponse(url="/Frontend/index.html")
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return RedirectResponse(url="/Frontend/Images/favicon.ico")
+
+
 @app.get("/register/{room_name}")
 @require_auth
 def register(request: Request, room_name: str):
