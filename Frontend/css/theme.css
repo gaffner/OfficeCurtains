@@ -53,6 +53,9 @@
     --gold-hover: #d97706;
     --gold-text: #78350f;
     --gradient-premium: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+
+    /* Accessibility */
+    --focus-ring: rgba(37, 99, 235, 0.45);
 }
 
 .dark-mode {
@@ -94,6 +97,8 @@
     --gold-hover: #d97706;
     --gold-text: #fef3c7;
     --gradient-premium: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+
+    --focus-ring: rgba(96, 165, 250, 0.55);
 }
 
 

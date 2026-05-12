@@ -94,6 +94,12 @@
 
 .rooms-list.expanded {
     display: flex;
+    animation: rooms-list-fade-in 180ms ease-out both;
+}
+
+@keyframes rooms-list-fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .rooms-toggle {
@@ -105,8 +111,24 @@
     cursor: pointer;
     font-size: 0.75rem;
     font-weight: 600;
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .rooms-toggle:hover {
     background: var(--primary-hover);
+}
+
+.rooms-toggle:active {
+    transform: scale(0.97);
+}
+
+.rooms-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring, rgba(59, 130, 246, 0.5));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rooms-list.expanded { animation: none; }
+    .rooms-toggle { transition: none; }
+    .rooms-toggle:active { transform: none; }
 }

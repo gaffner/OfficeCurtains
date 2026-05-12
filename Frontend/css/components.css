@@ -406,3 +406,34 @@
 .crown-icon {
     color: var(--gold);
 }
+
+
+/* ---------------------------------------------------------------
+ * Accessible focus states
+ * Applies a consistent, visible focus ring to interactive
+ * elements when navigated via keyboard. Pointer focus is left
+ * unstyled (via :focus-visible) so mouse users don't see rings
+ * on click.
+ * --------------------------------------------------------------- */
+button:focus-visible,
+[role="button"]:focus-visible,
+.back-button:focus-visible,
+.login-button:focus-visible,
+.add-button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--focus-ring, rgba(59, 130, 246, 0.5));
+    border-color: var(--primary-color, #3b82f6);
+}
+
+input,
+select,
+textarea {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    input, select, textarea { transition: none; }
+}
