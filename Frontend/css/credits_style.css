@@ -100,21 +100,6 @@ h1 {
     border-radius: 4px;
 }
 
-.back-button {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: var(--sub-container-color);
-    color: var(--text-color);
-    text-decoration: none;
-    border-radius: 4px;
-    margin-bottom: 20px;
-    transition: background-color 0.3s;
-}
-
-.back-button:hover {
-    background-color: #1d4ed8;
-}
-
 .contribute-section {
     background-color: var(--sub-container-color);
     padding: 1.5rem;

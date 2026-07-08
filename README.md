@@ -22,6 +22,23 @@ When in test mode:
 
 The UI will show `[TEST MODE]` in responses so you know commands aren't actually being sent.
 
+## Azure Functions
+
+The FastAPI app can also run as an Azure Functions Python app through `function_app.py`.
+
+1. Install Azure Functions Core Tools and dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Create local settings and run the function host:
+   ```bash
+   cp local.settings.json.example local.settings.json
+   func start
+   ```
+3. Open http://127.0.0.1:7071
+
+`host.json` removes the default `/api` route prefix so the existing frontend paths and authentication redirects keep working unchanged.
+
 ## Security Notes
 
 - Never commit `.env` file to git (already in `.gitignore`)

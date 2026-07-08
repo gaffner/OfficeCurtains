@@ -4,21 +4,6 @@
     padding: 20px;
 }
 
-.back-button {
-    display: inline-block;
-    margin-bottom: 20px;
-    text-decoration: none;
-    padding: 8px 16px;
-    background-color: var(--primary-color);
-    color: white;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-}
-
-.back-button:hover {
-    background-color: #1d4ed8;
-}
-
 /* Rest of the previous CSS remains the same */
 .option-container {
     background-color: var(--sub-container-color);
