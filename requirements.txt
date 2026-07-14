@@ -1,0 +1,2 @@
+-r data/requirements.txt
+azure-functions==1.21.3
