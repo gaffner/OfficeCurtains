@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -382,9 +382,9 @@
         </label>
     </div>
     
-    <div class="ad-banner" dir="rtl" lang="he" role="complementary" aria-label="שטח פרסום">
-        <span class="ad-banner-label">פרסומת</span>
-        <span class="ad-banner-text">שטח פרסום זה יכול להיות שלך</span>
+    <div class="ad-banner" dir="rtl" lang="he" role="complementary" aria-label="×©×˜×— ×¤×¨×¡×•×">
+        <span class="ad-banner-label">×¤×¨×¡×•×ž×ª</span>
+        <span class="ad-banner-text">×©×˜×— ×¤×¨×¡×•× ×–×” ×™×›×•×œ ×œ×”×™×•×ª ×©×œ×š</span>
     </div>
 
     <div class="logo-container">
@@ -417,25 +417,11 @@
 
 <!-- Sidebar -->
 <div class="sidebar">
-    <a href="/Frontend/premium.html" class="sidebar-link" style="color: #f59e0b;">👑 Curtains Premium</a>
-    <a href="/Frontend/chat.html" class="sidebar-link">💬 Chat & Messages</a>
-    <a href="/Frontend/admin.html" class="sidebar-link" id="adminLink" style="display: none; color: #dc2626;">🔐 Admin Panel</a>
-    <a href="/Frontend/whats_new.html" class="sidebar-link">✨ What's New?</a>
-    <a href="/Frontend/credits.html" class="sidebar-link">❤️ Credits</a>
-    <a href="#" class="sidebar-link sidebar-logout" id="sidebarLogout" onclick="logout(); return false;" style="display: none;">
-        <img src="https://img.icons8.com/material-outlined/24/ffffff/exit.png" alt="Logout" class="logout-icon">
-        Logout
-    </a>
-</div>
-<div class="points-display" id="pointsDisplay">
-    <span class="points-icon">🎯</span>
-    <span id="pointsValue">0</span> points
+    <a href="/Frontend/chat.html" class="sidebar-link">ðŸ’¬ Chat</a>
+    <a href="/Frontend/whats_new.html" class="sidebar-link">âœ¨ What's New?</a>
+    <a href="/Frontend/credits.html" class="sidebar-link">â¤ï¸ Credits</a>
 </div>
 <div class="bottom-buttons-container">
-    <div class="auth-container" id="authContainer">
-        <div class="auth-message" id="authMessage" style="display: none;"></div>
-        <div id="authButton"></div>
-    </div>
     <div class="report-container">
         <a href="https://teams.microsoft.com/l/chat/0/0?users=galtshuler@microsoft.com" class="teams-button">
             <img src="Images/teams.png" alt="Teams Logo">
@@ -446,305 +432,8 @@
         <img src="https://img.shields.io/badge/Donate_the_Code-GitHub-1f8ccf.svg" alt="Donate the Code on GitHub">
     </a>
 </div>
-<a href="/Frontend/premium.html" class="premium-button" id="premiumButton">
-    👑 Get Premium
-</a>
-
 <script>
-    // Check authentication status on page load
-    async function checkAuthStatus() {
-        console.log('checkAuthStatus: Starting...');
-        try {
-            const response = await fetch('/check-auth', {
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-            console.log('checkAuthStatus: Received data:', data);
-            const authMessage = document.getElementById('authMessage');
-            const authButton = document.getElementById('authButton');
-            const sidebarLogout = document.getElementById('sidebarLogout');
-
-            const welcomeMessage = document.getElementById('welcomeMessage');
-            const roomsList = document.getElementById('roomsList');
-            const emptyState = document.getElementById('emptyState');
-            
-            if (data.authenticated && data.username) {
-                // User is logged in - hide auth button on main screen (desktop only shows login, mobile uses sidebar)
-                authButton.innerHTML = '';
-                
-                // Show logout in sidebar for mobile
-                if (sidebarLogout) {
-                    sidebarLogout.style.display = 'flex';
-                }
-                
-                // Show rooms
-                if (roomsList) roomsList.style.display = 'block';
-                if (emptyState) emptyState.style.display = 'block';
-                
-                // Store authentication state
-                window.isAuthenticated = true;
-                
-                // Trigger room rendering
-                if (typeof curtainControl !== 'undefined') {
-                    curtainControl.renderRooms();
-                }
-
-                // Display welcome message
-                if (data.is_admin) {
-                    welcomeMessage.innerHTML = `Welcome ${data.username}, <span style="color: #dc2626; font-weight: bold;">Admin!</span>`;
-                } else {
-                    welcomeMessage.textContent = `Welcome ${data.username}`;
-                }
-                welcomeMessage.classList.add('visible');
-
-                // Update premium button based on status
-                const premiumButton = document.getElementById('premiumButton');
-                if (premiumButton && data.is_premium) {
-                    premiumButton.innerHTML = '✨ Premium Member';
-                    premiumButton.classList.add('is-premium');
-                }
-
-                // Display points
-                const pointsDisplay = document.getElementById('pointsDisplay');
-                const pointsValue = document.getElementById('pointsValue');
-                if (pointsDisplay && pointsValue) {
-                    pointsValue.textContent = data.points || 0;
-                    pointsDisplay.style.display = 'flex';
-                }
-
-                // Show admin link if user is admin
-                const adminLink = document.getElementById('adminLink');
-                if (adminLink && data.is_admin) {
-                    adminLink.style.display = 'flex';
-                }
-
-                // Store username in localStorage for persistence
-                localStorage.setItem('userName', data.username);
-
-                // Fetch and display pending messages
-                fetchAndDisplayMessages();
-            } else {
-                // User is not logged in - show login button
-                authButton.innerHTML = `
-                    <button class="login-button" disabled style="opacity: 0.6; cursor: not-allowed;">
-                        <img src="https://learn.microsoft.com/en-us/entra/identity-platform/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.svg" alt="Microsoft Logo">
-                        Sign-in temporarily disabled
-                    </button>
-                `;
-                
-                // Hide logout in sidebar
-                if (sidebarLogout) {
-                    sidebarLogout.style.display = 'none';
-                }
-                
-                // Hide rooms when not logged in
-                if (roomsList) roomsList.style.display = 'none';
-                if (emptyState) emptyState.style.display = 'none';
-                
-                // Store authentication state
-                window.isAuthenticated = false;
-
-                // Hide welcome message
-                welcomeMessage.classList.remove('visible');
-                welcomeMessage.textContent = '';
-
-                // Hide points display
-                const pointsDisplay = document.getElementById('pointsDisplay');
-                if (pointsDisplay) {
-                    pointsDisplay.style.display = 'none';
-                }
-
-                // Hide admin link
-                const adminLink = document.getElementById('adminLink');
-                if (adminLink) {
-                    adminLink.style.display = 'none';
-                }
-
-                // Clear stored username
-                localStorage.removeItem('userName');
-            }
-        } catch (error) {
-            console.error('Error checking auth status:', error);
-            const authButton = document.getElementById('authButton');
-            const sidebarLogout = document.getElementById('sidebarLogout');
-            const welcomeMessage = document.getElementById('welcomeMessage');
-            const roomsList = document.getElementById('roomsList');
-            const emptyState = document.getElementById('emptyState');
-
-            authButton.innerHTML = `
-                <button class="login-button" disabled style="opacity: 0.6; cursor: not-allowed;">
-                    <img src="https://learn.microsoft.com/en-us/entra/identity-platform/media/howto-add-branding-in-apps/ms-symbollockup_mssymbol_19.svg" alt="Microsoft Logo">
-                    Sign-in temporarily disabled
-                </button>
-            `;
-            
-            // Hide logout in sidebar on error
-            if (sidebarLogout) {
-                sidebarLogout.style.display = 'none';
-            }
-            
-            // Hide rooms on error
-            if (roomsList) roomsList.style.display = 'none';
-            if (emptyState) emptyState.style.display = 'none';
-            
-            // Store authentication state
-            window.isAuthenticated = false;
-
-            // Hide welcome message on error
-            welcomeMessage.classList.remove('visible');
-            welcomeMessage.textContent = '';
-        }
-    }
-
-    function logout() {
-        window.location.href = '/logout';
-    }
-
-    // Fetch and display pending messages
-    async function fetchAndDisplayMessages() {
-        try {
-            console.log('fetchAndDisplayMessages: Starting...');
-            const response = await fetch('/api/messages', {
-                credentials: 'include'
-            });
-            
-            console.log('fetchAndDisplayMessages: Response status:', response.status);
-            
-            if (!response.ok) {
-                console.log('No messages or not authenticated');
-                return;
-            }
-            
-            const data = await response.json();
-            console.log('Received messages:', data.messages);
-            
-            if (data.messages && data.messages.length > 0) {
-                console.log(`Displaying ${data.messages.length} messages`);
-                // Display messages one by one with delay
-                for (let i = 0; i < data.messages.length; i++) {
-                    setTimeout(() => {
-                        console.log(`Showing message ${i+1}:`, data.messages[i]);
-                        showMessage(data.messages[i]);
-                    }, i * 500); // Stagger popups by 500ms
-                }
-            } else {
-                console.log('No messages to display');
-            }
-        } catch (error) {
-            console.error('Error fetching messages:', error);
-        }
-    }
-
-    function showMessage(message) {
-        const { type, title, text } = message;
-        
-        // Determine emoji based on type
-        let emoji;
-        if (type === 'success') {
-            emoji = '😊'; // Happy emoji for success
-        } else if (type === 'warning') {
-            emoji = '⚠️'; // Warning emoji
-        } else if (type === 'failure') {
-            emoji = '❌';
-        } else {
-            emoji = 'ℹ️';
-        }
-        
-        console.log(`Showing ${type} popup:`, title, text);
-        
-        const popup = document.createElement('div');
-        popup.className = 'referral-popup';
-        popup.innerHTML = `
-            <div class="referral-popup-content ${type}">
-                <button class="referral-popup-close" onclick="this.parentElement.parentElement.remove()">×</button>
-                <div class="referral-popup-icon">${emoji}</div>
-                <h2>${title}</h2>
-                <p>${text}</p>
-                <button onclick="this.parentElement.parentElement.remove()">Got it!</button>
-            </div>
-        `;
-        document.body.appendChild(popup);
-        
-        // Close on background click
-        popup.addEventListener('click', (e) => {
-            if (e.target === popup) popup.remove();
-        });
-    }
-
-    function showTestLoginPopup() {
-        const popup = document.createElement('div');
-        popup.className = 'referral-popup';
-        popup.innerHTML = `
-            <div class="referral-popup-content">
-                <button class="referral-popup-close" onclick="this.parentElement.parentElement.remove()">×</button>
-                <div class="referral-popup-icon">🧪</div>
-                <h2>Test Mode Login</h2>
-                <p>Enter a username to simulate login:</p>
-                <input type="text" id="testUsername" placeholder="Enter username (e.g., John Doe)" autofocus>
-                <button onclick="submitTestLogin()">Login</button>
-            </div>
-        `;
-        document.body.appendChild(popup);
-        
-        // Handle Enter key
-        const input = document.getElementById('testUsername');
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') submitTestLogin();
-        });
-        input.focus();
-    }
-
-    function submitTestLogin() {
-        const username = document.getElementById('testUsername').value.trim() || 'Developer';
-        window.location.href = '/login/test?username=' + encodeURIComponent(username);
-    }
-
-    function showPendingReferralBanner(referrerName) {
-        const banner = document.createElement('div');
-        banner.className = 'pending-referral-banner';
-        banner.innerHTML = `
-            🎁 You got a referral from <strong>${referrerName}</strong>! 
-            Sign in for the first time to give them Premium.
-        `;
-        document.body.prepend(banner);
-        
-        // Auto-dismiss after 10 seconds
-        setTimeout(() => {
-            banner.style.animation = 'slideUp 0.3s ease reverse';
-            setTimeout(() => banner.remove(), 300);
-        }, 10000);
-    }
-
-    // Run auth check on page load
     document.addEventListener('DOMContentLoaded', function() {
-        checkAuthStatus();
-        
-        // Also fetch messages separately to catch any immediate redirects
-        setTimeout(() => {
-            fetchAndDisplayMessages();
-        }, 500);
-        
-        // Check for query params
-        const urlParams = new URLSearchParams(window.location.search);
-        
-        // Check for pending referral (before login)
-        const pendingReferral = urlParams.get('pendingReferral');
-        if (pendingReferral) {
-            showPendingReferralBanner(pendingReferral);
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-        
-        // Check for test login prompt
-        const showTestLogin = urlParams.get('showTestLogin');
-        if (showTestLogin === 'true') {
-            showTestLoginPopup();
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-        
         // Fetch and display version
         fetch('/version')
             .then(response => response.json())

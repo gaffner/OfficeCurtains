@@ -1,5 +1,12 @@
 # What's New?
 
+## July 2026
+
+### Version 4.0.0 - Simplified & Unified
+- **IP-Only Access**: Removed Microsoft sign-in (SSO). Access is now controlled purely by IP whitelisting - if you're on an allowed network you're in, no login required
+- **Anonymous Chat**: The chat is now anonymous and simpler - just type your name with each message
+- **Streamlined App**: Removed accounts-based features (premium, points, referrals, admin panel, private messages) to keep the app lightweight and easy to maintain
+
 ## February 2026
 
 ### Version 3.1.0 - Admin Panel Cleanup & Room Tracking

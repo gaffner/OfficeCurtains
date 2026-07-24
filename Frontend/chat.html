@@ -399,37 +399,10 @@
             ← Back to Control
         </a>
 
-        <!-- Private Messages Section -->
-        <div class="section-header">
-            <h2>✉️ Private Messages</h2>
-            <p>Send a private notification to another user</p>
-        </div>
-
-        <div class="pm-form">
-            <label for="pmRecipient">Recipient</label>
-            <div class="pm-autocomplete">
-                <input type="text" id="pmRecipient" placeholder="Type at least 3 characters..." autocomplete="off">
-                <div class="pm-suggestions" id="pmSuggestions"></div>
-            </div>
-
-            <label for="pmText">Message</label>
-            <textarea id="pmText" placeholder="Type your private message..." maxlength="500"></textarea>
-
-            <button class="pm-send-button" id="pmSendButton">Send Private Message</button>
-
-            <div class="pm-status" id="pmStatus"></div>
-        </div>
-
-        <div class="pm-info">
-            Private messages appear as notifications to the recipient the next time they use the app.
-        </div>
-
-        <hr class="section-divider">
-
         <!-- Public Chat Section -->
         <div class="section-header">
             <h2>💬 Public Chat</h2>
-            <p>Chat with other curtain controllers</p>
+            <p>Chat anonymously — just type your name with each message</p>
         </div>
 
         <div class="chat-messages" id="chatMessages">
@@ -437,10 +410,18 @@
         </div>
 
         <div class="chat-input-container">
-            <input 
-                type="text" 
-                class="chat-input" 
-                id="messageInput" 
+            <input
+                type="text"
+                class="chat-input"
+                id="nameInput"
+                placeholder="Your name"
+                maxlength="40"
+                style="flex: 0 0 140px;"
+            >
+            <input
+                type="text"
+                class="chat-input"
+                id="messageInput"
                 placeholder="Type your message..."
                 maxlength="500"
             >
@@ -450,6 +431,9 @@
 
     <script>
         let lastMessageCount = 0;
+
+        // Restore the last-used display name for convenience.
+        document.getElementById('nameInput').value = localStorage.getItem('chatName') || '';
 
         // ============== Public Chat ==============
         async function loadMessages() {
@@ -470,21 +454,17 @@
 
                 if (data.messages.length !== lastMessageCount) {
                     lastMessageCount = data.messages.length;
-                    
+
                     messagesContainer.innerHTML = data.messages.map(msg => {
-                        const messageTime = new Date(msg.timestamp).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
+                        const messageTime = new Date(msg.timestamp).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit'
                         });
 
-                        const premiumClass = msg.is_premium ? 'premium' : '';
-                        const crownIcon = msg.is_premium ? '<span class="crown-icon">👑</span>' : '';
-
                         return `
-                            <div class="message ${premiumClass}">
+                            <div class="message">
                                 <div class="message-header">
-                                    ${crownIcon}
-                                    <span class="message-username">${escapeHtml(msg.username)}</span>
+                                    <span class="message-username">${escapeHtml(msg.name)}</span>
                                     <span class="message-time">${messageTime}</span>
                                 </div>
                                 <div class="message-text">${escapeHtml(msg.message)}</div>
@@ -501,9 +481,13 @@
 
         async function sendMessage() {
             const input = document.getElementById('messageInput');
+            const nameField = document.getElementById('nameInput');
             const message = input.value.trim();
+            const name = nameField.value.trim() || 'Anonymous';
 
             if (!message) return;
+
+            localStorage.setItem('chatName', nameField.value.trim());
 
             const sendButton = document.getElementById('sendButton');
             sendButton.disabled = true;
@@ -513,7 +497,7 @@
                     method: 'POST',
                     credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
+                    body: JSON.stringify({ name, message })
                 });
 
                 if (!response.ok) throw new Error('Failed to send message');
@@ -529,99 +513,6 @@
             }
         }
 
-        // ============== Private Messages ==============
-        let searchTimeout = null;
-
-        document.getElementById('pmRecipient').addEventListener('input', function() {
-            const query = this.value.trim();
-            const suggestionsEl = document.getElementById('pmSuggestions');
-
-            if (query.length < 3) {
-                suggestionsEl.style.display = 'none';
-                return;
-            }
-
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(async () => {
-                try {
-                    const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}`, {
-                        credentials: 'include'
-                    });
-                    if (!response.ok) throw new Error('Search failed');
-                    const data = await response.json();
-
-                    if (data.users.length === 0) {
-                        suggestionsEl.innerHTML = '<div class="pm-suggestion-item" style="color:#9ca3af;cursor:default;">No users found</div>';
-                    } else {
-                        suggestionsEl.innerHTML = data.users.map(u =>
-                            `<div class="pm-suggestion-item" onclick="selectRecipient('${escapeHtml(u)}')">${escapeHtml(u)}</div>`
-                        ).join('');
-                    }
-                    suggestionsEl.style.display = 'block';
-                } catch (error) {
-                    console.error('Error searching users:', error);
-                    suggestionsEl.style.display = 'none';
-                }
-            }, 300);
-        });
-
-        function selectRecipient(username) {
-            document.getElementById('pmRecipient').value = username;
-            document.getElementById('pmSuggestions').style.display = 'none';
-        }
-
-        // Hide suggestions on click outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.pm-autocomplete')) {
-                document.getElementById('pmSuggestions').style.display = 'none';
-            }
-        });
-
-        async function sendPrivateMessage() {
-            const recipient = document.getElementById('pmRecipient').value;
-            const text = document.getElementById('pmText').value.trim();
-            const statusEl = document.getElementById('pmStatus');
-            const sendBtn = document.getElementById('pmSendButton');
-
-            statusEl.className = 'pm-status';
-            statusEl.style.display = 'none';
-
-            if (!recipient) {
-                statusEl.textContent = 'Please enter a recipient username.';
-                statusEl.className = 'pm-status error';
-                return;
-            }
-            if (!text) {
-                statusEl.textContent = 'Please enter a message.';
-                statusEl.className = 'pm-status error';
-                return;
-            }
-
-            sendBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/messages/send', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: recipient, text: text })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) throw new Error(data.detail || 'Failed to send message');
-
-                statusEl.textContent = `Message sent to ${recipient}!`;
-                statusEl.className = 'pm-status success';
-                document.getElementById('pmText').value = '';
-            } catch (error) {
-                statusEl.textContent = error.message;
-                statusEl.className = 'pm-status error';
-            } finally {
-                sendBtn.disabled = false;
-            }
-        }
-
         // ============== Utilities ==============
         function escapeHtml(text) {
             const div = document.createElement('div');
@@ -634,7 +525,6 @@
             if (e.key === 'Enter') sendMessage();
         });
         document.getElementById('sendButton').addEventListener('click', sendMessage);
-        document.getElementById('pmSendButton').addEventListener('click', sendPrivateMessage);
 
         // Load on page load
         loadMessages();

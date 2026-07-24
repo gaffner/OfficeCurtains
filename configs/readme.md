@@ -14,10 +14,7 @@ This document explains how to deploy the Office Curtains Control application usi
 ```
 /home/www/curtains/OfficeCurtains/    # Application directory
 ├── server.py                          # FastAPI application
-├── auth.py                            # Azure AD authentication
 ├── .env                               # Environment variables (create from .env.example)
-├── cert/                              # SSL certificates for Azure AD
-│   └── curtains.pfx.base64           # Base64 encoded PFX certificate
 ├── Frontend/                          # Static frontend files
 └── ...
 ```
@@ -33,10 +30,6 @@ sudo apt install python3-pip nginx
 
 # Install Python dependencies
 pip3 install -r data/requirements.txt
-
-# Important: Make sure you have PyJWT, NOT jwt package
-pip3 uninstall jwt -y  # Remove conflicting package if present
-pip3 install PyJWT
 ```
 
 ---
@@ -59,15 +52,10 @@ MD5_VALUE='<md5-hash>'
 REPORTS_FILE='reports.txt'
 TSHIRT_FILE='tshirt_requests.txt'
 STATISTICS_FILE='stats.csv'
-ALLOWED_ISP='localhost'
-COOKIES_KEY='<random-secret-key>'
 
-# Azure AD Configuration
-AZURE_CLIENT_ID='<your-azure-client-id>'
-AZURE_TENANT_ID='<your-azure-tenant-id>'
-AZURE_REDIRECT_URI='https://your-domain.example.com/auth/callback'
-CERT_PATH='cert/curtains.pfx.base64'
-CERT_THUMBPRINT='<certificate-thumbprint>'
+# Access control (IP whitelisting) - only clients whose ISP matches this value
+# are allowed in. Localhost is always allowed.
+ALLOWED_ISP='Microsoft'
 ```
 
 ---
@@ -171,14 +159,6 @@ sudo certbot --nginx -d your-domain.example.com
 ---
 
 ## Troubleshooting
-
-### JWT Authentication Error
-If you see "module 'jwt' has no attribute 'encode'", uninstall the `jwt` package and keep only `PyJWT`:
-```bash
-pip3 uninstall jwt -y --break-system-packages
-pip3 install PyJWT --break-system-packages
-sudo systemctl restart curtains.service
-```
 
 ### Service Won't Start
 Check logs for errors:

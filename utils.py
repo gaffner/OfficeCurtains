@@ -76,10 +76,14 @@ def setup_logging():
 
 
 def is_allowed_isp(ip: str):
+    # Localhost is always allowed (local development / reverse-proxy health checks)
+    # and short-circuits before any external lookup.
+    if ip in ('127.0.0.1', 'localhost', '::1'):
+        return True
     try:
         result = json.loads(requests.get(f'http://ip-api.com/json/{ip}?fields=isp').text)
         logging.info(f'IP-API result: {result}, allowed isp is {ALLOWED_ISP}')
-        return ip == '127.0.0.1' or result['isp'] == ALLOWED_ISP
+        return result['isp'] == ALLOWED_ISP
     except KeyError:
         logging.error(f'Client disallowed IP {ip}')
         return False

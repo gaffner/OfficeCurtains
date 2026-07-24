@@ -6,6 +6,7 @@ rooms.json
 statistics.txt
 data/
 venv/
+.venv/
 cert/
 .env
 __pycache__/*

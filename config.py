@@ -20,7 +20,6 @@ if IS_TEST:
     CURTAINS_PASSWORD = 'test'
     REPORTS_FILE = 'reports.txt'
     STATISTICS_FILE = 'statistics.txt'
-    COOKIES_KEY = 'test-secret-key-for-development'
 else:
     SERVER_IP = os.getenv('SERVER_IP')
     CURTAINS_USERNAME = os.getenv('CURTAINS_USERNAME')
@@ -28,10 +27,6 @@ else:
     CURTAINS_PASSWORD = os.getenv('CURTAINS_PASSWORD')
     REPORTS_FILE = os.getenv('REPORTS_FILE')
     STATISTICS_FILE = os.getenv('STATISTICS_FILE')
-    COOKIES_KEY = os.getenv('COOKIES_KEY')
-
-# Admin users (parsed from comma-separated list, stored lowercase for case-insensitive comparison)
-ADMIN_USERS = [user.strip().lower() for user in os.getenv('ADMIN_USERS', 'developer').split(',') if user.strip()]
 
 STATISTICS_FOLDER = "csv/"
 CSV_FORMAT = "Room,Up,Down"

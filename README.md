@@ -16,11 +16,19 @@ Want to contribute or test locally? It's easy:
 **That's it!** No `.env` file needed - the app automatically uses `.env.example` which has `IS_TEST=true`.
 
 When in test mode:
-- No Azure AD configuration needed - clicking "Sign in" logs you in as "Developer"
+- No IP whitelisting is enforced - localhost is always allowed
 - No real curtain server connection needed - curtain commands are simulated
-- All other features work normally (statistics, premium, rooms, etc.)
+- All other features work normally (rooms, chat, etc.)
 
 The UI will show `[TEST MODE]` in responses so you know commands aren't actually being sent.
+
+## Access Control
+
+There are no user accounts or SSO. Access is gated purely by IP whitelisting:
+only clients whose ISP matches `ALLOWED_ISP` (e.g. Microsoft) are allowed in;
+everyone else is redirected to a "blocked" page. Localhost is always allowed for
+local development. The public chat is anonymous - users type a display name with
+each message.
 
 ## Azure Functions
 
@@ -37,14 +45,13 @@ The FastAPI app can also run as an Azure Functions Python app through `function_
    ```
 3. Open http://127.0.0.1:7071
 
-`host.json` removes the default `/api` route prefix so the existing frontend paths and authentication redirects keep working unchanged.
+`host.json` removes the default `/api` route prefix so the existing frontend paths keep working unchanged.
 
 ## Security Notes
 
 - Never commit `.env` file to git (already in `.gitignore`)
-- Keep `COOKIES_KEY` secret and unique per deployment
+- Configure `ALLOWED_ISP` to restrict access to your organization's network
 - Use HTTPS only in production
-- Restrict admin access by configuring `ADMIN_USERS` carefully (case-insensitive)
 - Regular security updates: `sudo apt update && sudo apt upgrade`
 
 ## Screenshot
