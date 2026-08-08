@@ -55,7 +55,7 @@ STATISTICS_FILE='stats.csv'
 
 # Access control (IP whitelisting) - comma-separated ISP names are supported.
 # Localhost is always allowed.
-ALLOWED_ISP='Microsoft,Partner Communications Ltd.'
+ALLOWED_ISP='Microsoft Corporation,Partner Communications,Partner Communications Ltd.'
 ```
 
 ---

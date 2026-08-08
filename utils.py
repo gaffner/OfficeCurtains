@@ -17,8 +17,13 @@ BLOCKED_MESSAGE = (
 
 
 def get_allowed_isps():
+    """Configured ISP names, normalised for case-insensitive comparison.
+
+    Providers are matched by exact name (never substring), but casing varies
+    between lookups, so compare case-insensitively.
+    """
     return {
-        isp.strip()
+        isp.strip().casefold()
         for isp in (ALLOWED_ISP or '').split(',')
         if isp.strip()
     }
@@ -98,9 +103,10 @@ def is_allowed_isp(ip: str):
         )
         response.raise_for_status()
         result = response.json()
+        isp = (result.get('isp') or '').strip()
         allowed_isps = get_allowed_isps()
-        logging.info(f'IP-API result: {result}, allowed ISPs are {allowed_isps}')
-        return result.get('isp') in allowed_isps
+        logging.info(f'IP-API result: {result}, allowed ISPs are {sorted(allowed_isps)}')
+        return isp.casefold() in allowed_isps
     except (requests.RequestException, ValueError):
         logging.exception(f'Failed to validate ISP for client IP {ip}')
         return False
