@@ -40,9 +40,9 @@ STORED_SIZE = (1200, 180)
 
 ALLOWED_FORMATS = {'PNG', 'JPEG', 'GIF', 'WEBP'}
 
-# The site is running as a pilot, so ad slots are not charged for yet. The
-# rate below is what they are expected to cost once payment is supported, and
-# is shown to advertisers as a heads-up rather than as a bill.
+# The site is running as a pilot, so ad slots are not charged for yet and no
+# price is shown. The rate below only takes effect if the pilot is switched
+# off with AD_PILOT=0.
 PILOT_MODE = os.getenv('AD_PILOT', '1') != '0'
 PRICE_PER_DAY = float(os.getenv('AD_PRICE_PER_DAY', '10'))
 CURRENCY = os.getenv('AD_CURRENCY', 'ILS')
@@ -460,7 +460,6 @@ def _campaign_payload(row) -> dict:
         'price': row['price'],
         'currency': CURRENCY,
         'pilot': PILOT_MODE,
-        'future_price_per_day': PRICE_PER_DAY,
         'max_days': MAX_DAYS,
         'recommended_size': list(RECOMMENDED_SIZE),
         'status': row['status'],
@@ -489,7 +488,6 @@ def get_config() -> dict:
         'allowed_formats': sorted(ALLOWED_FORMATS),
         'pilot': PILOT_MODE,
         'price_per_day': 0.0 if PILOT_MODE else PRICE_PER_DAY,
-        'future_price_per_day': PRICE_PER_DAY,
         'currency': CURRENCY,
         'support_whatsapp': SUPPORT_WHATSAPP,
     }

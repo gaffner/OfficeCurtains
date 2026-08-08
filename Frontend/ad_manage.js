@@ -103,19 +103,14 @@ async function loadConfig() {
         c.allowed_formats.join(', ') + ', up to ' + c.max_upload_mb + ' MB.';
     el('maxDaysHint').textContent = c.max_days;
     el('days').max = c.max_days;
-    el('futurePrice').textContent = c.future_price_per_day + ' ' + c.currency;
 
     if (c.support_whatsapp) {
-        el('waLink').href = 'https://wa.me/' + c.support_whatsapp;
+        const link = 'https://wa.me/' + c.support_whatsapp;
+        el('waLink').href = link;
+        el('startWaLink').href = link;
     }
 
     el('pilotNote').hidden = !c.pilot;
-    if (c.pilot) {
-        el('paymentIntro').textContent =
-            'Payment is not connected yet, so there is nothing to pay during the pilot. '
-            + 'Press the button below and enter the confirmation code you were given to put '
-            + 'your campaign on air.';
-    }
 }
 
 // ---------------------------------------------------------------- step 1
@@ -195,13 +190,6 @@ function renderOrder() {
     el('orderLine').textContent =
         plural(c.days, 'day') + ' on air \u2014 ' + formatPrice(c.price, c.currency);
 }
-
-el('payBtn').addEventListener('click', () => {
-    el('codeArea').hidden = false;
-    el('payBtn').disabled = true;
-    el('payBtn').textContent = '\u2713 Payment step done';
-    el('code').focus();
-});
 
 el('code').addEventListener('input', () => clearError(el('codeError')));
 
