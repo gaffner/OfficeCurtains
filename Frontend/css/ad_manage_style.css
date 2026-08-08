@@ -1,0 +1,440 @@
+:root {
+    --background-color: #FFFAF0;
+    --container-color: #f7eee1;
+    --sub-container-color: #f0f0f0;
+    --text-color: #000000;
+    --primary-color: #2563eb;
+    --secondary-color: #e5e7eb;
+    --error-color: #dc2626;
+    --success-color: #6ec617;
+    --hover-color: #f1f5f9;
+    --muted-color: #57534e;
+    --border-color: #e5e7eb;
+}
+
+.dark-mode {
+    --background-color: #121212;
+    --container-color: #1a202c;
+    --sub-container-color: #2d3748;
+    --text-color: #ffffff;
+    --primary-color: #1d4ed8;
+    --secondary-color: #374151;
+    --error-color: #f87171;
+    --success-color: #4ade80;
+    --hover-color: #323d4d;
+    --muted-color: #cbd5e1;
+    --border-color: #374151;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    line-height: 1.6;
+    transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.container {
+    background-color: var(--container-color);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.logo svg {
+    width: 90px;
+    height: 90px;
+}
+
+h1 {
+    text-align: center;
+    color: #2563eb;
+    margin-bottom: 0.25rem;
+    font-size: 2.25rem;
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--muted-color);
+    margin-top: 0;
+    margin-bottom: 2rem;
+}
+
+/* ---------------------------------------------------------- step bar */
+
+.steps {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0 0 2rem;
+    counter-reset: step;
+}
+
+.step {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.5rem;
+    border-radius: 8px;
+    background-color: var(--sub-container-color);
+    color: var(--muted-color);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.step.current {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.step.current .step-num {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.step.done .step-num {
+    background-color: var(--success-color);
+    color: #ffffff;
+}
+
+/* ---------------------------------------------------------- form */
+
+.field {
+    margin-bottom: 1.75rem;
+}
+
+label,
+.label-text {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+}
+
+.hint {
+    margin: 0 0 0.6rem;
+    font-size: 0.875rem;
+    color: var(--muted-color);
+    line-height: 1.5;
+}
+
+input[type="url"],
+input[type="text"],
+input[type="file"] {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-size: 1rem;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+input[type="url"]:focus,
+input[type="text"]:focus,
+input[type="file"]:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 1px;
+}
+
+#code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.days-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.days-row input[type="range"] {
+    flex: 1;
+    accent-color: var(--primary-color);
+}
+
+.days-value {
+    min-width: 5.5rem;
+    text-align: right;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--primary-color);
+}
+
+/* ---------------------------------------------------------- preview */
+
+.ad-slot-preview {
+    width: 100%;
+    max-width: 600px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: repeating-conic-gradient(rgba(0, 0, 0, 0.06) 0% 25%, transparent 0% 50%)
+        50% / 16px 16px;
+    border: 2px dashed #f59e0b;
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.ad-slot-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    /* Matches how the slot renders it: scaled to fit, never stretched. */
+    object-fit: contain;
+}
+
+/* Step 3 shows the real thing, so it loses the dashed "empty slot" look. */
+.ad-slot-preview.live {
+    border-style: solid;
+    border-color: #f59e0b;
+    background: #ffffff;
+}
+
+.dark-mode .ad-slot-preview.live {
+    background: #1f2937;
+}
+
+.preview-empty {
+    font-size: 0.875rem;
+    color: var(--muted-color);
+}
+
+/* ---------------------------------------------------------- sections */
+
+.section {
+    margin-bottom: 1.75rem;
+}
+
+.section h2 {
+    color: #1d4ed8;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+}
+
+.dark-mode .section h2 {
+    color: #93c5fd;
+}
+
+.summary-line {
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    background-color: var(--sub-container-color);
+    font-weight: 700;
+    text-align: center;
+}
+
+.pilot-note {
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.75rem;
+    border-left: 4px solid var(--success-color);
+    border-radius: 6px;
+    background-color: var(--sub-container-color);
+    font-size: 0.95rem;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5rem 1.25rem;
+    margin: 0;
+}
+
+.summary-grid dt {
+    font-weight: 600;
+    color: var(--muted-color);
+}
+
+.summary-grid dd {
+    margin: 0;
+}
+
+.summary-grid dd.wrap {
+    overflow-wrap: anywhere;
+}
+
+.summary-grid a {
+    color: var(--primary-color);
+}
+
+.dark-mode .summary-grid a {
+    color: #93c5fd;
+}
+
+.success-badge {
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.75rem;
+    border-radius: 8px;
+    background-color: var(--success-color);
+    color: #ffffff;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* ---------------------------------------------------------- buttons */
+
+.primary-button {
+    display: inline-block;
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--primary-color);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.primary-button:hover:not(:disabled) {
+    background-color: #1d4ed8;
+}
+
+.primary-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.link-button {
+    display: block;
+    margin: 1.25rem auto 0;
+    padding: 0.35rem 0.5rem;
+    border: none;
+    background: none;
+    color: var(--muted-color);
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.code-area {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.code-area .primary-button {
+    margin-top: 1rem;
+}
+
+.error-box {
+    margin: 0 0 1rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 8px;
+    background-color: rgba(220, 38, 38, 0.12);
+    border-left: 4px solid var(--error-color);
+    color: var(--error-color);
+    font-size: 0.925rem;
+    font-weight: 600;
+}
+
+/* ---------------------------------------------------------- contact */
+
+.contact-section {
+    padding: 1.25rem;
+    border-radius: 8px;
+    background-color: var(--sub-container-color);
+}
+
+.contact-section h3 {
+    margin-top: 0;
+}
+
+.whatsapp-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.1rem;
+    border-radius: 8px;
+    background-color: #25d366;
+    color: #ffffff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.whatsapp-link:hover {
+    background-color: #1ebe5b;
+}
+
+.whatsapp-link .whatsapp-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.as-link {
+    margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 1.25rem;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    .steps {
+        font-size: 0.75rem;
+    }
+
+    .step {
+        flex-direction: column;
+        gap: 0.25rem;
+        padding: 0.5rem 0.25rem;
+    }
+
+    .ad-slot-preview {
+        height: 70px;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 0.15rem;
+    }
+
+    .summary-grid dd {
+        margin-bottom: 0.6rem;
+    }
+}

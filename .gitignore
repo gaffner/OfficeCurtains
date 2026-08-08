@@ -19,6 +19,9 @@ Scripts/pythonw.exe
 Scripts/python.exe
 reports.txt
 tshirt_requests.txt
+
+# Advertiser-uploaded banners
+Frontend/ads/
 .vscode/
 *.db
 *.db-shm

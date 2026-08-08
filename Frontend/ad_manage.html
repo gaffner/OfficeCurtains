@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curtain Control System - Ad Management</title>
+    <link rel="stylesheet" href="css/ad_manage_style.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <a href="/Frontend/index.html" class="back-button">&#8592; Back to Control Panel</a>
+
+    <div class="container">
+        <div class="logo">
+            <svg viewBox="0 0 100 100">
+                <rect x="10" y="10" width="80" height="80" fill="#2563eb" rx="8"/>
+                <path d="M30 30 Q50 50 30 70" stroke="white" fill="none" stroke-width="4"/>
+                <path d="M70 30 Q50 50 70 70" stroke="white" fill="none" stroke-width="4"/>
+            </svg>
+        </div>
+
+        <h1>Ad Management</h1>
+        <p class="subtitle">Put your banner in front of everyone who opens the curtains.</p>
+
+        <ol class="steps" aria-label="Progress">
+            <li class="step current" data-step="1"><span class="step-num">1</span>Your banner</li>
+            <li class="step" data-step="2"><span class="step-num">2</span>Payment</li>
+            <li class="step" data-step="3"><span class="step-num">3</span>Your campaign</li>
+        </ol>
+
+        <!-- ============ Step 1: the banner ============ -->
+        <section class="panel" id="panel-1">
+            <form id="adForm" novalidate>
+                <div class="field">
+                    <label for="banner">Banner image</label>
+                    <p class="hint">
+                        Recommended size <strong id="recSize">600 &times; 90</strong> pixels, but any size works &mdash;
+                        we scale your image to fit the slot without cropping or stretching it.
+                        <span id="formatHint">PNG, JPEG, GIF or WebP, up to 5 MB.</span>
+                    </p>
+                    <input type="file" id="banner" name="banner" accept="image/*" required>
+                </div>
+
+                <div class="field">
+                    <span class="label-text">Preview</span>
+                    <p class="hint">This is the exact slot your banner appears in, at the bottom of the control panel.</p>
+                    <div class="ad-slot-preview" id="previewSlot">
+                        <span class="preview-empty">Choose an image to see it here</span>
+                        <img id="previewImage" alt="Banner preview" hidden>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="targetUrl">Link to open when the banner is clicked</label>
+                    <input type="url" id="targetUrl" name="target_url" placeholder="https://your-site.example" required>
+                </div>
+
+                <div class="field">
+                    <label for="days">Days on air</label>
+                    <p class="hint">Up to <span id="maxDaysHint">14</span> days per campaign.</p>
+                    <div class="days-row">
+                        <input type="range" id="days" name="days" min="1" max="14" value="7">
+                        <output class="days-value" id="daysValue">7 days</output>
+                    </div>
+                </div>
+
+                <div class="error-box" id="formError" hidden role="alert"></div>
+
+                <button type="submit" class="primary-button" id="submitBtn">Next &#8594;</button>
+            </form>
+        </section>
+
+        <!-- ============ Step 2: payment ============ -->
+        <section class="panel" id="panel-2" hidden>
+            <div class="summary-line" id="orderLine"></div>
+
+            <div class="section">
+                <h2>Where the money goes</h2>
+                <p>
+                    This site is not a business. Income from this ad slot pays for the things that
+                    keep it running: the server, the domain name, and any support the site needs
+                    along the way &mdash; so it can stand on its own without anyone funding it out of pocket.
+                </p>
+                <p>
+                    Anything left over goes towards building more sites like this one: small tools that
+                    solve everyday problems people put up with and nobody has got around to fixing
+                    (not necessarily at Microsoft). None of it is taken as personal profit.
+                </p>
+            </div>
+
+            <div class="pilot-note" id="pilotNote" hidden>
+                <strong>Pilot &mdash; no charge.</strong>
+                Payment is not supported yet, so running an ad costs you nothing for now.
+                Once payment goes live the slot is expected to cost
+                <span id="futurePrice">10 ILS</span> per day.
+            </div>
+
+            <div class="section">
+                <h2>Payment</h2>
+                <p id="paymentIntro">
+                    Online payment is not connected yet. Press the button below and you will be given
+                    the confirmation code to enter, exactly where the payment provider will sit later.
+                </p>
+                <button type="button" class="primary-button" id="payBtn">Continue to payment</button>
+
+                <div class="code-area" id="codeArea" hidden>
+                    <label for="code">Confirmation code</label>
+                    <p class="hint">
+                        Enter the code you received. Dashes, spaces and lower case are all fine.
+                    </p>
+                    <input type="text" id="code" placeholder="XXXX-XXXX-XXXX-XXXX"
+                           autocomplete="off" spellcheck="false" maxlength="24">
+                    <div class="error-box" id="codeError" hidden role="alert"></div>
+                    <button type="button" class="primary-button" id="codeBtn">Activate campaign</button>
+                </div>
+            </div>
+
+            <button type="button" class="link-button" id="backTo1">&#8592; Change my banner</button>
+        </section>
+
+        <!-- ============ Step 3: the campaign ============ -->
+        <section class="panel" id="panel-3" hidden>
+            <div class="success-badge">&#10003; Your campaign is live</div>
+
+            <div class="section">
+                <h2>Summary</h2>
+                <dl class="summary-grid">
+                    <dt>Time on air</dt><dd id="sumDuration">&mdash;</dd>
+                    <dt>Starts</dt><dd id="sumStart">&mdash;</dd>
+                    <dt>Ends</dt><dd id="sumEnd">&mdash;</dd>
+                    <dt>Links to</dt><dd id="sumLink" class="wrap">&mdash;</dd>
+                    <dt>Paid</dt><dd id="sumPrice">&mdash;</dd>
+                </dl>
+            </div>
+
+            <div class="section">
+                <h2>How your ad looks</h2>
+                <p class="hint">Exactly as visitors see it at the bottom of the control panel.</p>
+                <div class="ad-slot-preview live" id="liveSlot">
+                    <img id="liveImage" alt="Your banner">
+                </div>
+            </div>
+
+            <div class="section contact-section">
+                <h3>Need something different?</h3>
+                <p>
+                    For a longer run, a different placement or any other special request,
+                    message us on WhatsApp and we will sort it out.
+                </p>
+                <a class="whatsapp-link" id="waLink" href="https://wa.me/94764194876" target="_blank" rel="noopener">
+                    <svg class="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path fill="currentColor" d="M12 2a10 10 0 0 0-8.5 15.2L2.2 22l4.9-1.3A10 10 0 1 0 12 2Zm0 1.8a8.2 8.2 0 1 1-4.2 15.2l-.3-.2-2.6.7.7-2.5-.2-.3A8.2 8.2 0 0 1 12 3.8Z"/>
+                        <path fill="currentColor" d="M9.3 7.4c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.3.3-.9.9-.9 2.1s.9 2.4 1 2.6c.1.2 1.7 2.8 4.3 3.8 2.1.8 2.5.7 3 .6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.5-.3-1.7-.8c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.2 0-.3.1-.4l.4-.5.2-.4c.1-.2 0-.3 0-.5l-.8-2Z"/>
+                    </svg>
+                    Message us on WhatsApp
+                </a>
+            </div>
+
+            <a href="/Frontend/index.html" class="primary-button as-link">See it on the control panel</a>
+        </section>
+    </div>
+
+    <script src="ad_manage.js"></script>
+</body>
+</html>

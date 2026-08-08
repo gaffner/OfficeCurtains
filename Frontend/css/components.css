@@ -52,6 +52,52 @@
     line-height: 1.3;
 }
 
+/* display:flex above beats the [hidden] attribute's default display:none,
+   so both slots would otherwise render at once. */
+.ad-banner[hidden] {
+    display: none;
+}
+
+/* The placeholder is a link to the ad manager; the live slot is the
+   advertiser's own banner, so it drops the dashed "empty space" look. */
+a.ad-banner {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a.ad-banner-empty:hover {
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    transform: translateY(-1px);
+}
+
+.ad-banner-live {
+    height: 90px;
+    padding: 0;
+    gap: 0;
+    border-style: solid;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.ad-banner-live img {
+    max-width: 100%;
+    max-height: 100%;
+    /* Banners are stored scaled-to-fit, so never stretch them here either. */
+    object-fit: contain;
+}
+
+.ad-banner-live .ad-banner-label {
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    font-size: 0.6rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 0 0 0.25rem 0;
+    opacity: 0.85;
+}
+
+
 .dark-mode .ad-banner {
     background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
     border-color: #fbbf24;
@@ -64,6 +110,13 @@
     color: #78350f;
 }
 
+/* Must come after ".dark-mode .ad-banner" - equal specificity, so the
+   advertiser's banner only gets its neutral backing by winning on order. */
+.dark-mode .ad-banner-live {
+    background: #1f2937;
+    border-color: #fbbf24;
+}
+
 @media (max-width: 768px) {
     .ad-banner {
         padding: 0.625rem 1rem;
@@ -72,6 +125,11 @@
 
     .ad-banner-text {
         font-size: 0.95rem;
+    }
+
+    .ad-banner-live {
+        height: 70px;
+        padding: 0;
     }
 }
 

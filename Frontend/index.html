@@ -414,13 +414,20 @@
     <a href="/Frontend/chat.html" class="sidebar-link">💬 Chat</a>
     <a href="/Frontend/all_statistics.html" class="sidebar-link">📊 Statistics</a>
     <a href="/Frontend/whats_new.html" class="sidebar-link">✨ What's New?</a>
+    <a href="/Frontend/ad_manage.html" class="sidebar-link">📢 Ad Management</a>
     <a href="/Frontend/credits.html" class="sidebar-link">❤️ Credits</a>
 </div>
 <div class="bottom-buttons-container">
-    <div class="ad-banner" dir="rtl" lang="he" role="complementary" aria-label="שטח פרסום">
+    <a href="/Frontend/ad_manage.html" class="ad-banner ad-banner-empty" id="adPlaceholder"
+       dir="rtl" lang="he" role="complementary" aria-label="שטח פרסום">
         <span class="ad-banner-label">פרסומת</span>
         <span class="ad-banner-text">שטח פרסום זה יכול להיות שלך</span>
-    </div>
+    </a>
+    <a class="ad-banner ad-banner-live" id="adLive" target="_blank" rel="noopener sponsored"
+       role="complementary" aria-label="Advertisement" hidden>
+        <span class="ad-banner-label">פרסומת</span>
+        <img id="adLiveImage" alt="Advertisement">
+    </a>
     <div class="report-container">
         <a href="https://wa.me/94764194876" target="_blank" rel="noopener" class="whatsapp-button">
             <svg class="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -479,6 +486,34 @@
     // index.html is a static file, so it loads even for visitors whose ISP is
     // blocked. Ask the server about access and explain the situation up front
     // instead of letting every control fail with an error.
+    // Swap the "this space could be yours" placeholder for a real banner when
+    // a campaign is on air. Deliberately not ISP-gated: advertisers pay for
+    // impressions, so the ad shows even to visitors who cannot use the controls.
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/api/ads/active', { headers: { 'Accept': 'application/json' } })
+            .then(function (response) {
+                return response.ok ? response.json() : null;
+            })
+            .then(function (data) {
+                if (!data || !data.ad) return;
+
+                const live = document.getElementById('adLive');
+                const image = document.getElementById('adLiveImage');
+                const placeholder = document.getElementById('adPlaceholder');
+                if (!live || !image || !placeholder) return;
+
+                // Only hide the placeholder once the banner has actually
+                // loaded, so a broken image never leaves an empty slot.
+                image.onload = function () {
+                    placeholder.hidden = true;
+                    live.hidden = false;
+                };
+                live.href = data.ad.target_url;
+                image.src = data.ad.banner_url;
+            })
+            .catch(function () { /* The slot just stays as the placeholder. */ });
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         fetch('/api/access', {
             credentials: 'include',

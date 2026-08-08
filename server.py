@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
@@ -16,6 +16,7 @@ from utils import (
     wants_json,
     LOCALHOST_ADDRESSES,
 )
+import ads
 import chat
 import stats_store
 
@@ -232,3 +233,59 @@ def send_chat_message(request: Request, payload: dict):
     chat.add_chat_message(name, message_text)
 
     return {"status": "success", "message": "Message sent"}
+
+# ============== Advertising slot ==============
+
+@app.get("/api/ads/active")
+def get_active_ad(request: Request):
+    """The banner currently on air, if any.
+
+    Like /api/access this is deliberately not ISP-gated: index.html loads for
+    everyone, and an advertiser is paying for impressions rather than for
+    clicks from one office.
+    """
+    return {"ad": ads.get_active_ad()}
+
+
+@app.get("/api/ads/config")
+def get_ad_config(request: Request):
+    """Sizing, pricing and limits, so the wizard has no hard-coded copy."""
+    return ads.get_config()
+
+
+@app.post("/api/ads/draft")
+@validate_isp()
+async def create_ad_draft(
+    request: Request,
+    banner: UploadFile = File(...),
+    target_url: str = Form(...),
+    days: int = Form(...),
+):
+    """Hold an uploaded banner as a draft until a payment code is entered."""
+    raw = await banner.read()
+
+    try:
+        return ads.create_draft(raw, banner.filename or '', target_url, days)
+    except ads.AdError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/api/ads/{campaign_id}/redeem")
+@validate_isp()
+def redeem_ad_code(request: Request, campaign_id: str, payload: dict):
+    """Activate a draft campaign with a payment code."""
+    try:
+        return ads.redeem_code(campaign_id, payload.get('code', ''), get_client_ip(request))
+    except ads.RateLimited as e:
+        raise HTTPException(status_code=429, detail=str(e))
+    except ads.AdError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/ads/{campaign_id}")
+@validate_isp()
+def get_ad_campaign(request: Request, campaign_id: str):
+    try:
+        return ads.get_campaign(campaign_id)
+    except ads.AdError as e:
+        raise HTTPException(status_code=404, detail=str(e))

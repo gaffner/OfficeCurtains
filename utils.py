@@ -2,6 +2,7 @@ import logging
 import os
 from datetime import datetime
 from functools import wraps
+from inspect import iscoroutinefunction
 
 import requests
 from dotenv import load_dotenv
@@ -153,32 +154,50 @@ def wants_json(request: Request) -> bool:
     return request.url.path.startswith("/api/")
 
 
+def _deny_response(request: Request):
+    """The response for a blocked caller, or None when access is allowed."""
+    if not request:
+        raise HTTPException(status_code=400, detail="Request object is missing.")
+
+    try:
+        user_ip = get_client_ip(request)
+        allowed = is_allowed_isp(user_ip)
+    except Exception:
+        logging.exception(f"Failed to evaluate access for request to {request.url.path}")
+        raise HTTPException(
+            status_code=503,
+            detail="Could not verify network access right now. Please try again shortly.",
+        )
+
+    if allowed:
+        return None
+
+    if wants_json(request):
+        return JSONResponse(status_code=403, content={"detail": BLOCKED_MESSAGE})
+
+    return RedirectResponse(url="/Frontend/blocked.html")
+
+
 def validate_isp():
     def decorator(func):
+        # Async endpoints need an async wrapper. A sync wrapper would hand
+        # FastAPI an un-awaited coroutine, because inspect.iscoroutinefunction
+        # looks at the wrapper rather than the function it wraps.
+        if iscoroutinefunction(func):
+            @wraps(func)
+            async def async_wrapper(*args, **kwargs):
+                denied = _deny_response(kwargs.get("request"))
+                if denied is not None:
+                    return denied
+                return await func(*args, **kwargs)
+
+            return async_wrapper
+
         @wraps(func)
         def wrapper(*args, **kwargs):
-            request: Request = kwargs.get("request")
-            if not request:
-                raise HTTPException(status_code=400, detail="Request object is missing.")
-
-            try:
-                user_ip = get_client_ip(request)
-                allowed = is_allowed_isp(user_ip)
-            except Exception:
-                logging.exception(f"Failed to evaluate access for request to {request.url.path}")
-                raise HTTPException(
-                    status_code=503,
-                    detail="Could not verify network access right now. Please try again shortly.",
-                )
-
-            if not allowed:
-                if wants_json(request):
-                    return JSONResponse(
-                        status_code=403,
-                        content={"detail": BLOCKED_MESSAGE},
-                    )
-                return RedirectResponse(url="/Frontend/blocked.html")
-
+            denied = _deny_response(kwargs.get("request"))
+            if denied is not None:
+                return denied
             return func(*args, **kwargs)
 
         return wrapper
