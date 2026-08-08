@@ -30,7 +30,24 @@ app = FastAPI(redirect_slashes=False)
 # only clients whose ISP is listed in ALLOWED_ISP are allowed. There are
 # no user accounts or SSO. Localhost is always allowed for local development.
 
-app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
+
+class RevalidatingStaticFiles(StaticFiles):
+    """StaticFiles that asks browsers to revalidate instead of guessing.
+
+    StaticFiles sends ETag and Last-Modified but no Cache-Control, which lets
+    browsers fall back to heuristic freshness (roughly 10% of the file's age).
+    For files that had not changed in months that meant a deployed fix could be
+    ignored for days, because the browser reused its copy without ever asking
+    the server. `no-cache` still allows caching, it just requires revalidation,
+    so the ETag turns the check into a cheap 304.
+    """
+
+    def file_response(self, *args, **kwargs):
+        response = super().file_response(*args, **kwargs)
+        response.headers.setdefault("Cache-Control", "no-cache")
+        return response
+
+app.mount("/Frontend", RevalidatingStaticFiles(directory="Frontend"), name="Frontend")
 
 
 @app.exception_handler(Exception)
