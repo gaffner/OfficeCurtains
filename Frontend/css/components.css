@@ -87,6 +87,33 @@ a.ad-banner-empty:hover {
     object-fit: contain;
 }
 
+/* Sits under the live banner so visitors know the slot is open to them.
+   Hidden while the placeholder is showing, which already says the same thing. */
+.ad-cta {
+    display: block;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #92400e;
+    text-decoration: none;
+    margin-top: 0.35rem;
+    opacity: 0.85;
+    transition: opacity 0.2s ease, color 0.5s ease;
+}
+
+.ad-cta[hidden] {
+    display: none;
+}
+
+.ad-cta:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.dark-mode .ad-cta {
+    color: #fcd34d;
+}
+
 .ad-banner-live .ad-banner-label {
     position: absolute;
     top: 0;
@@ -175,7 +202,8 @@ a.ad-banner-empty:hover {
    (ad + help button) above it so the two do not sit on top of each other.
    --isp-banner-height is measured in index.html once the banner is shown. */
 body.has-isp-banner {
-    padding-bottom: calc(10.5rem + var(--isp-banner-height, 4.5rem));
+    padding-bottom: calc(var(--bottom-bar-height, 10.5rem)
+                         + var(--isp-banner-height, 4.5rem));
 }
 
 body.has-isp-banner .bottom-buttons-container {
@@ -195,6 +223,7 @@ body.has-isp-banner .bottom-buttons-container {
     }
 
     body.has-isp-banner {
-        padding-bottom: calc(11rem + var(--isp-banner-height, 6rem));
+        padding-bottom: calc(var(--bottom-bar-height, 11rem)
+                             + var(--isp-banner-height, 6rem));
     }
 }

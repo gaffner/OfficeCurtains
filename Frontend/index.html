@@ -415,6 +415,7 @@
     <a href="/Frontend/all_statistics.html" class="sidebar-link">📊 Statistics</a>
     <a href="/Frontend/whats_new.html" class="sidebar-link">✨ What's New?</a>
     <a href="/Frontend/ad_manage.html" class="sidebar-link">📢 Ad Management</a>
+    <a href="/Frontend/ads_queue.html" class="sidebar-link">🎬 Ads Queue</a>
     <a href="/Frontend/credits.html" class="sidebar-link">❤️ Credits</a>
 </div>
 <div class="bottom-buttons-container">
@@ -428,6 +429,7 @@
         <span class="ad-banner-label">פרסומת</span>
         <img id="adLiveImage" alt="Advertisement">
     </a>
+    <a href="/Frontend/ad_manage.html" class="ad-cta" id="adCta" hidden>Want to advertise? Click here</a>
     <div class="report-container">
         <a href="https://wa.me/94764194876" target="_blank" rel="noopener" class="whatsapp-button">
             <svg class="whatsapp-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -486,9 +488,30 @@
     // index.html is a static file, so it loads even for visitors whose ISP is
     // blocked. Ask the server about access and explain the situation up front
     // instead of letting every control fail with an error.
+    // The bottom bar is fixed, so the page needs padding exactly as tall as the
+    // bar. Its height changes with its contents (placeholder vs real banner,
+    // with or without the advertise link), so measure it instead of guessing.
+    function measureBottomBar() {
+        const bar = document.querySelector('.bottom-buttons-container');
+        if (!bar) return;
+        document.documentElement.style.setProperty(
+            '--bottom-bar-height', (bar.offsetHeight + 16) + 'px'
+        );
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        measureBottomBar();
+
+        const bar = document.querySelector('.bottom-buttons-container');
+        if (bar && window.ResizeObserver) {
+            new ResizeObserver(measureBottomBar).observe(bar);
+        }
+        window.addEventListener('resize', measureBottomBar);
+    });
+
     // Swap the "this space could be yours" placeholder for a real banner when
-    // a campaign is on air. Deliberately not ISP-gated: advertisers pay for
-    // impressions, so the ad shows even to visitors who cannot use the controls.
+    // a campaign is on air. Deliberately not ISP-gated: the ad shows even to
+    // visitors who cannot use the controls.
     document.addEventListener('DOMContentLoaded', function () {
         fetch('/api/ads/active', { headers: { 'Accept': 'application/json' } })
             .then(function (response) {
@@ -504,11 +527,15 @@
 
                 // Only hide the placeholder once the banner has actually
                 // loaded, so a broken image never leaves an empty slot.
+                const cta = document.getElementById('adCta');
                 image.onload = function () {
                     placeholder.hidden = true;
                     live.hidden = false;
+                    if (cta) cta.hidden = false;
+                    measureBottomBar();
                 };
-                live.href = data.ad.target_url;
+                // click_url counts the click server-side, then redirects.
+                live.href = data.ad.click_url || data.ad.target_url;
                 image.src = data.ad.banner_url;
             })
             .catch(function () { /* The slot just stays as the placeholder. */ });

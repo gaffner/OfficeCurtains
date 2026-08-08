@@ -56,12 +56,13 @@
                 </div>
 
                 <div class="field">
-                    <label for="days">Days on air</label>
-                    <p class="hint">Up to <span id="maxDaysHint">14</span> days per campaign.</p>
+                    <label for="hours">Hours on air</label>
+                    <p class="hint">Up to <span id="maxHoursHint">24</span> hours per campaign.</p>
                     <div class="days-row">
-                        <input type="range" id="days" name="days" min="1" max="14" value="7">
-                        <output class="days-value" id="daysValue">7 days</output>
+                        <input type="range" id="hours" name="hours" min="1" max="24" value="24">
+                        <output class="days-value" id="hoursValue">24 hours</output>
                     </div>
+                    <p class="hint queue-hint" id="queueHint" hidden></p>
                 </div>
 
                 <div class="error-box" id="formError" hidden role="alert"></div>
@@ -70,31 +71,12 @@
             </form>
         </section>
 
-        <!-- ============ Step 2: payment ============ -->
+        <!-- ============ Step 2: confirmation code (only if enabled) ============ -->
         <section class="panel" id="panel-2" hidden>
             <div class="summary-line" id="orderLine"></div>
 
             <div class="section">
-                <h2>Where the money goes</h2>
-                <p>
-                    This site is not a business. Income from this ad slot pays for the things that
-                    keep it running: the server, the domain name, and any support the site needs
-                    along the way &mdash; so it can stand on its own without anyone funding it out of pocket.
-                </p>
-                <p>
-                    Anything left over goes towards building more sites like this one: small tools that
-                    solve everyday problems people put up with and nobody has got around to fixing
-                    (not necessarily at Microsoft). None of it is taken as personal profit.
-                </p>
-            </div>
-
-            <div class="pilot-note" id="pilotNote" hidden>
-                <strong>Pilot &mdash; no charge.</strong>
-                The ad slot is still being trialled, so running a campaign costs you nothing.
-            </div>
-
-            <div class="section">
-                <h2>Getting started</h2>
+                <h2>Get started</h2>
                 <p>
                     To put your campaign on air, message us on WhatsApp and we will send you a
                     confirmation code. Enter it below and your banner goes live straight away.
@@ -125,16 +107,16 @@
 
         <!-- ============ Step 3: the campaign ============ -->
         <section class="panel" id="panel-3" hidden>
-            <div class="success-badge">&#10003; Your campaign is live</div>
+            <div class="success-badge" id="successBadge">&#10003; Your campaign is booked</div>
 
             <div class="section">
                 <h2>Summary</h2>
                 <dl class="summary-grid">
                     <dt>Time on air</dt><dd id="sumDuration">&mdash;</dd>
+                    <dt>Position</dt><dd id="sumPosition">&mdash;</dd>
                     <dt>Starts</dt><dd id="sumStart">&mdash;</dd>
                     <dt>Ends</dt><dd id="sumEnd">&mdash;</dd>
                     <dt>Links to</dt><dd id="sumLink" class="wrap">&mdash;</dd>
-                    <dt>Paid</dt><dd id="sumPrice">&mdash;</dd>
                 </dl>
             </div>
 
@@ -161,7 +143,10 @@
                 </a>
             </div>
 
-            <a href="/Frontend/index.html" class="primary-button as-link">See it on the control panel</a>
+            <div class="cta-row">
+                <a href="/Frontend/index.html" class="primary-button as-link">See it on the control panel</a>
+                <a href="/Frontend/ads_queue.html" class="link-button as-link">View the ad queue</a>
+            </div>
         </section>
     </div>
 

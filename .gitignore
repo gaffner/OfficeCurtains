@@ -26,3 +26,4 @@ Frontend/ads/
 *.db
 *.db-shm
 *.db-wal
+ad_clicks.log

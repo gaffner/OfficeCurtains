@@ -1,4 +1,4 @@
-// Ad management wizard: banner -> payment -> live campaign.
+// Ad management wizard: banner -> queue slot -> live campaign.
 
 if (localStorage.getItem('dark-mode') === 'true') {
     document.body.classList.add('dark-mode');
@@ -7,6 +7,7 @@ if (localStorage.getItem('dark-mode') === 'true') {
 const state = {
     campaign: null,
     config: null,
+    queue: null,
 };
 
 const el = (id) => document.getElementById(id);
@@ -64,23 +65,17 @@ function plural(n, word) {
     return n + ' ' + word + (n === 1 ? '' : 's');
 }
 
-function formatPrice(amount, currency) {
-    if (!amount) {
-        return 'No charge (pilot)';
-    }
-    return amount + ' ' + currency;
-}
-
 function formatDate(iso) {
     if (!iso) {
         return '\u2014';
     }
-    const date = new Date(iso + 'T00:00:00');
+    const date = new Date(iso);
     if (isNaN(date)) {
         return iso;
     }
-    return date.toLocaleDateString(undefined, {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    return date.toLocaleString(undefined, {
+        weekday: 'long', month: 'long', day: 'numeric',
+        hour: '2-digit', minute: '2-digit',
     });
 }
 
@@ -101,8 +96,12 @@ async function loadConfig() {
     el('recSize').textContent = c.recommended_width + ' \u00d7 ' + c.recommended_height;
     el('formatHint').textContent =
         c.allowed_formats.join(', ') + ', up to ' + c.max_upload_mb + ' MB.';
-    el('maxDaysHint').textContent = c.max_days;
-    el('days').max = c.max_days;
+    el('maxHoursHint').textContent = c.max_hours;
+    hoursInput.max = c.max_hours;
+    if (Number(hoursInput.value) > c.max_hours) {
+        hoursInput.value = c.max_hours;
+    }
+    updateHoursLabel();
 
     if (c.support_whatsapp) {
         const link = 'https://wa.me/' + c.support_whatsapp;
@@ -110,19 +109,56 @@ async function loadConfig() {
         el('startWaLink').href = link;
     }
 
-    el('pilotNote').hidden = !c.pilot;
+    // Uploading is free, so the code step never runs: drop it from the
+    // progress list rather than showing a step that is always skipped.
+    if (!c.require_code) {
+        const codeStep = document.querySelector('.step[data-step="2"]');
+        if (codeStep) {
+            codeStep.remove();
+        }
+        const lastNum = document.querySelector('.step[data-step="3"] .step-num');
+        if (lastNum) {
+            lastNum.textContent = '2';
+        }
+    }
+}
+
+async function loadQueueHint() {
+    let queue;
+    try {
+        const response = await fetch('/api/ads/queue');
+        if (!response.ok) {
+            return;
+        }
+        queue = await response.json();
+    } catch (e) {
+        return;
+    }
+
+    state.queue = queue;
+    const hint = el('queueHint');
+
+    if (!queue.current) {
+        hint.textContent = 'The slot is free right now, so your ad starts as soon as you upload it.';
+    } else {
+        const waiting = queue.upcoming.length;
+        hint.textContent = 'One ad is on air'
+            + (waiting ? ' and ' + plural(waiting, 'other') + ' waiting' : '')
+            + '. Yours starts ' + formatDate(queue.free_from) + '.';
+    }
+    hint.hidden = false;
 }
 
 // ---------------------------------------------------------------- step 1
 
-const daysInput = el('days');
+const hoursInput = el('hours');
 
-function updateDaysLabel() {
-    el('daysValue').textContent = plural(Number(daysInput.value), 'day');
+function updateHoursLabel() {
+    el('hoursValue').textContent = plural(Number(hoursInput.value), 'hour');
 }
 
-daysInput.addEventListener('input', updateDaysLabel);
-updateDaysLabel();
+hoursInput.addEventListener('input', updateHoursLabel);
+updateHoursLabel();
 
 el('banner').addEventListener('change', (event) => {
     const file = event.target.files && event.target.files[0];
@@ -158,7 +194,7 @@ el('adForm').addEventListener('submit', async (event) => {
     const form = new FormData();
     form.append('banner', file);
     form.append('target_url', el('targetUrl').value.trim());
-    form.append('days', daysInput.value);
+    form.append('hours', hoursInput.value);
 
     const button = el('submitBtn');
     button.disabled = true;
@@ -171,8 +207,14 @@ el('adForm').addEventListener('submit', async (event) => {
             return;
         }
         state.campaign = await response.json();
-        renderOrder();
-        showStep(2);
+
+        if (state.campaign.status === 'active') {
+            renderCampaign();
+            showStep(3);
+        } else {
+            renderOrder();
+            showStep(2);
+        }
     } catch (e) {
         showError(errorBox, 'Could not reach the server. Please check your connection.');
     } finally {
@@ -186,9 +228,7 @@ el('backTo1').addEventListener('click', () => showStep(1));
 // ---------------------------------------------------------------- step 2
 
 function renderOrder() {
-    const c = state.campaign;
-    el('orderLine').textContent =
-        plural(c.days, 'day') + ' on air \u2014 ' + formatPrice(c.price, c.currency);
+    el('orderLine').textContent = plural(state.campaign.hours, 'hour') + ' on air';
 }
 
 el('code').addEventListener('input', () => clearError(el('codeError')));
@@ -235,11 +275,18 @@ el('codeBtn').addEventListener('click', async () => {
 function renderCampaign() {
     const c = state.campaign;
 
-    el('sumDuration').textContent = plural(c.days, 'day')
-        + ' (' + plural(c.days * 24, 'hour') + ' on air)';
+    el('sumDuration').textContent = plural(c.hours, 'hour') + ' on air';
+
+    const startsAt = new Date(c.starts_at);
+    const onAirNow = !isNaN(startsAt) && startsAt <= new Date();
+    el('successBadge').textContent = onAirNow
+        ? '\u2713 Your campaign is live'
+        : '\u2713 Your campaign is booked';
+    el('sumPosition').textContent = onAirNow
+        ? 'On air now'
+        : 'Queued \u2014 starts after the ads already booked';
     el('sumStart').textContent = formatDate(c.starts_at);
     el('sumEnd').textContent = formatDate(c.ends_at);
-    el('sumPrice').textContent = formatPrice(c.price, c.currency);
 
     const link = el('sumLink');
     link.textContent = '';
@@ -258,3 +305,4 @@ function renderCampaign() {
 }
 
 loadConfig();
+loadQueueHint();

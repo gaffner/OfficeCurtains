@@ -1,20 +1,23 @@
 """Advertising slot management.
 
-Advertisers upload a banner, point it at a URL and choose how many days it
-should run. Payment is not implemented yet, so a campaign only goes live once
-a redemption code is entered. Codes are minted by the site owner (see
-`python ads.py new-codes`) and handed out after payment is arranged manually,
-which is why they are treated like secrets: stored only as hashes and guarded
-by a per-IP attempt limit.
+Anyone can upload a banner, point it at a URL and choose how long it runs, up
+to a day. Campaigns are shown one at a time and queue up behind each other,
+so a new advertiser starts the moment the one in front of them finishes
+rather than competing for the same slot.
+
+Confirmation codes are still supported (see `python ads.py new-codes`) but are
+off by default; set AD_REQUIRE_CODE=1 to make campaigns wait for one. They are
+treated like secrets either way: stored only as hashes and guarded by a per-IP
+attempt limit.
 
 Backed by SQLite, like the rest of the app's small stores.
 """
 
 import hashlib
 import io
+import json
 import logging
 import os
-import random
 import re
 import secrets
 import sqlite3
@@ -30,7 +33,10 @@ DB_FILE = os.getenv('ADS_DB', 'ads.db')
 BANNER_DIR = os.getenv('AD_BANNER_DIR', os.path.join('Frontend', 'ads'))
 BANNER_URL_PREFIX = '/Frontend/ads/'
 
-MAX_DAYS = 14
+# An ad runs for at most a day. Short slots keep the queue moving while we
+# find out whether anyone wants to advertise here at all.
+MAX_HOURS = 24
+DEFAULT_HOURS = 24
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 
 # The slot renders at 600x90 CSS pixels; store at 2x so it stays sharp on
@@ -40,12 +46,22 @@ STORED_SIZE = (1200, 180)
 
 ALLOWED_FORMATS = {'PNG', 'JPEG', 'GIF', 'WEBP'}
 
-# The site is running as a pilot, so ad slots are not charged for yet and no
-# price is shown. The rate below only takes effect if the pilot is switched
-# off with AD_PILOT=0.
-PILOT_MODE = os.getenv('AD_PILOT', '1') != '0'
-PRICE_PER_DAY = float(os.getenv('AD_PRICE_PER_DAY', '10'))
-CURRENCY = os.getenv('AD_CURRENCY', 'ILS')
+def _env_flag(name: str, default: bool = False) -> bool:
+    """Read a boolean setting. "false"/"0"/"no"/"off"/"" all mean off.
+
+    A plain truthiness check would read the string "false" as True, which is
+    exactly the sort of setting that quietly does the opposite of what the
+    .env file says.
+    """
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {'1', 'true', 'yes', 'on'}
+
+
+# Uploading is open to everyone. Setting AD_REQUIRE_CODE=1 puts campaigns
+# behind a confirmation code again without any other change.
+REQUIRE_CODE = _env_flag('AD_REQUIRE_CODE', False)
 
 SUPPORT_WHATSAPP = os.getenv('AD_SUPPORT_WHATSAPP', '94764194876')
 
@@ -65,8 +81,20 @@ ATTEMPT_WINDOW = timedelta(minutes=15)
 # every typo reports "96 attempts left" and reads like a threat.
 ATTEMPTS_WARNING_THRESHOLD = 10
 
-# Drafts that were never paid for are cleaned up so uploads do not pile up.
+# Drafts that were never published are cleaned up so uploads do not pile up.
 DRAFT_RETENTION = timedelta(days=7)
+
+# Clicks are appended here as one JSON object per line, so the raw record
+# survives independently of the database.
+CLICK_LOG = os.getenv('AD_CLICK_LOG', 'ad_clicks.log')
+
+# Admin sign-in. Never hard-coded: with no password set the page stays off.
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', '')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '')
+
+# A password is far weaker than an 80 bit code, so its allowance is far
+# tighter than MAX_FAILED_ATTEMPTS.
+MAX_ADMIN_ATTEMPTS = 10
 
 
 class AdError(Exception):
@@ -74,13 +102,13 @@ class AdError(Exception):
 
 
 class RateLimited(AdError):
-    """Raised when too many wrong codes have been entered from one address."""
+    """Raised when too many wrong attempts have come from one address."""
 
-    def __init__(self, retry_after_seconds: int):
+    def __init__(self, retry_after_seconds: int, subject: str = 'codes'):
         self.retry_after_seconds = retry_after_seconds
         minutes = max(1, round(retry_after_seconds / 60))
         super().__init__(
-            f"Too many incorrect codes. Try again in about {minutes} minute(s)."
+            f"Too many incorrect {subject}. Try again in about {minutes} minute(s)."
         )
 
 
@@ -160,6 +188,45 @@ def init_db():
             "ON ad_campaigns(status, ends_at)"
         )
 
+        _migrate(conn)
+
+
+def _add_column(conn, table: str, column: str, definition: str):
+    """Add a column unless it is already there.
+
+    Guarded rather than checked first, because all four gunicorn workers run
+    this at once and any of them may win the race.
+    """
+    try:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+    except sqlite3.OperationalError as e:
+        if 'duplicate column name' not in str(e).lower():
+            raise
+
+
+def _migrate(conn):
+    """Bring an older ads.db up to the current schema."""
+    # Campaigns were measured in days before the slot was capped at 24 hours.
+    _add_column(conn, 'ad_campaigns', 'hours', 'INTEGER')
+    conn.execute(
+        "UPDATE ad_campaigns SET hours = days * 24 WHERE hours IS NULL"
+    )
+
+    _add_column(conn, 'ad_campaigns', 'clicks', 'INTEGER NOT NULL DEFAULT 0')
+    _add_column(conn, 'ad_campaigns', 'impressions', 'INTEGER NOT NULL DEFAULT 0')
+
+    # Code entry and admin sign-in share the attempt table.
+    _add_column(conn, 'redeem_attempts', 'scope', "TEXT NOT NULL DEFAULT 'code'")
+
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_attempts_scope "
+        "ON redeem_attempts(scope, ip, attempted_at)"
+    )
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS idx_campaigns_schedule "
+        "ON ad_campaigns(status, starts_at, ends_at)"
+    )
+
 
 # ---------------------------------------------------------------- codes
 
@@ -194,30 +261,35 @@ def generate_codes(count: int = 1) -> list:
     return codes
 
 
-def _check_rate_limit(conn, ip: str):
+def _check_rate_limit(conn, ip: str, scope: str = 'code', limit: int = None,
+                      subject: str = 'codes'):
+    limit = MAX_FAILED_ATTEMPTS if limit is None else limit
     window_start = (datetime.now() - ATTEMPT_WINDOW).isoformat()
     rows = conn.execute(
         """
         SELECT attempted_at FROM redeem_attempts
-        WHERE ip = ? AND success = 0 AND attempted_at > ?
+        WHERE scope = ? AND ip = ? AND success = 0 AND attempted_at > ?
         ORDER BY attempted_at ASC
         """,
-        (ip, window_start)
+        (scope, ip, window_start)
     ).fetchall()
 
-    if len(rows) < MAX_FAILED_ATTEMPTS:
+    if len(rows) < limit:
         return
 
     # Locked out until the oldest failure in the window ages out.
     oldest = datetime.fromisoformat(rows[0]['attempted_at'])
     retry_at = oldest + ATTEMPT_WINDOW
-    raise RateLimited(max(1, int((retry_at - datetime.now()).total_seconds())))
+    raise RateLimited(
+        max(1, int((retry_at - datetime.now()).total_seconds())), subject
+    )
 
 
-def _record_attempt(conn, ip: str, success: bool):
+def _record_attempt(conn, ip: str, success: bool, scope: str = 'code'):
     conn.execute(
-        "INSERT INTO redeem_attempts (ip, attempted_at, success) VALUES (?, ?, ?)",
-        (ip, datetime.now().isoformat(), 1 if success else 0)
+        "INSERT INTO redeem_attempts (ip, attempted_at, success, scope) "
+        "VALUES (?, ?, ?, ?)",
+        (ip, datetime.now().isoformat(), 1 if success else 0, scope)
     )
 
 
@@ -318,39 +390,111 @@ def _validate_target_url(url: str) -> str:
     return url
 
 
-def _validate_days(days) -> int:
+def _validate_hours(hours) -> int:
     try:
-        days = int(days)
+        hours = int(hours)
     except (TypeError, ValueError):
-        raise AdError("Choose how many days the ad should run.")
+        raise AdError("Choose how long the ad should run.")
 
-    if days < 1 or days > MAX_DAYS:
-        raise AdError(f"Choose between 1 and {MAX_DAYS} days.")
+    if hours < 1 or hours > MAX_HOURS:
+        raise AdError(f"Choose between 1 and {MAX_HOURS} hours.")
 
-    return days
+    return hours
 
 
-def create_draft(raw_image: bytes, filename: str, target_url: str, days) -> dict:
-    """Store an uploaded banner and hold it as an unpaid draft campaign."""
+def create_draft(raw_image: bytes, filename: str, target_url: str, hours) -> dict:
+    """Store an uploaded banner and hold it as an unpublished draft."""
     target_url = _validate_target_url(target_url)
-    days = _validate_days(days)
+    hours = _validate_hours(hours)
     banner_file = store_banner(raw_image, filename)
 
     campaign_id = secrets.token_urlsafe(12)
-    price = 0.0 if PILOT_MODE else round(days * PRICE_PER_DAY, 2)
 
     with _get_db() as conn:
         conn.execute(
             """
             INSERT INTO ad_campaigns
-                (id, banner_file, target_url, days, price, status, created_at)
-            VALUES (?, ?, ?, ?, ?, 'draft', ?)
+                (id, banner_file, target_url, days, hours, price, status, created_at)
+            VALUES (?, ?, ?, ?, ?, 0, 'draft', ?)
             """,
-            (campaign_id, banner_file, target_url, days, price,
-             datetime.now().isoformat())
+            (campaign_id, banner_file, target_url,
+             max(1, round(hours / 24)), hours, datetime.now().isoformat())
         )
 
     _cleanup_stale_drafts()
+    return get_campaign(campaign_id)
+
+
+def _queue_tail(conn, now: datetime) -> datetime:
+    """When the last campaign already in the queue finishes.
+
+    Ads run one at a time, so a new campaign starts where the queue ends
+    rather than fighting the current one for the slot.
+    """
+    tail = conn.execute(
+        "SELECT MAX(ends_at) FROM ad_campaigns WHERE status = 'active' AND ends_at > ?",
+        (now.isoformat(),)
+    ).fetchone()[0]
+
+    if not tail:
+        return now
+
+    try:
+        return max(now, datetime.fromisoformat(tail))
+    except ValueError:
+        return now
+
+
+def publish_campaign(campaign_id: str) -> dict:
+    """Put a draft into the queue.
+
+    Scheduling happens inside one IMMEDIATE transaction so two uploads landing
+    together cannot both claim the same slot.
+    """
+    conn = sqlite3.connect(DB_FILE, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.isolation_level = None
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+
+        campaign = conn.execute(
+            "SELECT * FROM ad_campaigns WHERE id = ?", (campaign_id,)
+        ).fetchone()
+
+        if campaign is None:
+            conn.execute("COMMIT")
+            raise AdError("That campaign could not be found. Please start again.")
+
+        if campaign['status'] == 'active':
+            conn.execute("COMMIT")
+            return get_campaign(campaign_id)
+
+        now = datetime.now()
+        starts_at = _queue_tail(conn, now)
+        ends_at = starts_at + timedelta(hours=campaign['hours'])
+
+        conn.execute(
+            """
+            UPDATE ad_campaigns
+            SET status = 'active', activated_at = ?, starts_at = ?, ends_at = ?
+            WHERE id = ?
+            """,
+            (now.isoformat(), starts_at.isoformat(), ends_at.isoformat(), campaign_id)
+        )
+        conn.execute("COMMIT")
+    except (AdError, sqlite3.Error):
+        try:
+            conn.execute("ROLLBACK")
+        except sqlite3.Error:
+            pass
+        raise
+    finally:
+        conn.close()
+
+    logging.info(
+        f"Ad campaign {campaign_id} queued for {campaign['hours']}h "
+        f"from {starts_at.isoformat()}"
+    )
     return get_campaign(campaign_id)
 
 
@@ -398,7 +542,8 @@ def redeem_code(campaign_id: str, code: str, ip: str) -> dict:
             raise AdError(message)
 
         now = datetime.now()
-        ends_at = now + timedelta(days=campaign['days'])
+        starts_at = _queue_tail(conn, now)
+        ends_at = starts_at + timedelta(hours=campaign['hours'])
 
         conn.execute(
             "UPDATE ad_codes SET used_at = ?, campaign_id = ? WHERE code_hash = ?",
@@ -410,7 +555,7 @@ def redeem_code(campaign_id: str, code: str, ip: str) -> dict:
             SET status = 'active', activated_at = ?, starts_at = ?, ends_at = ?
             WHERE id = ?
             """,
-            (now.isoformat(), now.isoformat(), ends_at.isoformat(), campaign_id)
+            (now.isoformat(), starts_at.isoformat(), ends_at.isoformat(), campaign_id)
         )
         _record_attempt(conn, ip, True)
         conn.execute("COMMIT")
@@ -423,20 +568,49 @@ def redeem_code(campaign_id: str, code: str, ip: str) -> dict:
     finally:
         conn.close()
 
-    logging.info(f"Ad campaign {campaign_id} activated for {campaign['days']} day(s)")
+    logging.info(f"Ad campaign {campaign_id} activated for {campaign['hours']}h")
     return get_campaign(campaign_id)
 
 
-def _remaining_attempts(conn, ip: str) -> int:
+def _remaining_attempts(conn, ip: str, scope: str = 'code', limit: int = None) -> int:
+    limit = MAX_FAILED_ATTEMPTS if limit is None else limit
     window_start = (datetime.now() - ATTEMPT_WINDOW).isoformat()
     used = conn.execute(
         """
         SELECT COUNT(*) FROM redeem_attempts
-        WHERE ip = ? AND success = 0 AND attempted_at > ?
+        WHERE scope = ? AND ip = ? AND success = 0 AND attempted_at > ?
         """,
-        (ip, window_start)
+        (scope, ip, window_start)
     ).fetchone()[0]
-    return max(0, MAX_FAILED_ATTEMPTS - used)
+    return max(0, limit - used)
+
+
+def check_admin_login(username: str, password: str, ip: str) -> bool:
+    """Verify admin credentials, refusing to answer a hammering client.
+
+    The attempt is recorded before the answer is returned so a lockout still
+    applies when the caller simply retries in a loop.
+    """
+    if not ADMIN_PASSWORD:
+        raise AdError("The admin page is not configured.")
+
+    ip = ip or 'unknown'
+
+    with _get_db() as conn:
+        _check_rate_limit(conn, ip, scope='admin', limit=MAX_ADMIN_ATTEMPTS,
+                          subject='sign-in attempts')
+
+        # compare_digest on both halves, so neither the username nor the
+        # password can be recovered by timing the response.
+        ok = (secrets.compare_digest(username or '', ADMIN_USERNAME)
+              & secrets.compare_digest(password or '', ADMIN_PASSWORD))
+
+        _record_attempt(conn, ip, ok, scope='admin')
+
+    if not ok:
+        logging.warning(f"Failed admin sign-in from {ip}")
+
+    return ok
 
 
 def get_campaign(campaign_id: str) -> dict:
@@ -456,64 +630,232 @@ def _campaign_payload(row) -> dict:
         'id': row['id'],
         'banner_url': BANNER_URL_PREFIX + row['banner_file'],
         'target_url': row['target_url'],
-        'days': row['days'],
-        'price': row['price'],
-        'currency': CURRENCY,
-        'pilot': PILOT_MODE,
-        'max_days': MAX_DAYS,
+        'hours': row['hours'],
+        'max_hours': MAX_HOURS,
         'recommended_size': list(RECOMMENDED_SIZE),
         'status': row['status'],
-        'starts_at': _as_date(row['starts_at']),
-        'ends_at': _as_date(row['ends_at']),
+        'starts_at': row['starts_at'],
+        'ends_at': row['ends_at'],
+        'clicks': row['clicks'],
+        'impressions': row['impressions'],
         'support_whatsapp': SUPPORT_WHATSAPP,
     }
-
-
-def _as_date(value):
-    if not value:
-        return None
-    try:
-        return datetime.fromisoformat(value).strftime('%Y-%m-%d')
-    except ValueError:
-        return value
 
 
 def get_config() -> dict:
     """Everything the wizard needs to describe the slot to an advertiser."""
     return {
-        'max_days': MAX_DAYS,
+        'max_hours': MAX_HOURS,
+        'default_hours': DEFAULT_HOURS,
         'recommended_width': RECOMMENDED_SIZE[0],
         'recommended_height': RECOMMENDED_SIZE[1],
         'max_upload_mb': MAX_UPLOAD_BYTES // (1024 * 1024),
         'allowed_formats': sorted(ALLOWED_FORMATS),
-        'pilot': PILOT_MODE,
-        'price_per_day': 0.0 if PILOT_MODE else PRICE_PER_DAY,
-        'currency': CURRENCY,
+        'require_code': REQUIRE_CODE,
         'support_whatsapp': SUPPORT_WHATSAPP,
     }
 
 
 def get_active_ad() -> dict:
-    """Pick a live campaign to display, or None when the slot is free.
+    """The campaign holding the slot right now, or None when it is free.
 
-    Live campaigns are rotated at random so every advertiser paying for the
-    same period gets a share of the impressions.
+    Only one ad runs at a time; the rest wait their turn, so this is a lookup
+    rather than a choice.
     """
     now = datetime.now().isoformat()
     with _get_db() as conn:
-        rows = conn.execute(
-            "SELECT * FROM ad_campaigns WHERE status = 'active' AND ends_at > ?",
-            (now,)
+        row = conn.execute(
+            """
+            SELECT * FROM ad_campaigns
+            WHERE status = 'active' AND starts_at <= ? AND ends_at > ?
+            ORDER BY starts_at ASC LIMIT 1
+            """,
+            (now, now)
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        conn.execute(
+            "UPDATE ad_campaigns SET impressions = impressions + 1 WHERE id = ?",
+            (row['id'],)
+        )
+
+    return {
+        'id': row['id'],
+        'banner_url': BANNER_URL_PREFIX + row['banner_file'],
+        'click_url': f"/ad/click/{row['id']}",
+        'target_url': row['target_url'],
+        'ends_at': row['ends_at'],
+    }
+
+
+def get_queue(limit: int = 20) -> dict:
+    """The ad on air now and the ones waiting behind it."""
+    now = datetime.now()
+    now_iso = now.isoformat()
+
+    with _get_db() as conn:
+        current = conn.execute(
+            """
+            SELECT * FROM ad_campaigns
+            WHERE status = 'active' AND starts_at <= ? AND ends_at > ?
+            ORDER BY starts_at ASC LIMIT 1
+            """,
+            (now_iso, now_iso)
+        ).fetchone()
+
+        upcoming = conn.execute(
+            """
+            SELECT * FROM ad_campaigns
+            WHERE status = 'active' AND starts_at > ?
+            ORDER BY starts_at ASC LIMIT ?
+            """,
+            (now_iso, limit)
         ).fetchall()
 
-    if not rows:
-        return None
+    def slot(row):
+        return {
+            'id': row['id'],
+            'banner_url': BANNER_URL_PREFIX + row['banner_file'],
+            'target_url': row['target_url'],
+            'hours': row['hours'],
+            'starts_at': row['starts_at'],
+            'ends_at': row['ends_at'],
+        }
 
-    row = random.choice(rows)
     return {
-        'banner_url': BANNER_URL_PREFIX + row['banner_file'],
-        'target_url': row['target_url'],
-        'ends_at': _as_date(row['ends_at']),
+        'now': now_iso,
+        'current': slot(current) if current else None,
+        'upcoming': [slot(r) for r in upcoming],
+        'free_from': _queue_tail_readonly(now),
+        'max_hours': MAX_HOURS,
+    }
+
+
+def _queue_tail_readonly(now: datetime) -> str:
+    with _get_db() as conn:
+        return _queue_tail(conn, now).isoformat()
+
+
+def record_click(campaign_id: str) -> str:
+    """Count a click and return where the visitor should be sent.
+
+    The click is appended to a plain log file as well as counted, so the raw
+    record survives even if the database is ever rebuilt.
+    """
+    with _get_db() as conn:
+        row = conn.execute(
+            "SELECT target_url FROM ad_campaigns WHERE id = ?", (campaign_id,)
+        ).fetchone()
+
+        if row is None:
+            raise AdError("That advert is no longer available.")
+
+        conn.execute(
+            "UPDATE ad_campaigns SET clicks = clicks + 1 WHERE id = ?", (campaign_id,)
+        )
+
+    _append_click_log(campaign_id, row['target_url'])
+    return row['target_url']
+
+
+def _append_click_log(campaign_id: str, target_url: str):
+    """Append one JSON line per click.
+
+    Nothing identifying about the visitor is written down: the site has no
+    accounts and this only needs to answer "how many".
+    """
+    entry = json.dumps({
+        'at': datetime.now().isoformat(timespec='seconds'),
+        'campaign_id': campaign_id,
+        'target_url': target_url,
+    })
+
+    try:
+        # One short line opened in append mode, so concurrent workers cannot
+        # interleave halves of a record.
+        with open(CLICK_LOG, 'a', encoding='utf-8') as handle:
+            handle.write(entry + '\n')
+    except OSError as e:
+        logging.error(f"Could not write to the ad click log: {e}")
+
+
+def read_click_log(limit: int = 200) -> list:
+    """The most recent clicks, newest first."""
+    try:
+        with open(CLICK_LOG, encoding='utf-8') as handle:
+            lines = handle.readlines()[-limit:]
+    except FileNotFoundError:
+        return []
+    except OSError as e:
+        logging.error(f"Could not read the ad click log: {e}")
+        return []
+
+    entries = []
+    for line in reversed(lines):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            entries.append(json.loads(line))
+        except ValueError:
+            continue
+
+    return entries
+
+
+def get_admin_stats() -> dict:
+    """Every campaign with its impressions, clicks and click-through rate."""
+    now = datetime.now().isoformat()
+
+    with _get_db() as conn:
+        rows = conn.execute(
+            "SELECT * FROM ad_campaigns ORDER BY created_at DESC"
+        ).fetchall()
+
+    campaigns = []
+    for row in rows:
+        if row['status'] != 'active':
+            state = 'draft'
+        elif row['ends_at'] and row['ends_at'] <= now:
+            state = 'finished'
+        elif row['starts_at'] and row['starts_at'] > now:
+            state = 'queued'
+        else:
+            state = 'on air'
+
+        impressions = row['impressions'] or 0
+        clicks = row['clicks'] or 0
+
+        campaigns.append({
+            'id': row['id'],
+            'state': state,
+            'banner_url': BANNER_URL_PREFIX + row['banner_file'],
+            'target_url': row['target_url'],
+            'hours': row['hours'],
+            'created_at': row['created_at'],
+            'starts_at': row['starts_at'],
+            'ends_at': row['ends_at'],
+            'impressions': impressions,
+            'clicks': clicks,
+            'ctr': (clicks / impressions * 100) if impressions else 0.0,
+        })
+
+    totals = {
+        'campaigns': len(campaigns),
+        'impressions': sum(c['impressions'] for c in campaigns),
+        'clicks': sum(c['clicks'] for c in campaigns),
+    }
+    totals['ctr'] = (
+        totals['clicks'] / totals['impressions'] * 100 if totals['impressions'] else 0.0
+    )
+
+    return {
+        'campaigns': campaigns,
+        'totals': totals,
+        'recent_clicks': read_click_log(50),
+        'click_log': os.path.abspath(CLICK_LOG),
     }
 
 
@@ -591,13 +933,14 @@ if __name__ == '__main__':
     else:
         with _get_db() as conn:
             campaigns = conn.execute(
-                "SELECT id, status, days, price, starts_at, ends_at, target_url "
-                "FROM ad_campaigns ORDER BY created_at DESC"
+                "SELECT id, status, hours, clicks, impressions, starts_at, ends_at, "
+                "target_url FROM ad_campaigns ORDER BY created_at DESC"
             ).fetchall()
 
         if not campaigns:
             print("No campaigns yet.")
         for row in campaigns:
-            window = f"{row['starts_at'] or '-'} -> {row['ends_at'] or '-'}"
-            print(f"{row['id']}  {row['status']:<7} {row['days']:>2}d  "
-                  f"{row['price']:>7.2f}  {window}  {row['target_url']}")
+            window = f"{(row['starts_at'] or '-')[:16]} -> {(row['ends_at'] or '-')[:16]}"
+            print(f"{row['id']}  {row['status']:<7} {row['hours']:>3}h  "
+                  f"{row['impressions']:>6} views {row['clicks']:>5} clicks  "
+                  f"{window}  {row['target_url']}")

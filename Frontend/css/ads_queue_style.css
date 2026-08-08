@@ -1,0 +1,143 @@
+/* Ads queue pipeline.
+   Builds on ad_manage_style.css for the page shell (colours, container,
+   buttons); everything here is specific to the queue view. */
+
+.loading {
+    text-align: center;
+    color: var(--muted-color);
+    padding: 2rem 0;
+}
+
+.pipeline {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    margin: 1.5rem 0 2rem;
+}
+
+.slot {
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    background-color: var(--sub-container-color);
+    transition: border-color 0.3s ease;
+}
+
+.slot.current {
+    border-color: var(--success-color);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--success-color) 18%, transparent);
+}
+
+.slot.upcoming {
+    border-style: dashed;
+}
+
+.slot.empty {
+    border-style: dashed;
+    text-align: center;
+    color: var(--muted-color);
+}
+
+.slot.empty p {
+    margin: 0.5rem 0;
+}
+
+.slot-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+}
+
+.slot.current .slot-badge {
+    background-color: var(--success-color);
+    color: #08290a;
+}
+
+/* The banner keeps the same 600x90 proportions as the real slot, so the
+   queue is an honest preview of what visitors actually see. */
+.slot-banner {
+    aspect-ratio: 600 / 90;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dark-mode .slot-banner {
+    background-color: #0f172a;
+}
+
+.slot-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.slot-meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.15rem 0.75rem;
+    margin: 0.85rem 0 0;
+    font-size: 0.9rem;
+}
+
+.slot-meta dt {
+    color: var(--muted-color);
+}
+
+.slot-meta dd {
+    margin: 0;
+    font-weight: 600;
+}
+
+.connector {
+    text-align: center;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--muted-color);
+    padding: 0.35rem 0;
+}
+
+.cta {
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+}
+
+.cta p {
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+}
+
+.cta .hint {
+    font-weight: 400;
+    margin-top: 0.9rem;
+}
+
+@media (max-width: 480px) {
+    .slot {
+        padding: 0.85rem;
+    }
+
+    .slot-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .slot-meta dd {
+        margin-bottom: 0.4rem;
+    }
+}

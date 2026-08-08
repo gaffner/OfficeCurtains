@@ -34,8 +34,10 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    /* Bottom padding clears the fixed bar holding the ad and help button. */
-    padding: 20px 20px 10.5rem;
+    /* Bottom padding clears the fixed bar holding the ad and help button.
+       The bar grows and shrinks with its contents, so index.html measures it
+       into --bottom-bar-height; the literal is only a pre-measurement guess. */
+    padding: 20px 20px var(--bottom-bar-height, 10.5rem);
     max-width: 600px;
     margin: 0 auto;
     background-color: var(--background-color);
@@ -49,7 +51,7 @@ body {
 /* Mobile layout adjustments */
 @media (max-width: 768px) {
     body {
-        padding-bottom: 11rem; /* Fixed bar is taller here: ad above the help button */
+        padding-bottom: var(--bottom-bar-height, 11rem); /* Taller here: ad above the help button */
         display: flex;
         flex-direction: column;
         min-height: 100vh;

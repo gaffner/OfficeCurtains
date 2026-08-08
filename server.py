@@ -1,8 +1,15 @@
+import base64
+import html
 import logging
 from datetime import datetime
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+    RedirectResponse,
+)
 from starlette.staticfiles import StaticFiles
 
 from config import *
@@ -253,19 +260,32 @@ def get_ad_config(request: Request):
     return ads.get_config()
 
 
+@app.get("/api/ads/queue")
+def get_ad_queue(request: Request):
+    """What is on air now and what follows it. Not ISP-gated, same as /active."""
+    return ads.get_queue()
+
+
 @app.post("/api/ads/draft")
 @validate_isp()
 async def create_ad_draft(
     request: Request,
     banner: UploadFile = File(...),
     target_url: str = Form(...),
-    days: int = Form(...),
+    hours: int = Form(...),
 ):
-    """Hold an uploaded banner as a draft until a payment code is entered."""
+    """Take an uploaded banner and put it in the queue.
+
+    Uploading is free and open, so unless AD_REQUIRE_CODE is switched on the
+    campaign goes live straight away instead of waiting for a code.
+    """
     raw = await banner.read()
 
     try:
-        return ads.create_draft(raw, banner.filename or '', target_url, days)
+        campaign = ads.create_draft(raw, banner.filename or '', target_url, hours)
+        if not ads.REQUIRE_CODE:
+            campaign = ads.publish_campaign(campaign['id'])
+        return campaign
     except ads.AdError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -289,3 +309,136 @@ def get_ad_campaign(request: Request, campaign_id: str):
         return ads.get_campaign(campaign_id)
     except ads.AdError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@app.get("/ad/click/{campaign_id}")
+def click_ad(request: Request, campaign_id: str):
+    """Count a click and forward the visitor to the advertiser.
+
+    Not ISP-gated, and it never records who clicked -- only that a click
+    happened -- so it keeps the site's anonymous design.
+    """
+    try:
+        target = ads.record_click(campaign_id)
+    except ads.AdError:
+        return RedirectResponse(url="/", status_code=302)
+
+    return RedirectResponse(url=target, status_code=302)
+
+
+def render_admin_page(data: dict) -> str:
+    """Plain server-rendered tables. No JS, so it works from any device."""
+    def esc(value):
+        return html.escape(str(value if value is not None else '-'))
+
+    def when(value):
+        return esc(value[:16].replace('T', ' ')) if value else '-'
+
+    totals = data['totals']
+    rows = []
+    for c in data['campaigns']:
+        rows.append(
+            f"<tr class='{esc(c['state']).replace(' ', '-')}'>"
+            f"<td><img src='{esc(c['banner_url'])}' alt=''></td>"
+            f"<td>{esc(c['state'])}</td>"
+            f"<td><a href='{esc(c['target_url'])}' rel='noopener noreferrer nofollow'"
+            f" target='_blank'>{esc(c['target_url'])}</a></td>"
+            f"<td>{esc(c['hours'])}h</td>"
+            f"<td>{when(c['starts_at'])}</td><td>{when(c['ends_at'])}</td>"
+            f"<td>{esc(c['impressions'])}</td><td>{esc(c['clicks'])}</td>"
+            f"<td>{c['ctr']:.2f}%</td>"
+            f"<td><code>{esc(c['id'])}</code></td></tr>"
+        )
+    campaign_rows = ''.join(rows) or "<tr><td colspan='10'>No campaigns yet.</td></tr>"
+
+    click_rows = ''.join(
+        f"<tr><td>{when(click.get('at'))}</td>"
+        f"<td><code>{esc(click.get('campaign_id'))}</code></td>"
+        f"<td>{esc(click.get('target_url'))}</td></tr>"
+        for click in data['recent_clicks']
+    ) or "<tr><td colspan='3'>No clicks recorded yet.</td></tr>"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Ad statistics</title>
+<style>
+  body {{ font-family: system-ui, sans-serif; margin: 1.5rem; color: #222; }}
+  h1 {{ margin-bottom: 0.25rem; }}
+  p.note {{ color: #666; margin-top: 0; }}
+  table {{ border-collapse: collapse; width: 100%; margin-bottom: 2rem; }}
+  th, td {{ border: 1px solid #ccc; padding: 0.4rem 0.6rem; text-align: left;
+           font-size: 0.9rem; vertical-align: middle; }}
+  th {{ background: #f2f2f2; }}
+  img {{ height: 28px; width: auto; max-width: 120px; display: block; }}
+  code {{ font-size: 0.8rem; }}
+  tr.on-air td {{ background: #eaf7ea; }}
+  tr.queued td {{ background: #fff8e5; }}
+  tr.draft td {{ color: #888; }}
+  .totals td {{ font-weight: bold; }}
+</style>
+</head>
+<body>
+<h1>Ad statistics</h1>
+<p class="note">Generated {esc(datetime.now().strftime('%Y-%m-%d %H:%M'))}</p>
+
+<table>
+  <tr><th>Campaigns</th><th>Impressions</th><th>Clicks</th><th>CTR</th></tr>
+  <tr class="totals"><td>{esc(totals['campaigns'])}</td>
+    <td>{esc(totals['impressions'])}</td><td>{esc(totals['clicks'])}</td>
+    <td>{totals['ctr']:.2f}%</td></tr>
+</table>
+
+<h2>Campaigns</h2>
+<table>
+  <tr><th>Banner</th><th>State</th><th>Target</th><th>Length</th><th>Starts</th>
+      <th>Ends</th><th>Views</th><th>Clicks</th><th>CTR</th><th>ID</th></tr>
+  {campaign_rows}
+</table>
+
+<h2>Recent clicks</h2>
+<table>
+  <tr><th>When</th><th>Campaign</th><th>Target</th></tr>
+  {click_rows}
+</table>
+<p class="note">Full click log: <code>{esc(data['click_log'])}</code></p>
+</body>
+</html>"""
+
+
+@app.get("/admin")
+def admin_page(request: Request):
+    """Private ad statistics, guarded by HTTP basic auth.
+
+    Deliberately not ISP-gated: the owner may be on any network, and the
+    password is the gate here.
+    """
+    def challenge(message: str, status: int = 401):
+        headers = {}
+        if status == 401:
+            headers["WWW-Authenticate"] = 'Basic realm="Curtains admin"'
+        return PlainTextResponse(message, status_code=status, headers=headers)
+
+    header = request.headers.get("authorization", "")
+    scheme, _, encoded = header.partition(" ")
+
+    if scheme.lower() != "basic" or not encoded:
+        return challenge("Sign in required.")
+
+    try:
+        username, _, password = base64.b64decode(encoded).decode('utf-8').partition(":")
+    except Exception:
+        return challenge("Sign in required.")
+
+    try:
+        if not ads.check_admin_login(username, password, get_client_ip(request)):
+            return challenge("Wrong username or password.")
+    except ads.RateLimited as e:
+        return challenge(str(e), status=429)
+    except ads.AdError as e:
+        return challenge(str(e), status=503)
+
+    return HTMLResponse(render_admin_page(ads.get_admin_stats()))

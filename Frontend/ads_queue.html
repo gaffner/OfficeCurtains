@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curtain Control System - Ads Queue</title>
+    <link rel="stylesheet" href="css/ad_manage_style.css">
+    <link rel="stylesheet" href="css/ads_queue_style.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <a href="/Frontend/index.html" class="back-button">&#8592; Back to Control Panel</a>
+
+    <div class="container">
+        <div class="logo">
+            <svg viewBox="0 0 100 100">
+                <rect x="10" y="10" width="80" height="80" fill="#2563eb" rx="8"/>
+                <path d="M30 30 Q50 50 30 70" stroke="white" fill="none" stroke-width="4"/>
+                <path d="M70 30 Q50 50 70 70" stroke="white" fill="none" stroke-width="4"/>
+            </svg>
+        </div>
+
+        <h1>Ads Queue</h1>
+        <p class="subtitle">One banner at a time, in the order it was booked.</p>
+
+        <div class="loading" id="loading">Loading the queue&hellip;</div>
+        <div class="error-box" id="queueError" hidden role="alert"></div>
+
+        <div class="pipeline" id="pipeline" hidden></div>
+
+        <div class="cta">
+            <p>Want to advertise?</p>
+            <a href="/Frontend/ad_manage.html" class="primary-button as-link">Put your banner in the queue</a>
+            <p class="hint" id="freeFromHint"></p>
+        </div>
+    </div>
+
+    <script src="ads_queue.js"></script>
+</body>
+</html>
