@@ -17,6 +17,7 @@ from utils import (
     LOCALHOST_ADDRESSES,
 )
 import chat
+import stats_store
 
 # Setup logging before anything else
 setup_logging()
@@ -144,6 +145,7 @@ def control_curtain(request: Request, room_name: str, action: str, direction: st
 
     # In test mode, just return success
     if IS_TEST:
+        stats_store.record_action(room_name, action)
         return {"status": "success", "message": f"Curtain in room {room_name} {action} command sent."}
 
     suffix = get_suffix(room_name)
@@ -168,9 +170,17 @@ def control_curtain(request: Request, room_name: str, action: str, direction: st
     # Send the message to the server
     res = send_message(operation_type, lift_direction, creds, address)
     if res.status_code == 200 or res.status_code == 202:
+        stats_store.record_action(room_name, action)
         return {"status": "success", "message": f"Curtain in room {room_name} {action} command sent successfully."}
     else:
         raise HTTPException(status_code=res.status_code, detail=f"Failed to send command {res.text}")
+
+
+@app.get("/stats/all")
+@validate_isp()
+def get_all_stats(request: Request):
+    """Usage statistics aggregated across the whole recorded history."""
+    return stats_store.get_all_statistics()
 
 
 # ============== Chat Endpoints (anonymous) ==============
