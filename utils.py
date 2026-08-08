@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 from datetime import datetime
@@ -7,10 +6,22 @@ from functools import wraps
 import requests
 from dotenv import load_dotenv
 from fastapi import Request, HTTPException
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 
 load_dotenv()
 ALLOWED_ISP = os.getenv('ALLOWED_ISP')
+
+BLOCKED_MESSAGE = (
+    "Access denied: your network provider is not on the allow list for this service."
+)
+
+
+def get_allowed_isps():
+    return {
+        isp.strip()
+        for isp in (ALLOWED_ISP or '').split(',')
+        if isp.strip()
+    }
 
 
 def setup_logging():
@@ -81,11 +92,17 @@ def is_allowed_isp(ip: str):
     if ip in ('127.0.0.1', 'localhost', '::1'):
         return True
     try:
-        result = json.loads(requests.get(f'http://ip-api.com/json/{ip}?fields=isp').text)
-        logging.info(f'IP-API result: {result}, allowed isp is {ALLOWED_ISP}')
-        return result['isp'] == ALLOWED_ISP
-    except KeyError:
-        logging.error(f'Client disallowed IP {ip}')
+        response = requests.get(
+            f'http://ip-api.com/json/{ip}?fields=isp',
+            timeout=5,
+        )
+        response.raise_for_status()
+        result = response.json()
+        allowed_isps = get_allowed_isps()
+        logging.info(f'IP-API result: {result}, allowed ISPs are {allowed_isps}')
+        return result.get('isp') in allowed_isps
+    except (requests.RequestException, ValueError):
+        logging.exception(f'Failed to validate ISP for client IP {ip}')
         return False
 
 
@@ -98,6 +115,20 @@ def get_client_ip(request: Request) -> str:
     return user_ip
 
 
+def wants_json(request: Request) -> bool:
+    """Whether the caller expects a machine-readable body rather than a web page.
+
+    Browser navigation should keep getting the friendly `blocked.html` page, but
+    `fetch`/XHR callers must get JSON so they can show an indicative message
+    instead of trying to parse HTML.
+    """
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return True
+    if "application/json" in request.headers.get("accept", "").lower():
+        return True
+    return request.url.path.startswith("/api/")
+
+
 def validate_isp():
     def decorator(func):
         @wraps(func)
@@ -108,11 +139,21 @@ def validate_isp():
 
             try:
                 user_ip = get_client_ip(request)
-                if not is_allowed_isp(user_ip):
-                    return RedirectResponse(url="/Frontend/blocked.html")
-            except Exception as e:
-                logging.info(f"bad request: {request}, {request.client}, {request.headers}")
-                raise HTTPException(status_code=500, detail=str(e))
+                allowed = is_allowed_isp(user_ip)
+            except Exception:
+                logging.exception(f"Failed to evaluate access for request to {request.url.path}")
+                raise HTTPException(
+                    status_code=503,
+                    detail="Could not verify network access right now. Please try again shortly.",
+                )
+
+            if not allowed:
+                if wants_json(request):
+                    return JSONResponse(
+                        status_code=403,
+                        content={"detail": BLOCKED_MESSAGE},
+                    )
+                return RedirectResponse(url="/Frontend/blocked.html")
 
             return func(*args, **kwargs)
 

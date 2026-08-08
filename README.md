@@ -25,7 +25,8 @@ The UI will show `[TEST MODE]` in responses so you know commands aren't actually
 ## Access Control
 
 There are no user accounts or SSO. Access is gated purely by IP whitelisting:
-only clients whose ISP matches `ALLOWED_ISP` (e.g. Microsoft) are allowed in;
+only clients whose ISP appears in the comma-separated `ALLOWED_ISP` allowlist
+(e.g. `Microsoft,Partner Communications Ltd.`) are allowed in;
 everyone else is redirected to a "blocked" page. Localhost is always allowed for
 local development. The public chat is anonymous - users type a display name with
 each message.

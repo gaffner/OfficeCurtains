@@ -1,3 +1,83 @@
+const ACCESS_DENIED_MESSAGE = 'Access denied: your network provider is not allowed to use this service.';
+
+/**
+ * Read a response body defensively. The server can legitimately answer with
+ * HTML (blocked page, proxy error page), so never assume the body is JSON.
+ */
+async function readPayload(response) {
+    const contentType = (response.headers.get('content-type') || '').toLowerCase();
+    if (!contentType.includes('application/json')) {
+        return { isJson: false, data: null };
+    }
+    try {
+        return { isJson: true, data: await response.json() };
+    } catch (err) {
+        return { isJson: false, data: null };
+    }
+}
+
+/** Turn any non-OK / non-JSON response into a message a human can act on. */
+function describeFailure(response, payload, fallback) {
+    if (payload.isJson && payload.data && typeof payload.data.detail === 'string') {
+        return payload.data.detail;
+    }
+    if (response.redirected && response.url.includes('blocked.html')) {
+        return ACCESS_DENIED_MESSAGE;
+    }
+    if (response.status === 401 || response.status === 403) {
+        return ACCESS_DENIED_MESSAGE;
+    }
+    if (response.status === 429) {
+        return 'Too many requests - please wait a moment and try again.';
+    }
+    if (response.status >= 500) {
+        return `The server is having trouble (error ${response.status}). Please try again shortly.`;
+    }
+    if (!payload.isJson) {
+        return ACCESS_DENIED_MESSAGE;
+    }
+    return fallback;
+}
+
+/**
+ * Perform a request and always resolve to { ok, data, message }.
+ * Network failures and non-JSON bodies produce an indicative message
+ * rather than an opaque JSON parse error.
+ */
+async function requestJson(url, options = {}) {
+    let response;
+    try {
+        response = await fetch(url, {
+            credentials: 'include',
+            ...options,
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                ...(options.headers || {})
+            }
+        });
+    } catch (err) {
+        return {
+            ok: false,
+            data: null,
+            message: 'Cannot reach the server. Please check your connection and try again.'
+        };
+    }
+
+    const payload = await readPayload(response);
+
+    if (!response.ok || !payload.isJson) {
+        return {
+            ok: false,
+            status: response.status,
+            data: payload.data,
+            message: describeFailure(response, payload, `Request failed (error ${response.status}).`)
+        };
+    }
+
+    return { ok: true, status: response.status, data: payload.data, message: null };
+}
+
 class CurtainControl {
     constructor() {
         this.favorites = [];
@@ -76,15 +156,9 @@ class CurtainControl {
 
         const encodedReport = encodeURIComponent(reportText);
 
-        fetch(`/submit-report/${encodedReport}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
+        requestJson(`/submit-report/${encodedReport}`, { method: 'GET' })
+        .then(result => {
+            if (result.ok) {
                 document.getElementById('successMessage').style.display = 'block';
                 document.getElementById('errorMessage').style.display = 'none';
                 document.getElementById('reportText').value = '';
@@ -93,47 +167,32 @@ class CurtainControl {
                     document.getElementById('successMessage').style.display = 'none';
                     document.getElementById('reportButton').textContent = 'Report Problem';
                 }, 3000);
-            } else {
-                throw new Error('Network response was not ok');
+                return;
             }
-        })
-        .catch(error => {
-            document.getElementById('errorMessage').style.display = 'block';
+
+            const errorBox = document.getElementById('errorMessage');
+            errorBox.textContent = result.message;
+            errorBox.style.display = 'block';
             document.getElementById('successMessage').style.display = 'none';
         });
     }
     async moveCurtain(room, direction) {
-        try {
-            const selectedDirection = this.roomDirections[room].selected;
-            const url = selectedDirection ?
-                `/control/${room}/${direction}?direction=${selectedDirection}` :
-                `/control/${room}/${direction}`;
+        const selectedDirection = this.roomDirections[room].selected;
+        const url = selectedDirection ?
+            `/control/${encodeURIComponent(room)}/${direction}?direction=${encodeURIComponent(selectedDirection)}` :
+            `/control/${encodeURIComponent(room)}/${direction}`;
 
-            console.log("Doing fetch to", url);
-	    if (direction === "stop")
-                this.showStatus(`Curtain is stopping...`);
-            else if (direction === "up")
-                this.showStatus(`Curtain is going up`);
-            else
-                this.showStatus(`Curtain is going down`);
+        if (direction === "stop")
+            this.showStatus(`Curtain is stopping...`);
+        else if (direction === "up")
+            this.showStatus(`Curtain is going up`);
+        else
+            this.showStatus(`Curtain is going down`);
 
-            const response = await fetch(url, {
-                method: 'GET',
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-            if (response.status === 401) {
-                const data = await response.json();
-                this.showError(data.detail || 'You need to authenticate');
-                return;
-            }
-            if (!response.ok) {
-                throw new Error(response.statusText);
-            }
-        } catch (err) {
-            this.showError(`Failed to ${direction} curtain: ${err.toString()}`);
+        const result = await requestJson(url, { method: 'GET' });
+
+        if (!result.ok) {
+            this.showError(`Could not ${direction} curtain in ${room}: ${result.message}`);
         }
     }
 
@@ -150,30 +209,21 @@ class CurtainControl {
             return;
         }
 
-        fetch(`/register/${room}`, {
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json'
+        requestJson(`/register/${encodeURIComponent(room)}`).then(result => {
+            if (!result.ok) {
+                if (result.status === 404) {
+                    this.showError(`Room ${room} was not found.`);
+                } else {
+                    this.showError(result.message);
+                }
+                return;
             }
-        }).then(response => {
-            if (response.status === 401) {
-                return response.json().then(data => {
-                    this.showError(data.detail || 'You need to authenticate');
-                    throw new Error('Authentication required');
-                });
+
+            const data = result.data;
+            if (!Array.isArray(data) || data.length === 0) {
+                this.showError(`Room ${room} returned no curtain directions.`);
+                return;
             }
-            if (response.status === 404) {
-                this.showError(`Room ${room} not found`);
-                throw new Error('Room not found');
-            }
-            if (!response.ok) {
-                throw new Error(`Failed to register ${response.status}`);
-            }
-            return response.json();
-        }).then(data => {
-            console.log(data);
-            console.log(data.length);
-            if (data === undefined) return;
 
             this.favorites.push(room);
             this.roomDirections[room] = {
@@ -183,8 +233,6 @@ class CurtainControl {
             this.saveToLocalStorage();
             this.roomInput.value = '';
             this.renderRooms();
-        }).catch(error => {
-            this.showError(`Error: ${error}`);
         });
     }
 

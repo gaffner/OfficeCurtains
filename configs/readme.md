@@ -53,9 +53,9 @@ REPORTS_FILE='reports.txt'
 TSHIRT_FILE='tshirt_requests.txt'
 STATISTICS_FILE='stats.csv'
 
-# Access control (IP whitelisting) - only clients whose ISP matches this value
-# are allowed in. Localhost is always allowed.
-ALLOWED_ISP='Microsoft'
+# Access control (IP whitelisting) - comma-separated ISP names are supported.
+# Localhost is always allowed.
+ALLOWED_ISP='Microsoft,Partner Communications Ltd.'
 ```
 
 ---
@@ -185,4 +185,3 @@ git pull
 # Restart the service
 sudo systemctl restart curtains.service
 ```
-

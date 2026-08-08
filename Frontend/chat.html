@@ -436,16 +436,62 @@
         document.getElementById('nameInput').value = localStorage.getItem('chatName') || '';
 
         // ============== Public Chat ==============
-        async function loadMessages() {
+        const CHAT_ACCESS_DENIED = 'Access denied: your network provider is not allowed to use this service.';
+
+        /** Read a response defensively - it may be HTML (blocked page / proxy error). */
+        async function readChatPayload(response) {
+            const contentType = (response.headers.get('content-type') || '').toLowerCase();
+            if (!contentType.includes('application/json')) {
+                return { isJson: false, data: null };
+            }
             try {
-                const response = await fetch('/api/chat/messages', {
-                    credentials: 'include'
+                return { isJson: true, data: await response.json() };
+            } catch (err) {
+                return { isJson: false, data: null };
+            }
+        }
+
+        function describeChatFailure(response, payload) {
+            if (payload.isJson && payload.data && typeof payload.data.detail === 'string') {
+                return payload.data.detail;
+            }
+            if (response.status === 401 || response.status === 403 || !payload.isJson) {
+                return CHAT_ACCESS_DENIED;
+            }
+            if (response.status >= 500) {
+                return `The server is having trouble (error ${response.status}). Please try again shortly.`;
+            }
+            return `Request failed (error ${response.status}).`;
+        }
+
+        async function loadMessages() {
+            const messagesContainer = document.getElementById('chatMessages');
+            let response;
+            try {
+                response = await fetch('/api/chat/messages', {
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
                 });
+            } catch (error) {
+                console.error('Error loading messages:', error);
+                messagesContainer.innerHTML = '<div class="empty-state">Cannot reach the server. Check your connection.</div>';
+                return;
+            }
 
-                if (!response.ok) throw new Error('Failed to load messages');
+            const payload = await readChatPayload(response);
 
-                const data = await response.json();
-                const messagesContainer = document.getElementById('chatMessages');
+            if (!response.ok || !payload.isJson) {
+                const message = describeChatFailure(response, payload);
+                console.error('Error loading messages:', message);
+                messagesContainer.innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
+                return;
+            }
+
+            try {
+                const data = payload.data;
 
                 if (data.messages.length === 0) {
                     messagesContainer.innerHTML = '<div class="empty-state">No messages yet. Be the first to say something!</div>';
@@ -493,20 +539,35 @@
             sendButton.disabled = true;
 
             try {
-                const response = await fetch('/api/chat/send', {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, message })
-                });
+                let response;
+                try {
+                    response = await fetch('/api/chat/send', {
+                        method: 'POST',
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ name, message })
+                    });
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    alert('Cannot reach the server. Please check your connection and try again.');
+                    return;
+                }
 
-                if (!response.ok) throw new Error('Failed to send message');
+                const payload = await readChatPayload(response);
+
+                if (!response.ok || !payload.isJson) {
+                    const failure = describeChatFailure(response, payload);
+                    console.error('Error sending message:', failure);
+                    alert(failure);
+                    return;
+                }
 
                 input.value = '';
                 await loadMessages();
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message. Please try again.');
             } finally {
                 sendButton.disabled = false;
                 input.focus();

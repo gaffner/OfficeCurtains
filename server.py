@@ -2,12 +2,12 @@ import logging
 from datetime import datetime
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, RedirectResponse
 from starlette.staticfiles import StaticFiles
 
 from config import *
 from helper import get_suffix, get_username, get_states_by_direction, send_message, get_room_states
-from utils import get_client_ip, setup_logging, validate_isp
+from utils import get_client_ip, setup_logging, validate_isp, wants_json
 import chat
 
 # Setup logging before anything else
@@ -18,10 +18,28 @@ load_dotenv()
 app = FastAPI(redirect_slashes=False)
 
 # Access is controlled purely by IP whitelisting (see utils.validate_isp):
-# only clients whose ISP matches ALLOWED_ISP (Microsoft) are allowed. There are
+# only clients whose ISP is listed in ALLOWED_ISP are allowed. There are
 # no user accounts or SSO. Localhost is always allowed for local development.
 
 app.mount("/Frontend", StaticFiles(directory="Frontend"), name="Frontend")
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Return a JSON error to API callers instead of an HTML/plain error page.
+
+    Without this, `fetch` callers receive HTML and fail with an opaque
+    "Unexpected token '<'" JSON parse error instead of a usable message.
+    """
+    logging.exception(f"Unhandled error while handling {request.method} {request.url.path}")
+
+    if wants_json(request):
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "The server hit an unexpected error. Please try again shortly."},
+        )
+
+    return PlainTextResponse("Internal Server Error", status_code=500)
 
 
 @app.get("/submit-report/{report}")
