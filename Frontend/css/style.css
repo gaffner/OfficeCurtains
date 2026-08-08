@@ -34,7 +34,8 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    padding: 20px;
+    /* Bottom padding clears the fixed bar holding the ad and help button. */
+    padding: 20px 20px 10.5rem;
     max-width: 600px;
     margin: 0 auto;
     background-color: var(--background-color);
@@ -48,7 +49,7 @@ body {
 /* Mobile layout adjustments */
 @media (max-width: 768px) {
     body {
-        padding-bottom: 20px; /* Reduced since bottom buttons are hidden */
+        padding-bottom: 11rem; /* Fixed bar is taller here: ad above the help button */
         display: flex;
         flex-direction: column;
         min-height: 100vh;
@@ -494,10 +495,10 @@ textarea {
     font-weight: 500;
 }
 
-.teams-button {
+.whatsapp-button {
     display: flex;
     align-items: center;
-    background-color: #4d4e83;
+    background-color: #25d366;
     color: white;
     border: none;
     padding: 7px 12px;
@@ -506,10 +507,17 @@ textarea {
     cursor: pointer;
     text-decoration: none;
 }
-.teams-button img {
+
+.whatsapp-button:hover {
+    background-color: #1da851;
+}
+
+.whatsapp-button img,
+.whatsapp-icon {
     width: 24px;
     height: 24px;
     margin-right: 10px;
+    flex-shrink: 0;
 }
 
 .toggle-switch {
