@@ -389,8 +389,7 @@
 
     <div class="logo-container">
         <img src="Images/logo.png" alt="Curtain Control System Logo" class="logo">
-    </div>
-    <div class="welcome-message" id="welcomeMessage"></div>
+    </div>    <div class="welcome-message" id="welcomeMessage"></div>
 
 <div class="input-container">
     <input type="text" id="roomInput" placeholder="Enter room number (e.g., 8B210)">
@@ -473,6 +472,48 @@
             overlay.addEventListener('click', toggleMenu);
         }
     });
+
+    // index.html is a static file, so it loads even for visitors whose ISP is
+    // blocked. Ask the server about access and explain the situation up front
+    // instead of letting every control fail with an error.
+    document.addEventListener('DOMContentLoaded', function () {
+        fetch('/api/access', {
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(function (response) {
+            const contentType = (response.headers.get('content-type') || '').toLowerCase();
+            if (!response.ok || !contentType.includes('application/json')) return null;
+            return response.json();
+        })
+        .then(function (data) {
+            // Only warn when the server is sure the ISP is not allowed.
+            // `allowed === null` means the lookup failed - stay quiet.
+            if (!data || data.allowed !== false) return;
+
+            const banner = document.getElementById('ispBanner');
+            if (!banner) return;
+
+            if (data.isp) {
+                document.getElementById('ispBannerProvider').textContent = ' (' + data.isp + ')';
+            }
+            banner.hidden = false;
+            document.body.classList.add('has-isp-banner');
+        })
+        .catch(function () { /* Never block the page on this check. */ });
+    });
 </script>
+
+<div id="ispBanner" class="isp-banner" role="alert" hidden>
+    <span class="isp-banner-icon" aria-hidden="true">&#9888;</span>
+    <span class="isp-banner-text">
+        Your internet provider<span id="ispBannerProvider"></span> is not on the allow list,
+        so the curtain controls will not work.
+        Connect from the <strong>Microsoft office network</strong> to use this site.
+    </span>
+</div>
 </body>
 </html>

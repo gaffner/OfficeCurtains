@@ -15,6 +15,9 @@ BLOCKED_MESSAGE = (
     "Access denied: your network provider is not on the allow list for this service."
 )
 
+# Always allowed: local development and reverse-proxy health checks.
+LOCALHOST_ADDRESSES = ('127.0.0.1', 'localhost', '::1')
+
 
 def get_allowed_isps():
     """Configured ISP names, normalised for case-insensitive comparison.
@@ -91,11 +94,12 @@ def setup_logging():
         logging.warning(f"Failed to setup file logging: {e}. Continuing with console logging only.")
 
 
-def is_allowed_isp(ip: str):
-    # Localhost is always allowed (local development / reverse-proxy health checks)
-    # and short-circuits before any external lookup.
-    if ip in ('127.0.0.1', 'localhost', '::1'):
-        return True
+def lookup_isp(ip: str):
+    """Return the ISP name reported for `ip`, or None if it cannot be determined.
+
+    None means "unknown" (lookup failed / rate limited), which is deliberately
+    distinct from "known but not allowed" so callers can tell the difference.
+    """
     try:
         response = requests.get(
             f'http://ip-api.com/json/{ip}?fields=isp',
@@ -103,13 +107,27 @@ def is_allowed_isp(ip: str):
         )
         response.raise_for_status()
         result = response.json()
-        isp = (result.get('isp') or '').strip()
-        allowed_isps = get_allowed_isps()
-        logging.info(f'IP-API result: {result}, allowed ISPs are {sorted(allowed_isps)}')
-        return isp.casefold() in allowed_isps
     except (requests.RequestException, ValueError):
-        logging.exception(f'Failed to validate ISP for client IP {ip}')
+        logging.exception(f'Failed to look up ISP for client IP {ip}')
+        return None
+
+    isp = (result.get('isp') or '').strip()
+    logging.info(f'IP-API result: {result}, allowed ISPs are {sorted(get_allowed_isps())}')
+
+    return isp or None
+
+
+def is_allowed_isp(ip: str):
+    # Localhost is always allowed (local development / reverse-proxy health checks)
+    # and short-circuits before any external lookup.
+    if ip in LOCALHOST_ADDRESSES:
+        return True
+
+    isp = lookup_isp(ip)
+    if isp is None:
         return False
+
+    return isp.casefold() in get_allowed_isps()
 
 
 def get_client_ip(request: Request) -> str:

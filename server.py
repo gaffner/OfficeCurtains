@@ -7,7 +7,15 @@ from starlette.staticfiles import StaticFiles
 
 from config import *
 from helper import get_suffix, get_username, get_states_by_direction, send_message, get_room_states
-from utils import get_client_ip, setup_logging, validate_isp, wants_json
+from utils import (
+    get_allowed_isps,
+    get_client_ip,
+    lookup_isp,
+    setup_logging,
+    validate_isp,
+    wants_json,
+    LOCALHOST_ADDRESSES,
+)
 import chat
 
 # Setup logging before anything else
@@ -95,6 +103,27 @@ def get_version(request: Request):
 @app.get("/")
 def root(request: Request):
     return RedirectResponse(url="/Frontend/index.html")
+
+
+@app.get("/api/access")
+def get_access_status(request: Request):
+    """Report whether the caller's ISP is on the allow list.
+
+    Intentionally NOT ISP-gated: Frontend/index.html is served as a static file
+    and therefore loads for everyone, so the page needs a way to find out that
+    the controls will not work and explain why.
+    """
+    user_ip = get_client_ip(request)
+
+    if user_ip in LOCALHOST_ADDRESSES:
+        return {"allowed": True, "isp": None}
+
+    isp = lookup_isp(user_ip)
+    if isp is None:
+        # Unknown (lookup failed or rate limited) - do not claim the user is blocked.
+        return {"allowed": None, "isp": None}
+
+    return {"allowed": isp.casefold() in get_allowed_isps(), "isp": isp}
 
 
 @app.get("/register/{room_name}")
