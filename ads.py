@@ -96,6 +96,19 @@ ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', '')
 # tighter than MAX_FAILED_ATTEMPTS.
 MAX_ADMIN_ATTEMPTS = 10
 
+# The owner's override. A campaign created with this code goes on air
+# immediately and may run far longer than the public limit; everything already
+# booked is pushed back rather than dropped. Never hard-coded: with no code
+# set the override is simply unavailable.
+PRIORITY_CODE = os.getenv('AD_PRIORITY_CODE', '')
+
+# 14 days, against MAX_HOURS for everyone else.
+PRIORITY_MAX_HOURS = 14 * 24
+
+# This code is short and memorable rather than random, so it gets the same
+# tight allowance as the admin password.
+MAX_PRIORITY_ATTEMPTS = 10
+
 
 class AdError(Exception):
     """Raised for problems that should be reported back to the advertiser."""
@@ -214,6 +227,7 @@ def _migrate(conn):
 
     _add_column(conn, 'ad_campaigns', 'clicks', 'INTEGER NOT NULL DEFAULT 0')
     _add_column(conn, 'ad_campaigns', 'impressions', 'INTEGER NOT NULL DEFAULT 0')
+    _add_column(conn, 'ad_campaigns', 'priority', 'INTEGER NOT NULL DEFAULT 0')
 
     # Code entry and admin sign-in share the attempt table.
     _add_column(conn, 'redeem_attempts', 'scope', "TEXT NOT NULL DEFAULT 'code'")
@@ -390,22 +404,30 @@ def _validate_target_url(url: str) -> str:
     return url
 
 
-def _validate_hours(hours) -> int:
+def _validate_hours(hours, priority: bool = False) -> int:
+    limit = PRIORITY_MAX_HOURS if priority else MAX_HOURS
+
     try:
         hours = int(hours)
     except (TypeError, ValueError):
         raise AdError("Choose how long the ad should run.")
 
-    if hours < 1 or hours > MAX_HOURS:
-        raise AdError(f"Choose between 1 and {MAX_HOURS} hours.")
+    if hours < 1 or hours > limit:
+        raise AdError(f"Choose between 1 and {limit} hours.")
 
     return hours
 
 
-def create_draft(raw_image: bytes, filename: str, target_url: str, hours) -> dict:
-    """Store an uploaded banner and hold it as an unpublished draft."""
+def create_draft(raw_image: bytes, filename: str, target_url: str, hours,
+                 priority: bool = False) -> dict:
+    """Store an uploaded banner and hold it as an unpublished draft.
+
+    `priority` is never taken from the caller directly: the endpoint sets it
+    only after check_priority_code has accepted the override code, so the
+    longer runtime cannot be unlocked by posting a flag.
+    """
     target_url = _validate_target_url(target_url)
-    hours = _validate_hours(hours)
+    hours = _validate_hours(hours, priority)
     banner_file = store_banner(raw_image, filename)
 
     campaign_id = secrets.token_urlsafe(12)
@@ -414,11 +436,13 @@ def create_draft(raw_image: bytes, filename: str, target_url: str, hours) -> dic
         conn.execute(
             """
             INSERT INTO ad_campaigns
-                (id, banner_file, target_url, days, hours, price, status, created_at)
-            VALUES (?, ?, ?, ?, ?, 0, 'draft', ?)
+                (id, banner_file, target_url, days, hours, price, status,
+                 created_at, priority)
+            VALUES (?, ?, ?, ?, ?, 0, 'draft', ?, ?)
             """,
             (campaign_id, banner_file, target_url,
-             max(1, round(hours / 24)), hours, datetime.now().isoformat())
+             max(1, round(hours / 24)), hours, datetime.now().isoformat(),
+             1 if priority else 0)
         )
 
     _cleanup_stale_drafts()
@@ -443,6 +467,117 @@ def _queue_tail(conn, now: datetime) -> datetime:
         return max(now, datetime.fromisoformat(tail))
     except ValueError:
         return now
+
+
+def check_priority_code(code: str, ip: str) -> bool:
+    """Verify the owner's override code, refusing to answer a hammering client.
+
+    The attempt is recorded before the answer is returned, so a lockout still
+    applies to a caller that simply retries in a loop.
+    """
+    if not PRIORITY_CODE:
+        return False
+
+    ip = ip or 'unknown'
+
+    with _get_db() as conn:
+        _check_rate_limit(conn, ip, scope='priority', limit=MAX_PRIORITY_ATTEMPTS,
+                          subject='attempts')
+
+        ok = secrets.compare_digest((code or '').strip(), PRIORITY_CODE)
+        _record_attempt(conn, ip, ok, scope='priority')
+
+    if not ok:
+        logging.warning(f"Failed ad override code from {ip}")
+
+    return ok
+
+
+def publish_priority_campaign(campaign_id: str) -> dict:
+    """Put a campaign on air right now, ahead of everything already booked.
+
+    Nobody loses airtime: whatever is running or waiting is pushed back and
+    keeps the time it had left, so the queue resumes once the override
+    finishes. The whole reshuffle happens in one IMMEDIATE transaction so a
+    normal upload landing at the same moment cannot be scheduled into the gap.
+    """
+    conn = sqlite3.connect(DB_FILE, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.isolation_level = None
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+
+        campaign = conn.execute(
+            "SELECT * FROM ad_campaigns WHERE id = ?", (campaign_id,)
+        ).fetchone()
+
+        if campaign is None:
+            conn.execute("COMMIT")
+            raise AdError("That campaign could not be found. Please start again.")
+
+        if campaign['status'] == 'active':
+            conn.execute("COMMIT")
+            return get_campaign(campaign_id)
+
+        now = datetime.now()
+        now_iso = now.isoformat()
+        ends_at = now + timedelta(hours=campaign['hours'])
+
+        # Everything still to run, in the order it would have aired.
+        others = conn.execute(
+            """
+            SELECT id, starts_at, ends_at FROM ad_campaigns
+            WHERE status = 'active' AND ends_at > ? AND id != ?
+            ORDER BY starts_at ASC
+            """,
+            (now_iso, campaign_id)
+        ).fetchall()
+
+        conn.execute(
+            """
+            UPDATE ad_campaigns
+            SET status = 'active', activated_at = ?, starts_at = ?, ends_at = ?,
+                priority = 1
+            WHERE id = ?
+            """,
+            (now_iso, now_iso, ends_at.isoformat(), campaign_id)
+        )
+
+        cursor = ends_at
+        for row in others:
+            try:
+                row_start = datetime.fromisoformat(row['starts_at'])
+                row_end = datetime.fromisoformat(row['ends_at'])
+            except (TypeError, ValueError):
+                continue
+
+            # An ad already on air keeps only the time it has left, so it is
+            # not silently handed a longer run than it booked.
+            left = row_end - max(row_start, now)
+            if left <= timedelta(0):
+                continue
+
+            conn.execute(
+                "UPDATE ad_campaigns SET starts_at = ?, ends_at = ? WHERE id = ?",
+                (cursor.isoformat(), (cursor + left).isoformat(), row['id'])
+            )
+            cursor += left
+
+        conn.execute("COMMIT")
+    except (AdError, sqlite3.Error):
+        try:
+            conn.execute("ROLLBACK")
+        except sqlite3.Error:
+            pass
+        raise
+    finally:
+        conn.close()
+
+    logging.info(
+        f"Ad campaign {campaign_id} put on air immediately for "
+        f"{campaign['hours']}h, pushing back {len(others)} campaign(s)"
+    )
+    return get_campaign(campaign_id)
 
 
 def publish_campaign(campaign_id: str) -> dict:
@@ -634,6 +769,7 @@ def _campaign_payload(row) -> dict:
         'max_hours': MAX_HOURS,
         'recommended_size': list(RECOMMENDED_SIZE),
         'status': row['status'],
+        'priority': bool(row['priority']),
         'starts_at': row['starts_at'],
         'ends_at': row['ends_at'],
         'clicks': row['clicks'],
@@ -831,6 +967,7 @@ def get_admin_stats() -> dict:
         campaigns.append({
             'id': row['id'],
             'state': state,
+            'priority': bool(row['priority']),
             'banner_url': BANNER_URL_PREFIX + row['banner_file'],
             'target_url': row['target_url'],
             'hours': row['hours'],

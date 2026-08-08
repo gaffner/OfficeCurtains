@@ -348,6 +348,73 @@ input[type="file"]:focus {
     text-decoration: underline;
 }
 
+/* The override is the owner's, so it stays folded away instead of inviting
+   every visitor to guess at it. */
+.special-field {
+    margin-top: 0.5rem;
+}
+
+.special-field .link-button {
+    margin: 0;
+    padding-left: 0;
+}
+
+.special-area {
+    margin-top: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 1px dashed var(--border-color);
+    border-radius: 8px;
+    background-color: var(--sub-container-color);
+}
+
+.special-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: stretch;
+}
+
+.special-row input {
+    flex: 1;
+    min-width: 0;
+}
+
+.secondary-button {
+    padding: 0 1.1rem;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s ease;
+}
+
+.secondary-button:hover:not(:disabled) {
+    background-color: var(--hover-color);
+}
+
+.secondary-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.special-ok {
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: 8px;
+    background-color: var(--success-color);
+    color: #08290a;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.special-ok[hidden] {
+    display: none;
+}
+
 .code-area {
     margin-top: 1.5rem;
     padding-top: 1.5rem;

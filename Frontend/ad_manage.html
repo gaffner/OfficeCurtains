@@ -56,13 +56,36 @@
                 </div>
 
                 <div class="field">
-                    <label for="hours">Hours on air</label>
-                    <p class="hint">Up to <span id="maxHoursHint">24</span> hours per campaign.</p>
+                    <label for="hours">Time on air</label>
+                    <p class="hint">Up to <span id="maxHoursHint">24 hours</span> per campaign.</p>
                     <div class="days-row">
                         <input type="range" id="hours" name="hours" min="1" max="24" value="24">
                         <output class="days-value" id="hoursValue">24 hours</output>
                     </div>
                     <p class="hint queue-hint" id="queueHint" hidden></p>
+                </div>
+
+                <div class="field special-field">
+                    <button type="button" class="link-button" id="specialToggle">
+                        Have a special code?
+                    </button>
+
+                    <div class="special-area" id="specialArea" hidden>
+                        <label for="specialCode">Special code</label>
+                        <p class="hint">
+                            Puts your ad on air immediately, ahead of the queue,
+                            and unlocks a longer run.
+                        </p>
+                        <div class="special-row">
+                            <input type="text" id="specialCode" name="special_code"
+                                   autocomplete="off" spellcheck="false" maxlength="64">
+                            <button type="button" class="secondary-button" id="specialBtn">Apply</button>
+                        </div>
+                        <div class="error-box" id="specialError" hidden role="alert"></div>
+                        <div class="special-ok" id="specialOk" hidden>
+                            &#10003; Override active &mdash; this ad goes on air immediately.
+                        </div>
+                    </div>
                 </div>
 
                 <div class="error-box" id="formError" hidden role="alert"></div>

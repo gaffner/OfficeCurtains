@@ -266,6 +266,25 @@ def get_ad_queue(request: Request):
     return ads.get_queue()
 
 
+@app.post("/api/ads/priority/check")
+@validate_isp()
+def check_ad_priority_code(request: Request, payload: dict):
+    """Unlock the owner's override for the upload form.
+
+    Answers only "is this code right", never the code itself, and is rate
+    limited per IP because the override code is short enough to guess at.
+    """
+    try:
+        ok = ads.check_priority_code(payload.get('code', ''), get_client_ip(request))
+    except ads.RateLimited as e:
+        raise HTTPException(status_code=429, detail=str(e))
+
+    if not ok:
+        raise HTTPException(status_code=400, detail="That code is not valid.")
+
+    return {'valid': True, 'max_hours': ads.PRIORITY_MAX_HOURS}
+
+
 @app.post("/api/ads/draft")
 @validate_isp()
 async def create_ad_draft(
@@ -273,16 +292,34 @@ async def create_ad_draft(
     banner: UploadFile = File(...),
     target_url: str = Form(...),
     hours: int = Form(...),
+    special_code: str = Form(''),
 ):
     """Take an uploaded banner and put it in the queue.
 
     Uploading is free and open, so unless AD_REQUIRE_CODE is switched on the
     campaign goes live straight away instead of waiting for a code.
+
+    The override code is checked here as well as by /priority/check, so a
+    caller cannot skip the check and post a long campaign directly.
     """
     raw = await banner.read()
 
+    priority = False
+    if special_code.strip():
+        try:
+            priority = ads.check_priority_code(special_code, get_client_ip(request))
+        except ads.RateLimited as e:
+            raise HTTPException(status_code=429, detail=str(e))
+
+        if not priority:
+            raise HTTPException(status_code=400, detail="That code is not valid.")
+
     try:
-        campaign = ads.create_draft(raw, banner.filename or '', target_url, hours)
+        campaign = ads.create_draft(
+            raw, banner.filename or '', target_url, hours, priority
+        )
+        if priority:
+            return ads.publish_priority_campaign(campaign['id'])
         if not ads.REQUIRE_CODE:
             campaign = ads.publish_campaign(campaign['id'])
         return campaign
@@ -340,7 +377,7 @@ def render_admin_page(data: dict) -> str:
         rows.append(
             f"<tr class='{esc(c['state']).replace(' ', '-')}'>"
             f"<td><img src='{esc(c['banner_url'])}' alt=''></td>"
-            f"<td>{esc(c['state'])}</td>"
+            f"<td>{esc(c['state'])}{' &#9733;' if c['priority'] else ''}</td>"
             f"<td><a href='{esc(c['target_url'])}' rel='noopener noreferrer nofollow'"
             f" target='_blank'>{esc(c['target_url'])}</a></td>"
             f"<td>{esc(c['hours'])}h</td>"
@@ -378,6 +415,7 @@ def render_admin_page(data: dict) -> str:
   tr.on-air td {{ background: #eaf7ea; }}
   tr.queued td {{ background: #fff8e5; }}
   tr.draft td {{ color: #888; }}
+  p.legend {{ color: #666; font-size: 0.85rem; }}
   .totals td {{ font-weight: bold; }}
 </style>
 </head>
@@ -398,6 +436,8 @@ def render_admin_page(data: dict) -> str:
       <th>Ends</th><th>Views</th><th>Clicks</th><th>CTR</th><th>ID</th></tr>
   {campaign_rows}
 </table>
+
+<p class="legend">&#9733; marks an ad published with the override code.</p>
 
 <h2>Recent clicks</h2>
 <table>

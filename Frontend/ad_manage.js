@@ -8,6 +8,9 @@ const state = {
     campaign: null,
     config: null,
     queue: null,
+    // Set only after the server accepts the override code. It unlocks a
+    // longer slider, but the server checks the code again on upload.
+    specialCode: '',
 };
 
 const el = (id) => document.getElementById(id);
@@ -96,7 +99,7 @@ async function loadConfig() {
     el('recSize').textContent = c.recommended_width + ' \u00d7 ' + c.recommended_height;
     el('formatHint').textContent =
         c.allowed_formats.join(', ') + ', up to ' + c.max_upload_mb + ' MB.';
-    el('maxHoursHint').textContent = c.max_hours;
+    el('maxHoursHint').textContent = formatLimit(c.max_hours);
     hoursInput.max = c.max_hours;
     if (Number(hoursInput.value) > c.max_hours) {
         hoursInput.value = c.max_hours;
@@ -138,6 +141,11 @@ async function loadQueueHint() {
     state.queue = queue;
     const hint = el('queueHint');
 
+    // The override message outranks the queue estimate: that ad skips the queue.
+    if (state.specialCode) {
+        return;
+    }
+
     if (!queue.current) {
         hint.textContent = 'The slot is free right now, so your ad starts as soon as you upload it.';
     } else {
@@ -153,12 +161,94 @@ async function loadQueueHint() {
 
 const hoursInput = el('hours');
 
+function formatDuration(hours) {
+    if (hours < 24) {
+        return plural(hours, 'hour');
+    }
+
+    const days = Math.floor(hours / 24);
+    const rest = hours % 24;
+    return plural(days, 'day') + (rest ? ' ' + plural(rest, 'hour') : '');
+}
+
+function formatLimit(hours) {
+    // "1 day" reads oddly as a cap, so the 24 hour limit stays in hours.
+    return hours <= 24 ? plural(hours, 'hour') : formatDuration(hours);
+}
+
 function updateHoursLabel() {
-    el('hoursValue').textContent = plural(Number(hoursInput.value), 'hour');
+    el('hoursValue').textContent = formatDuration(Number(hoursInput.value));
 }
 
 hoursInput.addEventListener('input', updateHoursLabel);
 updateHoursLabel();
+
+// ------------------------------------------------- override code (owner only)
+
+el('specialToggle').addEventListener('click', () => {
+    const area = el('specialArea');
+    area.hidden = !area.hidden;
+    if (!area.hidden) {
+        el('specialCode').focus();
+    }
+});
+
+el('specialCode').addEventListener('input', () => clearError(el('specialError')));
+
+el('specialCode').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        el('specialBtn').click();
+    }
+});
+
+el('specialBtn').addEventListener('click', async () => {
+    const errorBox = el('specialError');
+    clearError(errorBox);
+
+    const code = el('specialCode').value.trim();
+    if (!code) {
+        showError(errorBox, 'Please enter the code.');
+        return;
+    }
+
+    const button = el('specialBtn');
+    button.disabled = true;
+    button.textContent = 'Checking\u2026';
+
+    try {
+        const response = await fetch('/api/ads/priority/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: code }),
+        });
+
+        if (!response.ok) {
+            showError(errorBox, await readError(response));
+            return;
+        }
+
+        const result = await response.json();
+        state.specialCode = code;
+
+        hoursInput.max = result.max_hours;
+        updateHoursLabel();
+        el('maxHoursHint').textContent = formatLimit(result.max_hours);
+        el('queueHint').textContent =
+            'This ad goes on air immediately. Anything already booked keeps '
+            + 'the time it had left and runs afterwards.';
+        el('queueHint').hidden = false;
+
+        el('specialOk').hidden = false;
+        el('specialCode').disabled = true;
+        button.hidden = true;
+    } catch (e) {
+        showError(errorBox, 'Could not reach the server. Please check your connection.');
+    } finally {
+        button.disabled = false;
+        button.textContent = 'Apply';
+    }
+});
 
 el('banner').addEventListener('change', (event) => {
     const file = event.target.files && event.target.files[0];
@@ -195,6 +285,9 @@ el('adForm').addEventListener('submit', async (event) => {
     form.append('banner', file);
     form.append('target_url', el('targetUrl').value.trim());
     form.append('hours', hoursInput.value);
+    if (state.specialCode) {
+        form.append('special_code', state.specialCode);
+    }
 
     const button = el('submitBtn');
     button.disabled = true;
@@ -228,7 +321,7 @@ el('backTo1').addEventListener('click', () => showStep(1));
 // ---------------------------------------------------------------- step 2
 
 function renderOrder() {
-    el('orderLine').textContent = plural(state.campaign.hours, 'hour') + ' on air';
+    el('orderLine').textContent = formatDuration(state.campaign.hours) + ' on air';
 }
 
 el('code').addEventListener('input', () => clearError(el('codeError')));
@@ -275,7 +368,7 @@ el('codeBtn').addEventListener('click', async () => {
 function renderCampaign() {
     const c = state.campaign;
 
-    el('sumDuration').textContent = plural(c.hours, 'hour') + ' on air';
+    el('sumDuration').textContent = formatDuration(c.hours) + ' on air';
 
     const startsAt = new Date(c.starts_at);
     const onAirNow = !isNaN(startsAt) && startsAt <= new Date();
