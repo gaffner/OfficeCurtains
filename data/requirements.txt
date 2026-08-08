@@ -23,7 +23,7 @@ stack-data==0.6.3
 starlette==0.41.3
 traitlets==5.14.3
 typing_extensions==4.12.2
-urllib3==2.3.0
+urllib3==2.6.3
 wcwidth==0.2.13
 pandas
 uvicorn~=0.34.0
