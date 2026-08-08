@@ -208,50 +208,51 @@ def record_action(room_number: str, action: str):
 
 
 def get_all_statistics() -> dict:
-    """Aggregate usage across the entire recorded history."""
+    """Usage for every recorded day, newest first.
+
+    Keeps the response shape the original CSV-backed version used, so the
+    statistics page stays the plain per-day table listing it has always been.
+    """
     with _get_db() as conn:
-        rooms = [dict(row) for row in conn.execute(
+        rows = conn.execute(
             """
-            SELECT room_number,
-                   SUM(up) AS up,
-                   SUM(down) AS down,
-                   SUM(stop) AS stop,
-                   SUM(up + down + stop) AS total
+            SELECT date, room_number, up, down, stop
             FROM room_daily_stats
-            GROUP BY room_number
-            ORDER BY total DESC, room_number ASC
+            ORDER BY date DESC, room_number ASC
             """
-        )]
+        ).fetchall()
 
-        daily = [dict(row) for row in conn.execute(
-            """
-            SELECT date,
-                   COUNT(DISTINCT room_number) AS rooms,
-                   SUM(up) AS up,
-                   SUM(down) AS down,
-                   SUM(stop) AS stop,
-                   SUM(up + down + stop) AS total
-            FROM room_daily_stats
-            GROUP BY date
-            ORDER BY date DESC
-            """
-        )]
+        unique_rooms = conn.execute(
+            "SELECT COUNT(DISTINCT room_number) FROM room_daily_stats"
+        ).fetchone()[0]
 
-    totals = {
-        'up': sum(room['up'] for room in rooms),
-        'down': sum(room['down'] for room in rooms),
-        'stop': sum(room['stop'] for room in rooms),
-    }
-    totals['total'] = totals['up'] + totals['down'] + totals['stop']
+    days = []
+    for row in rows:
+        if not days or days[-1]['raw_date'] != row['date']:
+            days.append({
+                'date': _format_date(row['date']),
+                'raw_date': row['date'],
+                'stats': [],
+                'room_count': 0,
+            })
 
-    dates = [day['date'] for day in daily]
+        days[-1]['stats'].append({
+            'room_number': row['room_number'],
+            'up': row['up'],
+            'down': row['down'],
+            'stop': row['stop'],
+        })
+        days[-1]['room_count'] += 1
 
     return {
-        'totals': totals,
-        'unique_rooms': len(rooms),
-        'days_tracked': len(daily),
-        'first_date': min(dates) if dates else None,
-        'last_date': max(dates) if dates else None,
-        'rooms': rooms,
-        'daily': daily,
+        'data': days,
+        'total_unique_rooms': unique_rooms,
     }
+
+
+def _format_date(date: str) -> str:
+    """Render an ISO date the way the page has always displayed it."""
+    try:
+        return datetime.strptime(date, '%Y-%m-%d').strftime('%A, %B %d, %Y')
+    except ValueError:
+        return date

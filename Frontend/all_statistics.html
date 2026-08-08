@@ -4,204 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Curtain Control Statistics</title>
-    <link rel="stylesheet" href="/Frontend/css/style.css">
-    <link rel="stylesheet" href="/Frontend/css/components.css">
-    <link rel="stylesheet" href="/Frontend/css/all_statistics_style.css">
-    <link rel="icon" type="image/svg+xml" href="Images/favicon.ico">
+    <link rel="stylesheet" href="css/all_statistics_style.css">
 </head>
 <body>
-    <div class="stats-page">
-        <a href="/Frontend/index.html" class="back-button">&#8592; Back to Control Panel</a>
-
-        <h1>All Curtain Control Statistics</h1>
-        <p class="stats-subtitle" id="statsPeriod">Totals across the entire recorded history.</p>
-
-        <div id="statsError" class="stats-error" role="alert" hidden></div>
-
-        <div id="summaryCards" class="summary-cards"></div>
-
-        <section class="stats-section">
-            <h2>Usage by room <span class="stats-hint">(all time)</span></h2>
-            <div id="roomStats" class="loading">Loading statistics...</div>
-        </section>
-
-        <section class="stats-section">
-            <h2>Activity by day</h2>
-            <div id="dailyStats" class="loading">Loading statistics...</div>
-        </section>
+    <a href="/Frontend/index.html" class="back-button">← Back to Control Panel</a>
+    <h1>All Curtain Control Statistics</h1>
+    <div id="totalStatsContainer" class="total-stats-container">
+        <div class="loading">Loading total statistics...</div>
+    </div>
+    <div id="statsContainer">
+        <div class="loading">Loading statistics...</div>
     </div>
 
-<script>
-    if (localStorage.getItem('dark-mode') === 'true') {
-        document.body.classList.add('dark-mode');
-    }
+    <script>
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text === null || text === undefined ? '' : text;
-        return div.innerHTML;
-    }
+        const isDarkMode = localStorage.getItem('dark-mode') === 'true';
 
-    function num(value) {
-        return Number(value || 0).toLocaleString();
-    }
-
-    function showError(message) {
-        const box = document.getElementById('statsError');
-        box.textContent = message;
-        box.hidden = false;
-        document.getElementById('roomStats').innerHTML = '';
-        document.getElementById('dailyStats').innerHTML = '';
-        document.getElementById('summaryCards').innerHTML = '';
-    }
-
-    function renderSummary(data) {
-        const totals = data.totals || {};
-        const cards = [
-            { label: 'Total commands', value: num(totals.total) },
-            { label: 'Rooms used', value: num(data.unique_rooms) },
-            { label: 'Days tracked', value: num(data.days_tracked) },
-            { label: 'Up', value: num(totals.up), modifier: 'up' },
-            { label: 'Down', value: num(totals.down), modifier: 'down' },
-            { label: 'Stop', value: num(totals.stop), modifier: 'stop' }
-        ];
-
-        document.getElementById('summaryCards').innerHTML = cards.map(card => `
-            <div class="summary-card${card.modifier ? ' summary-card--' + card.modifier : ''}">
-                <span class="summary-card-value">${card.value}</span>
-                <span class="summary-card-label">${escapeHtml(card.label)}</span>
-            </div>
-        `).join('');
-
-        if (data.first_date && data.last_date) {
-            document.getElementById('statsPeriod').textContent =
-                `Totals across the entire recorded history (${data.first_date} to ${data.last_date}).`;
-        }
-    }
-
-    function renderRooms(rooms) {
-        const container = document.getElementById('roomStats');
-        container.classList.remove('loading');
-
-        if (!rooms || rooms.length === 0) {
-            container.innerHTML = '<div class="no-data">No statistics recorded yet.</div>';
-            return;
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
         }
 
-        const max = Math.max(...rooms.map(room => room.total || 0), 1);
+        function calculateTotals(stats) {
+            return stats.reduce((totals, row) => {
+                totals.up += parseInt(row.up) || 0;
+                totals.down += parseInt(row.down) || 0;
+                totals.stop += parseInt(row.stop) || 0;
+                return totals;
+            }, { up: 0, down: 0, stop: 0 });
+        }
 
-        container.innerHTML = `
-            <div class="table-wrapper">
+        function createTableHTML(stats) {
+            if (stats.length === 0) {
+                return '<div class="no-data">No statistics available for this day</div>';
+            }
+
+            const totals = calculateTotals(stats);
+
+            return `
                 <table>
                     <thead>
                         <tr>
-                            <th>Room</th>
-                            <th class="num">Up</th>
-                            <th class="num">Down</th>
-                            <th class="num">Stop</th>
-                            <th class="num">Total</th>
-                            <th class="share-col">Share</th>
+                            <th>Room Number</th>
+                            <th>Up</th>
+                            <th>Down</th>
+                            <th>Stop</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${rooms.map(room => `
+                        ${stats.map(row => `
                             <tr>
-                                <td class="room-cell">${escapeHtml(room.room_number)}</td>
-                                <td class="num">${num(room.up)}</td>
-                                <td class="num">${num(room.down)}</td>
-                                <td class="num">${num(room.stop)}</td>
-                                <td class="num strong">${num(room.total)}</td>
-                                <td class="share-col">
-                                    <span class="bar" style="width: ${Math.round((room.total || 0) / max * 100)}%"></span>
-                                </td>
+                                <td>${row.room_number}</td>
+                                <td>${row.up}</td>
+                                <td>${row.down}</td>
+                                <td>${row.stop}</td>
                             </tr>
                         `).join('')}
-                    </tbody>
-                </table>
-            </div>
-        `;
-    }
-
-    function renderDaily(daily) {
-        const container = document.getElementById('dailyStats');
-        container.classList.remove('loading');
-
-        if (!daily || daily.length === 0) {
-            container.innerHTML = '<div class="no-data">No statistics recorded yet.</div>';
-            return;
-        }
-
-        container.innerHTML = `
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th class="num">Rooms</th>
-                            <th class="num">Up</th>
-                            <th class="num">Down</th>
-                            <th class="num">Stop</th>
-                            <th class="num">Total</th>
+                        <tr class="totals-row">
+                            <td>Daily Totals</td>
+                            <td>${totals.up}</td>
+                            <td>${totals.down}</td>
+                            <td>${totals.stop}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        ${daily.map(day => `
-                            <tr>
-                                <td>${escapeHtml(day.date)}</td>
-                                <td class="num">${num(day.rooms)}</td>
-                                <td class="num">${num(day.up)}</td>
-                                <td class="num">${num(day.down)}</td>
-                                <td class="num">${num(day.stop)}</td>
-                                <td class="num strong">${num(day.total)}</td>
-                            </tr>
-                        `).join('')}
                     </tbody>
                 </table>
-            </div>
-        `;
-    }
-
-    async function loadAllStats() {
-        let response;
-        try {
-            response = await fetch('/stats/all', {
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-        } catch (err) {
-            showError('Cannot reach the server. Please check your connection and try again.');
-            return;
+            `;
         }
 
-        const contentType = (response.headers.get('content-type') || '').toLowerCase();
+        function loadAllStats() {
+            fetch('/stats/all')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('statsContainer');
+                    const totalContainer = document.getElementById('totalStatsContainer');
 
-        if (!contentType.includes('application/json')) {
-            showError('Your internet provider is not on the allow list, so statistics are unavailable. Connect from the Microsoft office network.');
-            return;
+                    // Display total unique rooms count
+                    totalContainer.innerHTML = `
+                        <div class="total-unique-rooms">
+                            <span class="total-label">Total Unique Rooms (All Time):</span>
+                            <span class="total-count">${data.total_unique_rooms}</span>
+                        </div>
+                    `;
+
+                    if (data.data.length === 0) {
+                        container.innerHTML = '<div class="no-data">No statistics available</div>';
+                        return;
+                    }
+
+                    container.innerHTML = data.data.map(day => `
+                        <div class="stats-container">
+                            <div class="date-header-container">
+                                <h2 class="date-header">${day.date}</h2>
+                                <span class="room-count">Unique Rooms: ${day.room_count}</span>
+                            </div>
+                            <div class="table-container">
+                                ${createTableHTML(day.stats)}
+                            </div>
+                        </div>
+                    `).join('');
+                })
+                .catch(error => {
+                    console.error('Error loading statistics:', error);
+                    document.getElementById('statsContainer').innerHTML = `
+                        <div class="error-message">
+                            Error loading statistics. Please try again later.
+                        </div>
+                    `;
+                    document.getElementById('totalStatsContainer').innerHTML = '';
+                });
         }
 
-        let data;
-        try {
-            data = await response.json();
-        } catch (err) {
-            showError('The server returned an unreadable response. Please try again shortly.');
-            return;
-        }
-
-        if (!response.ok) {
-            showError(data && data.detail ? data.detail : `Could not load statistics (error ${response.status}).`);
-            return;
-        }
-
-        renderSummary(data);
-        renderRooms(data.rooms);
-        renderDaily(data.daily);
-    }
-
-    loadAllStats();
-</script>
+        // Load stats when page loads
+        document.addEventListener('DOMContentLoaded', loadAllStats);
+    </script>
 </body>
 </html>
