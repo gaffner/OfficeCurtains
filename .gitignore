@@ -27,3 +27,5 @@ Frontend/ads/
 *.db-shm
 *.db-wal
 ad_clicks.log
+tshirt_requests.pdf
+tshirt_requests.txt
