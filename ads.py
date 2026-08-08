@@ -55,9 +55,15 @@ CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'  # no I, O, 0, 1
 CODE_LENGTH = 16
 CODE_GROUP = 4
 
-# Brute force protection for code entry.
-MAX_FAILED_ATTEMPTS = 5
+# Brute force protection for code entry. The codes themselves carry 80 bits
+# of entropy, so this only has to stop someone hammering the endpoint - it can
+# be generous enough that an advertiser mistyping their code never trips it.
+MAX_FAILED_ATTEMPTS = 100
 ATTEMPT_WINDOW = timedelta(minutes=15)
+
+# Only start warning about the lockout when it is actually close, otherwise
+# every typo reports "96 attempts left" and reads like a threat.
+ATTEMPTS_WARNING_THRESHOLD = 10
 
 # Drafts that were never paid for are cleaned up so uploads do not pile up.
 DRAFT_RETENTION = timedelta(days=7)
@@ -386,11 +392,10 @@ def redeem_code(campaign_id: str, code: str, ip: str) -> dict:
             _record_attempt(conn, ip, False)
             remaining = _remaining_attempts(conn, ip)
             conn.execute("COMMIT")
-            raise AdError(
-                "That code is not valid or has already been used."
-                + (f" {remaining} attempt(s) left before a short lockout."
-                   if remaining else "")
-            )
+            message = "That code is not valid or has already been used."
+            if 0 < remaining <= ATTEMPTS_WARNING_THRESHOLD:
+                message += f" {remaining} attempt(s) left before a short lockout."
+            raise AdError(message)
 
         now = datetime.now()
         ends_at = now + timedelta(days=campaign['days'])
